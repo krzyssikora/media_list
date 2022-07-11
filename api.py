@@ -1,0 +1,155 @@
+import os
+import sqlite3
+import config
+
+
+def clear_screen():
+    """Clears the terminal screen."""
+    if os.name == 'posix':
+        # mac, linux
+        _ = os.system('clear')
+    else:
+        # for windows
+        _ = os.system('cls')
+
+
+def get_user_input(message="Please enter", default='', intro=''):
+    """Collects a string from a user.
+
+    Args:
+        message (str): A message to be printed when a user is asked for the input.
+        default (str): Default value of the input, printed for user's verification.
+        intro (str): Introduction message to display
+    """
+    clear_screen()
+    if intro:
+        print(intro)
+    return_string = input(message + ": {}".format(default) + chr(8)*len(str(default)))
+    if not return_string:
+        return_string = default
+    return return_string
+
+
+def get_choice_from_list(choices, intro=''):
+    while True:
+        clear_screen()
+        if intro:
+            print(intro)
+        for idx, choice in enumerate(choices):
+            print(str(idx + 1).rjust(len(str(len(choices))) + 1) + ': ' + str(choice))
+        users_choice = input('your choice: ')
+        if users_choice.isdigit():
+            users_choice = int(users_choice)
+            if 1 <= users_choice <= len(choices):
+                return choices[users_choice - 1]
+
+
+def remove_component_from_list_of_tuples(the_list, components, single=True):
+    """
+    Args:
+        the_list (list): a list of tuples
+        components:     it is supposed to be the first coordinate of a certain tuple in the list,
+                        it may be also an iterable of such first coordinates
+        single (bool):  True if component is just a single coordinates,
+                        False if it is an iterable of such first coordinates
+    Returns:
+        the_list with elements pointed by component removed
+    """
+    if single:
+        components = [components]
+    items_to_be_removed = set()
+
+    # find elements to be removed
+    for component in components:
+        for elt in the_list:
+            if elt[0] == component:
+                items_to_be_removed.add(elt)
+
+    # remove the elements
+    for item in items_to_be_removed:
+        the_list.remove(item)
+
+    return the_list
+
+
+def get_record_field_from_user(field_data, new_record, intro_message, fields):
+    field_description, field_name, field_type, field_third = field_data
+    intro_message += '\n' + field_description
+
+    if field_type == list:
+        new_value = get_choice_from_list(field_third, intro_message)
+        if field_name == 'artist_type':
+            if new_value == 'person':
+                # remove artist_name from the 'fields' list
+                fields = remove_component_from_list_of_tuples(fields, 'artist name')
+            elif new_value == 'band':
+                # remove firstname and surname from the 'fields' list
+                fields = remove_component_from_list_of_tuples(fields, ['artist firstname', 'artist surname'])
+        elif field_name == 'artist_name' and new_record['artist_type'] in {'other', ''}:
+            # remove firstname and surname from the 'fields' list
+            fields = remove_component_from_list_of_tuples(fields, ['artist firstname', 'artist surname'])
+            # add sort_name to the 'fields' list
+            fields.append(('sort name', 'sort_name', str, ''))
+        elif field_name == 'type' and new_value == 'classical':
+            print('I am not ready for it yet')
+            quit()
+    elif field_type == set:
+        # allow many choices,
+        # the value in new_record will be a set which will be later put into a separate db table
+        new_value = set()
+        extra_message = ''
+        number_of_choices = 0
+        while True:
+            info_for_user = '\nYou can choose multiple values. Choose empty to finish.'
+            new_element = get_choice_from_list(field_third, intro_message + extra_message + info_for_user)
+            if new_element:
+                number_of_choices += 1
+                extra_message += ' {}: {}'.format(number_of_choices, new_element) + '\n' + field_description
+                new_value.add(new_element)
+            else:
+                break
+    else:
+        new_value = get_user_input(default=field_third, intro=intro_message)
+        if field_type == int:
+            while not (isinstance(new_value, int) or isinstance(new_value, float) or new_value.isdigit()):
+                new_value = get_user_input(default=field_third, intro=intro_message)
+            new_value = int(new_value)
+
+    intro_message += ': {}'.format(new_value)
+    new_record[field_name] = new_value
+
+    return new_record, intro_message, fields
+
+
+def get_album_data_from_user(fields):
+    conn = sqlite3.connect("database/records_list_tmp.sqlite")
+    cur = conn.cursor()
+
+    new_record = dict()
+    intro_message = 'Adding new album'
+
+    for field in fields:
+        new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
+
+    # verify artist_type and add artist_name for 'person'; add sort_name
+    if new_record['artist_type'] == 'person':
+        new_record['artist_name'] = (new_record['artist_firstname'] + ' ' + new_record['artist_surname']).strip()
+        new_record['sort_name'] = (new_record['artist_surname'] + ' ' + new_record['artist_firstname']).strip()
+    else:
+        new_record['sort_name'] = new_record['artist_name']
+
+    return new_record
+
+    # todo: def find_similar(dict): where dict is {db_field_name: value}
+
+    # INSERT INTO albums (artist_name, sort_name, album_title, publisher, medium, date_orig, date_publ, type)
+    # VALUES ('Mike Patton, Jean-Claude Vennier', 'Patton Mike',
+    # 'Corpse Flower', 'Ipecac', 'CD', '2019', '2019', 'various');
+
+
+def main():
+    print(get_album_data_from_user(fields=config.NEW_ALBUM_FIELDS))
+
+
+if __name__ == "__main__":
+    main()
