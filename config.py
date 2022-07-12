@@ -8,7 +8,7 @@ DATABASE="database/records_list.sqlite"
 
 NEW_ALBUM_FIELDS = [('type of record', 'type', list, ['various', 'jazz', 'OSTR', 'classics']),
                     ('number of parts', 'parts', int, 1),
-                    ('type of an artist', 'artist_type', list, ['person', 'band', 'other', '']),
+                    ('type of an artist', 'main_artist_type', list, ['person', 'band', 'other', '']),
                     ('artist name', 'artist_name', str, ''),
                     ('artist firstname', 'artist_firstname', str, ''),
                     ('artist surname', 'artist_surname', str, ''),
@@ -27,6 +27,8 @@ NEW_ALBUM_FIELDS = [('type of record', 'type', list, ['various', 'jazz', 'OSTR',
                                              'easy', 'experimental', 'folk', 'hip hop',
                                              'pop', 'r&b, soul', 'punk', 'World'])
                     ]
+
+# ALBUM_FIELDS = [x[1] for x in NEW_ALBUM_FIELDS]
 
 MATCH_NEW_ALBUM_FIELDS = [('artist name', 'artist_name', str, ''),
                     ('artist firstname', 'artist_firstname', str, ''),

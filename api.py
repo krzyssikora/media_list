@@ -1,5 +1,6 @@
 import os
 import config
+import database
 from prettytable import PrettyTable
 
 
@@ -98,14 +99,14 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
 
     if field_type == list:
         new_value = get_choice_from_list(field_third, intro_message)
-        if field_name == 'artist_type':
+        if field_name == 'main_artist_type':
             if new_value == 'person':
                 # remove artist_name from the 'fields' list
                 fields = remove_component_from_list_of_tuples(fields, 'artist name')
             elif new_value == 'band':
                 # remove firstname and surname from the 'fields' list
                 fields = remove_component_from_list_of_tuples(fields, ['artist firstname', 'artist surname'])
-        elif field_name == 'artist_name' and new_record['artist_type'] in {'other', ''}:
+        elif field_name == 'artist_name' and new_record['main_artist_type'] in {'other', ''}:
             # remove firstname and surname from the 'fields' list
             fields = remove_component_from_list_of_tuples(fields, ['artist firstname', 'artist surname'])
             # add sort_name to the 'fields' list
@@ -159,8 +160,8 @@ def get_album_data_from_user(fields):
 
     # todo: multiple parts
 
-    # verify artist_type and add artist_name for 'person'; add sort_name
-    if new_record['artist_type'] == 'person':
+    # verify main_artist_type and add artist_name for 'person'; add sort_name
+    if new_record['main_artist_type'] == 'person':
         new_record['artist_name'] = (new_record['artist_firstname'] + ' ' + new_record['artist_surname']).strip()
         new_record['sort_name'] = (new_record['artist_surname'] + ' ' + new_record['artist_firstname']).strip()
     else:
@@ -194,8 +195,10 @@ def pretty_table_from_dicts(dicts, column_names):
 
 def main():
     print(pretty_table_from_dicts(get_album_data_from_user(fields=config.NEW_ALBUM_FIELDS),
-                                  [x[1] for x in config.NEW_ALBUM_FIELDS]))
+                                  database.get_db_columns()['albums']))
 
 
 if __name__ == "__main__":
     main()
+
+# todo: display records with filters
