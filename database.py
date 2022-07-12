@@ -1,15 +1,46 @@
+import config
 import csv
 import sqlite3
+import re
 from difflib import SequenceMatcher
 
 
-def get_similarity_ratio(a, b):
+def similarity_ratio(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
-def find_similar_artist(artist_dict):
-    pass
+def find_similar_artist(artist_dict, similarity_level=0.7):
+    """
+    Args:
+        artist_dict:  includes at least one of the following keys: artist_name, artist_surname, artist_firstname
+        similarity_level: only artists for which at least one field is similar on at least this level will be returned
 
+    Returns:
+        a list of dicts with artists similar to the one in question
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute('''SELECT * FROM artists''')
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    similar_artists = list()
+    for row in lines:
+        artist_id, artist_type, artist_name, artist_surname, artist_firstname, artist_role = row
+        current_dict = {
+            'artist_id': artist_id,
+            'artist_type': artist_type,
+            'artist_name': artist_name,
+            'artist_surname': artist_surname,
+            'artist_firstname': artist_firstname,
+            'artist_role': artist_role
+        }
+        for field in artist_dict:
+            if similarity_ratio(str(artist_dict[field]).lower(), str(current_dict[field]).lower()) >= similarity_level:
+                similar_artists.append(current_dict)
+                print(current_dict)
+                continue
+    return similar_artists
 
 
 def old_records_from_csv(my_file, albums_list):
@@ -117,7 +148,7 @@ def old_records_from_csv_classics(my_file, albums_list):
 
 
 def old_database_from_list(my_list, artists=None):
-    conn = sqlite3.connect("database/records_list.sqlite")
+    conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS albums
     (item_id INTEGER PRIMARY KEY, parts INTEGER, part_id INTEGER, first_part_id INTEGER, 
@@ -168,13 +199,13 @@ def old_database_from_list(my_list, artists=None):
 
 
 def tmp_artist_types():
-    conn = sqlite3.connect("database/records_list.sqlite")
+    conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM artists")
     cur.execute("SELECT * FROM artists")
     lines = cur.fetchall()
     for row in lines:
-        if row[1] is None:
+        if row[1] == 'other':
             artist_types_dict = {1: "person", 2: "band", 3: "other", 0: 'break', "": "leave empty"}
             print(artist_types_dict)
             artist_type = input(row[2] + ": ")
@@ -189,5 +220,31 @@ def tmp_artist_types():
     cur.close()
 
 
+def get_db_columns():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    ret_dict = dict()
+    for table in ['albums', 'artists']:
+        command = "SELECT sql FROM sqlite_master WHERE tbl_name = '{}' AND type = 'table'".format(table)
+        cur.execute(command)
+        my_string = cur.fetchall()[0][0].replace('\n', '')
+        pattern = r'\((.+)\)'
+        separated = re.search(pattern, my_string)[1].split(',')
+        columns = [elt.strip().split()[0] for elt in separated]
+        ret_dict[table] = columns
+    conn.commit()
+    cur.close()
+    return ret_dict
+
+
 if __name__ == '__main__':
-    tmp_artist_types()
+    # tmp_artist_types()
+    # print(find_similar_artist({'artist_name': 'paton'}, 0.6))
+    pass
+
+
+# todo: add artist_id index to albums table or a new table albums_artists:
+#  album_id, artist_id(many)...
+# todo: check for duplicates in artists
+# todo: check for incorrect artists names in albums
+# todo: add firstname and surname for artists of type person

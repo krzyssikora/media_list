@@ -1,3 +1,6 @@
+DATABASE="database/records_list.sqlite"
+# DATABASE="database/records_list_tmp.sqlite"
+
 # 0. descriptions of database fields
 # 1. db field name
 # 2. type of field
