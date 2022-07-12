@@ -1,6 +1,6 @@
 import os
-import sqlite3
 import config
+from prettytable import PrettyTable
 
 
 def clear_screen():
@@ -150,8 +150,6 @@ def get_album_data_from_user(fields):
     Returns:
         new_record - a dict where key = field and value = user's input
     """
-    conn = sqlite3.connect("database/records_list_tmp.sqlite")
-    cur = conn.cursor()
 
     new_record = dict()
     intro_message = 'Adding new album'
@@ -175,8 +173,28 @@ def get_album_data_from_user(fields):
     # 'Corpse Flower', 'Ipecac', 'CD', '2019', '2019', 'various');
 
 
+def pretty_table_from_dicts(dicts, column_names):
+    """
+    creates a nice table with values from each dict displayed in a separate row
+    Args:
+        dicts: a single dict or a list of dicts
+        column_names (list): keys from the dicts, may be a subset or a superset
+    Returns:
+        a string with a nice table
+    """
+    table = PrettyTable()
+    table.field_names = column_names
+    if isinstance(dicts, dict):
+        dicts = [dicts]
+    for row_dict in dicts:
+        row = [row_dict.get(column, '') or '' for column in column_names]
+        table.add_row(row)
+    return table
+
+
 def main():
-    print(get_album_data_from_user(fields=config.NEW_ALBUM_FIELDS))
+    print(pretty_table_from_dicts(get_album_data_from_user(fields=config.NEW_ALBUM_FIELDS),
+                                  [x[1] for x in config.NEW_ALBUM_FIELDS]))
 
 
 if __name__ == "__main__":
