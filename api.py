@@ -31,6 +31,15 @@ def get_user_input(message="Please enter", default='', intro=''):
 
 
 def get_choice_from_list(choices, intro=''):
+    """
+    Prompts user to choose a value from a list until a choice is made.
+    Args:
+        choices (list):  items to choose from.
+        intro (str): a message displayed
+
+    Returns:
+        the choice made by the user, whatever type of object it was
+    """
     while True:
         clear_screen()
         if intro:
@@ -73,6 +82,17 @@ def remove_component_from_list_of_tuples(the_list, components, single=True):
 
 
 def get_record_field_from_user(field_data, new_record, intro_message, fields):
+    """
+    Args:
+        field_data (tuple): one of the tuples from config.NEW_ALBUM_FIELDS
+        new_record (dict): a dict in which key is field_name (field_data[1]) and value is an input from a user
+        intro_message (str): a message displayed with info about fields already added
+        fields (list): a list of fields that a user will be asked about.
+            The list may be changed e.g. on the basis of the artist type (person / band)
+
+    Returns:
+        new_record, intro_message, fields - changed accordingly to the user's input
+    """
     field_description, field_name, field_type, field_third = field_data
     intro_message += '\n' + field_description
 
@@ -122,6 +142,14 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
 
 
 def get_album_data_from_user(fields):
+    """
+    Collects data about the new album
+    Args:
+        fields: a list of tuples like config.NEW_ALBUM_FIELDS
+
+    Returns:
+        new_record - a dict where key = field and value = user's input
+    """
     conn = sqlite3.connect("database/records_list_tmp.sqlite")
     cur = conn.cursor()
 
@@ -131,6 +159,8 @@ def get_album_data_from_user(fields):
     for field in fields:
         new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
 
+    # todo: multiple parts
+
     # verify artist_type and add artist_name for 'person'; add sort_name
     if new_record['artist_type'] == 'person':
         new_record['artist_name'] = (new_record['artist_firstname'] + ' ' + new_record['artist_surname']).strip()
@@ -139,8 +169,6 @@ def get_album_data_from_user(fields):
         new_record['sort_name'] = new_record['artist_name']
 
     return new_record
-
-    # todo: def find_similar(dict): where dict is {db_field_name: value}
 
     # INSERT INTO albums (artist_name, sort_name, album_title, publisher, medium, date_orig, date_publ, type)
     # VALUES ('Mike Patton, Jean-Claude Vennier', 'Patton Mike',
