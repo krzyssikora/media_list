@@ -229,6 +229,45 @@ def old_get_duplicate_artists(ratio=0.85):
     return duplicate_list
 
 
+def find_null_main_artist_id_in_albums():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("""SELECT album_id, artist_name, album_title, main_artist_id FROM albums
+    WHERE main_artist_id IS NULL""")
+    lines = cur.fetchall()
+    for line in lines:
+        album_id, artist_name, album_title, main_artist_id = line
+        if artist_name is None or artist_name.lower() == 'various':
+            cur.execute("UPDATE albums SET main_artist_id = (?) WHERE album_id = (?)",
+                        (1413, album_id))  # i.e. 'various'
+            continue
+        print(line)
+        users_main_artist = input('Who is the main artist?')
+        cur.execute("SELECT artist_id, artist_name FROM artists WHERE artist_name = (?)", (users_main_artist,))
+        artists = cur.fetchall()
+
+        if len(artists) == 0:
+            print('   No artist found.')
+        elif len(artists) == 1:
+            print(artists[0])
+            choice = input('Is it the correct artist? (y/n) ')
+            if choice in {'y', 'Y'}:
+                cur.execute("UPDATE albums SET main_artist_id = (?) WHERE album_id = (?)",
+                            (artists[0][0], album_id))
+        else:
+            for idx, artist in enumerate(artists):
+                print(str(idx + 1) + ': ' + '...'.join(map(str, artist)))
+                choice = input('Which one is the correct artist?')
+                if choice.isdigit():
+                    choice = int(choice) - 1
+                    if 0 <= choice < len(artists):
+                        cur.execute("UPDATE albums SET main_artist_id = (?) WHERE album_id = (?)",
+                                    (artists[choice][0], album_id))
+    conn.commit()
+    cur.close()
+    print(len(lines))
+
+
 if __name__ == '__main__':
     # tmp_artist_types()
     # print(find_similar_artist({'artist_name': 'paton'}, 0.6))

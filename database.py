@@ -59,13 +59,34 @@ def get_db_columns():
     return ret_dict
 
 
+def old_add_main_artist_id_to_albums():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("""SELECT albums.album_id, albums.artist_name, artists.artist_id FROM albums
+    INNER JOIN artists ON albums.artist_name = artists.artist_name""")
+    lines = cur.fetchall()
+    for line in lines:
+        album_id, artist_name, main_artist_id = line
+        cur.execute("UPDATE albums SET main_artist_id = (?) WHERE album_id = (?)", (main_artist_id, album_id))
+    conn.commit()
+    cur.close()
+
+
+def dummy():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT")
+    conn.commit()
+    cur.close()
+
+
 if __name__ == '__main__':
-    # tmp_artist_types()
-    # print(find_similar_artist({'artist_name': 'paton'}, 0.6))
-    tmp_get_person_first_last_and_sort_names()
+    # print(get_db_columns())
+    # quit()
+    find_null_main_artist_id_in_albums()
     pass
 
-
+# todo: check missing main_artist_id in albums
 # todo: add artist_id index to albums table or a new table albums_artists:
 #  album_id, artist_id(many)...
 # todo: check for incorrect artists names in albums
