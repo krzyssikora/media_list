@@ -142,9 +142,56 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
     return new_record, intro_message, fields
 
 
+def clear_artist_names(artist_type, record):
+    """
+    The following exemplary data:
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |1.| person      | Mike Patton  | None             | None           | None         |
+    |2.| band        | the Kills    | None             | None           | None         |
+    |3.| band        | Led Zeppelin | None             | None           | None         |
+    |4.| band        | Los Lobos    | None             | None           | None         |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    will be changed into:
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |1.| person      | Mike Patton  | Mike             | Patton         | Patton Mike  |
+    |2.| band        | the Kills    | None             | None           | Kills the    |
+    |3.| band        | Led Zeppelin | None             | None           | Led Zeppelin |
+    |4.| band        | Los Lobos    | None             | None           | Lobos Los    |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    Args:
+        artist_type: person or different (band, other)
+        record: the whole record
+    Returns:
+        record with names cleared
+    """
+    artist_name = record.get('artist_name', None)
+    artist_firstname = record.get('artist_firstname', None)
+    artist_surname = record.get('artist_surname', None)
+    if artist_type == 'person':
+        if artist_name is None:
+            artist_name = (artist_firstname + ' ' + artist_surname).strip()
+        sort_name = (artist_surname + ' ' + artist_firstname).strip()
+    else:
+        sort_name = artist_name
+        prefixes_irrelevant_for_sort = ['the', 'los', 'las']
+        for prefix in prefixes_irrelevant_for_sort:
+            if artist_name.lower().startswith(prefix + ' '):
+                sort_name = artist_name[len(prefix) + 1] + ' ' + artist_name[:len(prefix)]
+                break
+    record['artist_name'] = artist_name
+    record['artist_firstname'] = artist_firstname
+    record['artist_surname'] = artist_surname
+    record['sort_name'] = sort_name
+    return record
+
+
 def get_album_data_from_user(fields):
     """
-    Collects data about the new album
+    Collects data about a new album
     Args:
         fields: a list of tuples like config.NEW_ALBUM_FIELDS
 
@@ -160,18 +207,36 @@ def get_album_data_from_user(fields):
 
     # todo: multiple parts
 
-    # verify main_artist_type and add artist_name for 'person'; add sort_name
-    if new_record['main_artist_type'] == 'person':
-        new_record['artist_name'] = (new_record['artist_firstname'] + ' ' + new_record['artist_surname']).strip()
-        new_record['sort_name'] = (new_record['artist_surname'] + ' ' + new_record['artist_firstname']).strip()
-    else:
-        new_record['sort_name'] = new_record['artist_name']
+    new_record = clear_artist_names(new_record['main_artist_type'], new_record)
 
     return new_record
 
     # INSERT INTO albums (artist_name, sort_name, album_title, publisher, medium, date_orig, date_publ, type)
     # VALUES ('Mike Patton, Jean-Claude Vennier', 'Patton Mike',
     # 'Corpse Flower', 'Ipecac', 'CD', '2019', '2019', 'various');
+
+
+def get_artist_data_from_user(fields):
+    """
+        Collects data about a new artist
+        Args:
+            fields: a list of tuples like config.NEW_ARTIST_FIELDS
+
+        Returns:
+            new_record - a dict where key = field and value = user's input
+        """
+
+    new_record = dict()
+    intro_message = 'Adding new album'
+
+    for field in fields:
+        new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
+
+    # todo: multiple parts
+
+    new_record = clear_artist_names(new_record['artist_type'], new_record)
+
+    return new_record
 
 
 def pretty_table_from_dicts(dicts, column_names):
