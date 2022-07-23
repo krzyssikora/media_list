@@ -28,6 +28,13 @@ NEW_ALBUM_FIELDS = [('type of record', 'type', list, ['various', 'jazz', 'OSTR',
                                              'pop', 'r&b, soul', 'punk', 'World'])
                     ]
 
+NEW_ARTIST_FIELDS = [('type of the artist', 'artist_type', list, ['person', 'band', 'other', '']),
+                     ('name of the artist', 'artist_name', str, ''),
+                     ('artist\'s surname', 'artist_surname', str, ''),
+                     ('artist\'s firstname', 'artist_firstname', str, ''),
+                     ('artist\'s role (what do they do)', 'artist_role', str, '')
+                     ]
+
 # ALBUM_FIELDS = [x[1] for x in NEW_ALBUM_FIELDS]
 
 MATCH_NEW_ALBUM_FIELDS = [('artist name', 'artist_name', str, ''),
