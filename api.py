@@ -99,13 +99,13 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
 
     if field_type == list:
         new_value = get_choice_from_list(field_third, intro_message)
-        if field_name == 'main_artist_type':
+        if field_name in {'main_artist_type', 'artist_type'}:
             if new_value == 'person':
                 # remove artist_name from the 'fields' list
-                fields = remove_component_from_list_of_tuples(fields, 'artist name')
+                fields = remove_component_from_list_of_tuples(fields, 'artist\'s name')
             elif new_value == 'band':
                 # remove firstname and surname from the 'fields' list
-                fields = remove_component_from_list_of_tuples(fields, ['artist firstname', 'artist surname'])
+                fields = remove_component_from_list_of_tuples(fields, ['artist\'s firstname', 'artist\'s surname'])
         elif field_name == 'artist_name' and new_record['main_artist_type'] in {'other', ''}:
             # remove firstname and surname from the 'fields' list
             fields = remove_component_from_list_of_tuples(fields, ['artist firstname', 'artist surname'])
@@ -227,16 +227,25 @@ def get_artist_data_from_user(fields):
         """
 
     new_record = dict()
-    intro_message = 'Adding new album'
+    intro_message = 'Adding new artist'
 
     for field in fields:
         new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
 
-    # todo: multiple parts
-
     new_record = clear_artist_names(new_record['artist_type'], new_record)
 
     return new_record
+
+
+def add_artist_to_table():
+    new_artist = get_artist_data_from_user(fields=config.NEW_ARTIST_FIELDS)
+    artist_id = database.add_record_to_table(record=new_artist, table='artists')
+    if artist_id:
+        new_artist['artist_id'] = artist_id
+        print('The following artist was added to the "artists" table.')
+        print(pretty_table_from_dicts(new_artist, database.get_db_columns()['artists']))
+    else:
+        print('The artist was not added to the database.')
 
 
 def pretty_table_from_dicts(dicts, column_names):
@@ -258,9 +267,30 @@ def pretty_table_from_dicts(dicts, column_names):
     return table
 
 
+def pretty_table_from_tuples(tuples, column_names=None):
+    """
+    creates a nice table with values from each tuple displayed in a separate row
+    Args:
+        tuples: a single tuple or a list of tuples
+        column_names (list): keys from the dicts, may be a subset or a superset
+    Returns:
+        a string with a nice table
+    """
+    table = PrettyTable()
+    if column_names:
+        table.field_names = column_names
+    else:
+        table.field_names = [i for i in range(len(tuples[0]))]
+    if isinstance(tuples, tuple):
+        tuples = [tuples]
+    for row in tuples:
+        table.add_row(row)
+    return table
+
+
 def main():
-    print(pretty_table_from_dicts(get_album_data_from_user(fields=config.NEW_ALBUM_FIELDS),
-                                  database.get_db_columns()['albums']))
+    add_artist_to_table()
+    
 
 
 if __name__ == "__main__":
