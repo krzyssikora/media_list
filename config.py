@@ -1,5 +1,5 @@
-# DATABASE = "database/records_list.sqlite"
-DATABASE = "database/records_list_tmp.sqlite"
+DATABASE = "database/records_list.sqlite"
+# DATABASE = "database/records_list_tmp.sqlite"
 
 DB_TABLES = {'artists', 'albums'}  # tables that can be accessed by a user
 
@@ -39,10 +39,10 @@ NEW_ARTIST_FIELDS = [('type of the artist', 'artist_type', list, ['person', 'ban
 
 # ALBUM_FIELDS = [x[1] for x in NEW_ALBUM_FIELDS]
 
-MATCH_NEW_ALBUM_FIELDS = [('artist name', 'artist_name', str, ''),
-                          ('artist firstname', 'artist_firstname', str, ''),
-                          ('artist surname', 'artist_surname', str, ''),
-                          ('artist role', 'artist_role', str, ''),
+MATCH_NEW_ALBUM_FIELDS = [('artist\'s name', 'artist_name', str, ''),
+                          ('artist\'s firstname', 'artist_firstname', str, ''),
+                          ('artist\'s surname', 'artist_surname', str, ''),
+                          ('artist\'s role', 'artist_role', str, ''),
                           # 'sort name': 'sort_name',
                           ('album title', 'album_title', str, ''),
                           ('content', 'content', str, ''),

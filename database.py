@@ -25,6 +25,8 @@ def find_similar_artist(artist_dict, similarity_level=0.7):
     conn.commit()
     cur.close()
     similar_artists = list()
+    fields = {'artist_name', 'artist_surname', 'artist_firstname'}.intersection(f for f in artist_dict.keys()
+                                                                                if artist_dict.get(f, None))
     for row in lines:
         artist_id, artist_type, artist_name, artist_surname, artist_firstname, artist_role, sort_name = row
         current_dict = {
@@ -36,11 +38,10 @@ def find_similar_artist(artist_dict, similarity_level=0.7):
             'artist_role': artist_role,
             'sort_name': sort_name
         }
-        for field in {'artist_name', 'artist_surname', 'artist_firstname'}:
+        for field in fields:
             if similarity_ratio(str(artist_dict[field]).lower(), str(current_dict[field]).lower()) >= similarity_level:
                 similar_artists.append(current_dict)
-                print(current_dict)
-                continue
+                break
     return similar_artists
 
 

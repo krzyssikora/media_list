@@ -74,7 +74,6 @@ def remove_component_from_list_of_tuples(the_list, components, single=True):
         for elt in the_list:
             if elt[0] == component:
                 items_to_be_removed.add(elt)
-
     # remove the elements
     for item in items_to_be_removed:
         the_list.remove(item)
@@ -105,14 +104,21 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
                 fields = remove_component_from_list_of_tuples(fields, 'artist\'s name')
             elif new_value == 'band':
                 # remove firstname and surname from the 'fields' list
-                fields = remove_component_from_list_of_tuples(fields, ['artist\'s firstname', 'artist\'s surname'])
-        elif field_name == 'artist_name' and new_record['main_artist_type'] in {'other', ''}:
+                fields = remove_component_from_list_of_tuples(fields,
+                                                              ['artist\'s firstname', 'artist\'s surname'],
+                                                              single=False)
+        elif field_name == 'artist_name' and \
+                (new_record.get('main_artist_type', None) in {'other', ''} or
+                 new_record.get('artist_type', None) in {'other', ''}):
             # remove firstname and surname from the 'fields' list
-            fields = remove_component_from_list_of_tuples(fields, ['artist firstname', 'artist surname'])
+            fields = remove_component_from_list_of_tuples(fields,
+                                                          ['artist\'s firstname', 'artist\'s surname'],
+                                                          single=False)
             # add sort_name to the 'fields' list
             fields.append(('sort name', 'sort_name', str, ''))
         elif field_name == 'type' and new_value == 'classical':
             print('I am not ready for it yet')
+            # todo: get ready for classical
             quit()
     elif field_type == set:
         # allow many choices,
@@ -290,7 +296,7 @@ def pretty_table_from_tuples(tuples, column_names=None):
 
 def main():
     add_artist_to_table()
-    
+
 
 
 if __name__ == "__main__":
