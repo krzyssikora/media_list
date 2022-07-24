@@ -98,7 +98,7 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
 
     if field_type == list:
         new_value = get_choice_from_list(field_third, intro_message)
-        if field_name in {'main_artist_type', 'artist_type'}:
+        if field_name == 'artist_type':
             if new_value == 'person':
                 # remove artist_name from the 'fields' list
                 fields = remove_component_from_list_of_tuples(fields, 'artist\'s name')
@@ -180,6 +180,12 @@ def clear_artist_names(artist_type, record):
     if artist_type == 'person':
         if artist_name is None:
             artist_name = (artist_firstname + ' ' + artist_surname).strip()
+        ### todo: remove it
+        if artist_surname is None or artist_firstname is None:
+            names = artist_name.split()
+            artist_firstname, artist_surname = ' '.join(names[:-1]), names[-1]
+        ### todo: remove it
+
         sort_name = (artist_surname + ' ' + artist_firstname).strip()
     else:
         sort_name = artist_name
@@ -216,10 +222,6 @@ def get_album_data_from_user(fields):
     new_record = clear_artist_names(new_record['main_artist_type'], new_record)
 
     return new_record
-
-    # INSERT INTO albums (artist_name, sort_name, album_title, publisher, medium, date_orig, date_publ, type)
-    # VALUES ('Mike Patton, Jean-Claude Vennier', 'Patton Mike',
-    # 'Corpse Flower', 'Ipecac', 'CD', '2019', '2019', 'various');
 
 
 def get_artist_data_from_user(fields):
@@ -263,12 +265,18 @@ def pretty_table_from_dicts(dicts, column_names):
     Returns:
         a string with a nice table
     """
-    table = PrettyTable()
-    table.field_names = column_names
     if isinstance(dicts, dict):
         dicts = [dicts]
+
+    table = PrettyTable()
+    if column_names is None:
+        column_names = set()
+        for row_dict in dicts:
+            column_names = column_names.union(set(row_dict.keys()))
+    non_empty_columns = [column for column in column_names if any(row.get(column, None) for row in dicts)]
+    table.field_names = non_empty_columns
     for row_dict in dicts:
-        row = [row_dict.get(column, '') or '' for column in column_names]
+        row = [row_dict.get(column, '') or '' for column in non_empty_columns]
         table.add_row(row)
     return table
 
@@ -282,20 +290,24 @@ def pretty_table_from_tuples(tuples, column_names=None):
     Returns:
         a string with a nice table
     """
-    table = PrettyTable()
-    if column_names:
-        table.field_names = column_names
-    else:
-        table.field_names = [i for i in range(len(tuples[0]))]
     if isinstance(tuples, tuple):
         tuples = [tuples]
-    for row in tuples:
+
+    table = PrettyTable()
+    if column_names is None:
+        column_names = [i for i in range(len(tuples[0]))]
+
+    non_empty_column_indices = [i for i in range(len(column_names)) if any(row[i] for row in tuples)]
+    table.field_names = [column_names[i] for i in non_empty_column_indices]
+    for row_tuple in tuples:
+        row = [elt if elt else '' for elt in row_tuple]
+        row = [row[i] for i in non_empty_column_indices]
         table.add_row(row)
     return table
 
 
 def main():
-    add_artist_to_table()
+    print(pretty_table_from_dicts(get_album_data_from_user(config.NEW_ALBUM_FIELDS), database.get_db_columns()['albums']))
 
 
 

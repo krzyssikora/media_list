@@ -237,7 +237,8 @@ def old_add_main_artist_id_to_albums():
     lines = cur.fetchall()
     for line in lines:
         album_id, artist_name, main_artist_id = line
-        cur.execute("UPDATE albums SET main_artist_id = (?) WHERE album_id = (?)", (main_artist_id, album_id))
+        print(main_artist_id)
+        # cur.execute("UPDATE albums SET main_artist_id = (?) WHERE album_id = (?)", (main_artist_id, album_id))
     conn.commit()
     cur.close()
 
