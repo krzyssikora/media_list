@@ -229,6 +229,19 @@ def old_get_duplicate_artists(ratio=0.85):
     return duplicate_list
 
 
+def old_add_main_artist_id_to_albums():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("""SELECT albums.album_id, albums.artist_name, artists.artist_id FROM albums
+    INNER JOIN artists ON albums.artist_name = artists.artist_name""")
+    lines = cur.fetchall()
+    for line in lines:
+        album_id, artist_name, main_artist_id = line
+        cur.execute("UPDATE albums SET main_artist_id = (?) WHERE album_id = (?)", (main_artist_id, album_id))
+    conn.commit()
+    cur.close()
+
+
 def find_null_main_artist_id_in_albums():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
