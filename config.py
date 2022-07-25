@@ -10,7 +10,7 @@ DB_TABLES = {'artists', 'albums'}  # tables that can be accessed by a user
 
 NEW_ALBUM_FIELDS = [('type of record', 'type', list, ['various', 'jazz', 'OSTR', 'classics']),
                     ('number of parts', 'parts', int, 1),
-                    ('type of an artist', 'main_artist_type', list, ['person', 'band', 'other', '']),
+                    # ('type of an artist', 'main_artist_type', list, ['person', 'band', 'other', '']),
                     ('artist\'s name', 'artist_name', str, ''),
                     # 'sort name': 'sort_name',
                     ('album title', 'album_title', str, ''),
@@ -37,8 +37,8 @@ NEW_ARTIST_FIELDS = [('type of the artist', 'artist_type', list, ['person', 'ban
 # ALBUM_FIELDS = [x[1] for x in NEW_ALBUM_FIELDS]
 
 MATCH_NEW_ALBUM_FIELDS = [('artist\'s name', 'artist_name', str, ''),
-                          ('artist\'s firstname', 'artist_firstname', str, ''),
-                          ('artist\'s surname', 'artist_surname', str, ''),
+                          # ('artist\'s firstname', 'artist_firstname', str, ''),
+                          # ('artist\'s surname', 'artist_surname', str, ''),
                           ('artist\'s role', 'artist_role', str, ''),
                           # 'sort name': 'sort_name',
                           ('album title', 'album_title', str, ''),

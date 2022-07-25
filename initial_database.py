@@ -232,13 +232,36 @@ def old_get_duplicate_artists(ratio=0.85):
 def old_add_main_artist_id_to_albums():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
-    cur.execute("""SELECT albums.album_id, albums.artist_name, artists.artist_id FROM albums
-    INNER JOIN artists ON albums.artist_name = artists.artist_name""")
+    cur.execute("""SELECT albums.album_id, albums.artist_name, albums.main_artist_id, artists.artist_id FROM albums
+    LEFT JOIN artists ON albums.artist_name = artists.artist_name""")
     lines = cur.fetchall()
+    problems = list()
     for line in lines:
-        album_id, artist_name, main_artist_id = line
-        print(main_artist_id)
-        # cur.execute("UPDATE albums SET main_artist_id = (?) WHERE album_id = (?)", (main_artist_id, album_id))
+        album_id, artist_name, main_artist_id, artist_id = line
+        if main_artist_id != artist_id and main_artist_id is None:
+            problems.append(line)
+            # print(album_id, artist_name, main_artist_id, artist_id)
+
+            cur.execute("UPDATE albums SET main_artist_id = 1413 WHERE album_id = (?)", (album_id,))
+
+    print(api.pretty_table_from_tuples(problems, ['album_id', 'artist_name', 'main_artist_id', 'artist_id']))
+    conn.commit()
+    cur.close()
+
+
+def old_find_empty_main_artist():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM albums WHERE main_artist_id IS NULL")
+    lines = cur.fetchall()
+    # for line in lines:
+    #     print(api.pretty_table_from_tuples(line, get_db_columns()['albums']))
+    #     decision = input('Change artist name to "various" (y/n)? ')
+    #     if decision in {'y', 'Y'}:
+    #         cur.execute("""
+    #         UPDATE albums SET artist_name="various" WHERE album_id={}
+    #         """.format(line[0]))
+    print(api.pretty_table_from_tuples(lines, get_db_columns()['albums']))
     conn.commit()
     cur.close()
 
@@ -280,6 +303,32 @@ def find_null_main_artist_id_in_albums():
     conn.commit()
     cur.close()
     print(len(lines))
+
+
+def old_find_incorrect_main_artist_id_in_albums():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT albums.album_id, albums.album_title, albums.artist_name, albums.main_artist_id, 
+        artists.artist_id, artists.artist_type, artists.artist_firstname, artists.artist_surname
+        FROM albums
+        LEFT JOIN artists ON albums.main_artist_id = artists.artist_id
+        """)
+    lines = cur.fetchall()
+    interesting = list()
+    for line in lines:
+        if line[4] != line[3]:
+            cur.execute("""
+            UPDATE albums
+            SET main_artist_id=NULL
+            WHERE album_id=(?)
+            """, (line[0],))
+            interesting.append([str(_)[:30] if _ else _ for _ in line])
+    conn.commit()
+    cur.close()
+    print(api.pretty_table_from_tuples(interesting, ['L.album_id', 'L.album_title', 'L.artist_name', 'L.main_artist_id',
+                                                     'R.artist_id', 'R.artist_type', 'R.artist_firstname',
+                                                     'R.artist_surname']))
 
 
 if __name__ == '__main__':
