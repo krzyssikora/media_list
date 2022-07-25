@@ -81,6 +81,60 @@ def remove_component_from_list_of_tuples(the_list, components, single=True):
     return the_list
 
 
+def clear_artist_names(artist_type, record):
+    """
+    The following exemplary data:
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |1.| person      | Mike Patton  | None             | None           | None         |
+    |2.| band        | the Kills    | None             | None           | None         |
+    |3.| band        | Led Zeppelin | None             | None           | None         |
+    |4.| band        | Los Lobos    | None             | None           | None         |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    will be changed into:
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |1.| person      | Mike Patton  | Mike             | Patton         | Patton Mike  |
+    |2.| band        | the Kills    | None             | None           | Kills the    |
+    |3.| band        | Led Zeppelin | None             | None           | Led Zeppelin |
+    |4.| band        | Los Lobos    | None             | None           | Lobos Los    |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    Args:
+        artist_type: person or different (band, other)
+        record: the whole record
+    Returns:
+        record with names cleared
+    """
+    artist_name = record.get('artist_name', None)
+    artist_firstname = record.get('artist_firstname', None)
+    artist_surname = record.get('artist_surname', None)
+    if artist_type == 'person':
+        if artist_name is None:
+            artist_name = (artist_firstname or ' ' + ' ' + artist_surname or ' ').strip()
+        ### todo: remove it - this should never be used,
+        # todo: now only when adding new album, where there is no checking if an artist already is in the db
+        elif artist_surname is None or artist_firstname is None:
+            names = artist_name.split()
+            artist_firstname, artist_surname = ' '.join(names[:-1]), names[-1]
+        ### todo: remove it
+
+        sort_name = (artist_surname + ' ' + artist_firstname).strip()
+    else:
+        sort_name = artist_name
+        prefixes_irrelevant_for_sort = ['the', 'los', 'las']
+        for prefix in prefixes_irrelevant_for_sort:
+            if artist_name.lower().startswith(prefix + ' '):
+                sort_name = artist_name[len(prefix) + 1] + ' ' + artist_name[:len(prefix)]
+                break
+    record['artist_name'] = artist_name
+    record['artist_firstname'] = artist_firstname
+    record['artist_surname'] = artist_surname
+    record['sort_name'] = sort_name
+    return record
+
+
 def get_record_field_from_user(field_data, new_record, intro_message, fields):
     """
     Args:
@@ -148,57 +202,52 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
     return new_record, intro_message, fields
 
 
-def clear_artist_names(artist_type, record):
-    """
-    The following exemplary data:
-    +--+-------------+--------------+------------------+----------------+--------------+
-    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
-    +--+-------------+--------------+------------------+----------------+--------------+
-    |1.| person      | Mike Patton  | None             | None           | None         |
-    |2.| band        | the Kills    | None             | None           | None         |
-    |3.| band        | Led Zeppelin | None             | None           | None         |
-    |4.| band        | Los Lobos    | None             | None           | None         |
-    +--+-------------+--------------+------------------+----------------+--------------+
-    will be changed into:
-    +--+-------------+--------------+------------------+----------------+--------------+
-    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
-    +--+-------------+--------------+------------------+----------------+--------------+
-    |1.| person      | Mike Patton  | Mike             | Patton         | Patton Mike  |
-    |2.| band        | the Kills    | None             | None           | Kills the    |
-    |3.| band        | Led Zeppelin | None             | None           | Led Zeppelin |
-    |4.| band        | Los Lobos    | None             | None           | Lobos Los    |
-    +--+-------------+--------------+------------------+----------------+--------------+
-    Args:
-        artist_type: person or different (band, other)
-        record: the whole record
-    Returns:
-        record with names cleared
-    """
-    artist_name = record.get('artist_name', None)
-    artist_firstname = record.get('artist_firstname', None)
-    artist_surname = record.get('artist_surname', None)
-    if artist_type == 'person':
-        if artist_name is None:
-            artist_name = (artist_firstname + ' ' + artist_surname).strip()
-        ### todo: remove it
-        if artist_surname is None or artist_firstname is None:
-            names = artist_name.split()
-            artist_firstname, artist_surname = ' '.join(names[:-1]), names[-1]
-        ### todo: remove it
+def get_artist_for_album(new_record, intro_message):
+    intro_message += '\n' + 'artist\'s name'
+    users_artist = get_user_input(intro=intro_message)
 
-        sort_name = (artist_surname + ' ' + artist_firstname).strip()
-    else:
-        sort_name = artist_name
-        prefixes_irrelevant_for_sort = ['the', 'los', 'las']
-        for prefix in prefixes_irrelevant_for_sort:
-            if artist_name.lower().startswith(prefix + ' '):
-                sort_name = artist_name[len(prefix) + 1] + ' ' + artist_name[:len(prefix)]
+    similar_artists_in_database = database.find_similar_artist(artist_dict={'artist_name': users_artist.strip()})
+    number_of_artists_in_database = len(similar_artists_in_database)
+
+    artist_chosen = None
+
+    if number_of_artists_in_database > 0:
+        table_keys = list(similar_artists_in_database[0].keys())
+        table_keys.remove('similarity')
+        if number_of_artists_in_database == 1:
+            print('The following artist was found in the database.')
+            print(pretty_table_from_dicts(similar_artists_in_database, table_keys))
+            decision = input('Is it the artist (y/n)? ')
+            if decision in {'y', 'Y'}:
+                artist_chosen = similar_artists_in_database[0]
+        else:
+            similar_artists_in_database.sort(key=lambda x: x['similarity'], reverse=True)
+            for idx, art in enumerate(similar_artists_in_database):
+                art['ord'] = idx + 1
+            table_keys.insert(0, 'ord')
+            print('The following artists were found in the database.')
+            print(pretty_table_from_dicts(similar_artists_in_database, table_keys))
+            decision = ''
+            while True:
+                decision = input('Choose the correct artist (1-{}) '
+                                 'or 0 if it is not on the list. '.format(number_of_artists_in_database))
+                if decision.isdigit():
+                    decision = int(decision)
+                    if 1 <= decision <= number_of_artists_in_database:
+                        artist_chosen = similar_artists_in_database[decision - 1]
+                    elif decision == 0:
+                        break
+    if artist_chosen is None:
+        while True:
+            artist_chosen = add_artist_to_table()
+            if artist_chosen is not None:
                 break
-    record['artist_name'] = artist_name
-    record['artist_firstname'] = artist_firstname
-    record['artist_surname'] = artist_surname
-    record['sort_name'] = sort_name
-    return record
+    artist_name = artist_chosen['artist_name']
+    intro_message += ': {}'.format(artist_name)
+    new_record['artist_name'] = artist_name
+    new_record['main_artist_id'] = artist_chosen['artist_id']
+
+    return new_record, intro_message
 
 
 def get_album_data_from_user(fields):
@@ -215,9 +264,13 @@ def get_album_data_from_user(fields):
     intro_message = 'Adding new album'
 
     for field in fields:
+        # todo: multiple parts
+        if field[1] == 'artist_name':
+            # todo: artist's name << DONE? TEST IT!
+            new_record, intro_message = get_artist_for_album(new_record, intro_message)
+
         new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
 
-    # todo: multiple parts
 
     new_record = clear_artist_names(new_record['main_artist_type'], new_record)
 
@@ -252,8 +305,10 @@ def add_artist_to_table():
         new_artist['artist_id'] = artist_id
         print('The following artist was added to the "artists" table.')
         print(pretty_table_from_dicts(new_artist, database.get_db_columns()['artists']))
+        return new_artist
     else:
         print('The artist was not added to the database.')
+        return None
 
 
 def pretty_table_from_dicts(dicts, column_names):
@@ -269,6 +324,7 @@ def pretty_table_from_dicts(dicts, column_names):
         dicts = [dicts]
 
     table = PrettyTable()
+    table.align = 'l'
     if column_names is None:
         column_names = set()
         for row_dict in dicts:
@@ -294,6 +350,7 @@ def pretty_table_from_tuples(tuples, column_names=None):
         tuples = [tuples]
 
     table = PrettyTable()
+    table.align = 'l'
     if column_names is None:
         column_names = [i for i in range(len(tuples[0]))]
 
@@ -307,7 +364,8 @@ def pretty_table_from_tuples(tuples, column_names=None):
 
 
 def main():
-    print(pretty_table_from_dicts(get_album_data_from_user(config.NEW_ALBUM_FIELDS), database.get_db_columns()['albums']))
+    add_artist_to_table()
+    # print(pretty_table_from_dicts(get_album_data_from_user(config.NEW_ALBUM_FIELDS), database.get_db_columns()['albums']))
 
 
 
