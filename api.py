@@ -27,7 +27,7 @@ def get_user_input(message="Please enter", default='', intro=''):
         print(intro)
     return_string = input(message + ": {}".format(default) + chr(8)*len(str(default)))
     if not return_string:
-        return_string = default
+        return_string = '' if default == 'YYYY/MM/DD' else default
     return return_string
 
 
@@ -112,14 +112,7 @@ def clear_artist_names(artist_type, record):
     artist_surname = record.get('artist_surname', None)
     if artist_type == 'person':
         if artist_name is None:
-            artist_name = (artist_firstname or ' ' + ' ' + artist_surname or ' ').strip()
-        ### todo: remove it - this should never be used,
-        # todo: now only when adding new album, where there is no checking if an artist already is in the db
-        elif artist_surname is None or artist_firstname is None:
-            names = artist_name.split()
-            artist_firstname, artist_surname = ' '.join(names[:-1]), names[-1]
-        ### todo: remove it
-
+            artist_name = ((artist_firstname or ' ') + ' ' + (artist_surname or ' ')).strip()
         sort_name = (artist_surname + ' ' + artist_firstname).strip()
     else:
         sort_name = artist_name
@@ -206,7 +199,10 @@ def get_artist_for_album(new_record, intro_message):
     intro_message += '\n' + 'artist\'s name'
     users_artist = get_user_input(intro=intro_message)
 
-    similar_artists_in_database = database.find_similar_artist(artist_dict={'artist_name': users_artist.strip()})
+    if users_artist:
+        similar_artists_in_database = database.find_similar_artist(artist_dict={'artist_name': users_artist.strip()})
+    else:
+        similar_artists_in_database = list()
     number_of_artists_in_database = len(similar_artists_in_database)
 
     artist_chosen = None
@@ -266,13 +262,9 @@ def get_album_data_from_user(fields):
     for field in fields:
         # todo: multiple parts
         if field[1] == 'artist_name':
-            # todo: artist's name << DONE? TEST IT!
             new_record, intro_message = get_artist_for_album(new_record, intro_message)
-
-        new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
-
-
-    new_record = clear_artist_names(new_record['main_artist_type'], new_record)
+        else:
+            new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
 
     return new_record
 
@@ -292,9 +284,13 @@ def get_artist_data_from_user(fields):
 
     for field in fields:
         new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
-
+    print('*' * 50)
+    print(new_record)
+    _ = input()
     new_record = clear_artist_names(new_record['artist_type'], new_record)
-
+    print('*' * 50)
+    print(new_record)
+    _ = input()
     return new_record
 
 
@@ -364,8 +360,11 @@ def pretty_table_from_tuples(tuples, column_names=None):
 
 
 def main():
-    add_artist_to_table()
-    # print(pretty_table_from_dicts(get_album_data_from_user(config.NEW_ALBUM_FIELDS), database.get_db_columns()['albums']))
+    # add_artist_to_table()
+    album = get_album_data_from_user(config.NEW_ALBUM_FIELDS)
+    print(album)
+    print()
+    print(pretty_table_from_dicts(album, database.get_db_columns()['albums']))
 
 
 

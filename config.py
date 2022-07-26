@@ -1,5 +1,5 @@
-DATABASE = "database/records_list.sqlite"
-# DATABASE = "database/records_list_tmp.sqlite"
+# DATABASE = "database/records_list.sqlite"
+DATABASE = "database/records_list_tmp.sqlite"
 
 DB_TABLES = {'artists', 'albums'}  # tables that can be accessed by a user
 
