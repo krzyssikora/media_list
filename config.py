@@ -8,7 +8,7 @@ DB_TABLES = {'artists', 'albums'}  # tables that can be accessed by a user
 # 2. type of field
 # 3. list of possible values or placeholder (default input) or empty string if the value is to be entered
 
-NEW_ALBUM_FIELDS = [('type of record', 'type', list, ['various', 'jazz', 'OSTR', 'classics']),
+NEW_ALBUM_FIELDS = [('type of music', 'type', list, ('various', 'jazz', 'OSTR', 'classics')),
                     ('number of parts', 'parts', int, 1),
                     # ('type of an artist', 'main_artist_type', list, ['person', 'band', 'other', '']),
                     ('artist\'s name', 'artist_name', str, ''),
@@ -21,10 +21,10 @@ NEW_ALBUM_FIELDS = [('type of record', 'type', list, ['various', 'jazz', 'OSTR',
                     ('publication date', 'date_publ', str, 'YYYY/MM/DD'),
                     ('notes', 'notes', str, ''),
                     # https://en.wikipedia.org/wiki/List_of_music_genres_and_styles
-                    ('genre', 'genre', set, ['', 'classical', 'jazz', 'blues', 'country',
+                    ('genre', 'genre', set, ('', 'classical', 'jazz', 'blues', 'country',
                                              'rock', 'metal', 'techno', 'electronic',
                                              'easy', 'experimental', 'folk', 'hip hop',
-                                             'pop', 'r&b, soul', 'punk', 'World'])
+                                             'pop', 'r&b, soul', 'punk', 'World'))
                     ]
 
 NEW_ARTIST_FIELDS = [('type of the artist', 'artist_type', list, ['person', 'band', 'other', '']),

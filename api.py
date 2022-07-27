@@ -2,6 +2,7 @@ import os
 import config
 import database
 from prettytable import PrettyTable
+import msvcrt as m
 
 
 def clear_screen():
@@ -60,7 +61,7 @@ def remove_component_from_list_of_tuples(the_list, components, single=True):
         the_list (list): a list of tuples
         components:     it is supposed to be the first coordinate of a certain tuple in the list,
                         it may be also an iterable of such first coordinates
-        single (bool):  True if component is just a single coordinates,
+        single (bool):  True if component is just a single first coordinate,
                         False if it is an iterable of such first coordinates
     Returns:
         the_list with elements pointed by component removed
@@ -73,7 +74,12 @@ def remove_component_from_list_of_tuples(the_list, components, single=True):
     for component in components:
         for elt in the_list:
             if elt[0] == component:
-                items_to_be_removed.add(elt)
+                try:
+                    items_to_be_removed.add(elt)
+                except TypeError:
+                    print(items_to_be_removed)
+                    print(elt)
+                    quit()
     # remove the elements
     for item in items_to_be_removed:
         the_list.remove(item)
@@ -119,7 +125,7 @@ def clear_artist_names(artist_type, record):
         prefixes_irrelevant_for_sort = ['the', 'los', 'las']
         for prefix in prefixes_irrelevant_for_sort:
             if artist_name.lower().startswith(prefix + ' '):
-                sort_name = artist_name[len(prefix) + 1] + ' ' + artist_name[:len(prefix)]
+                sort_name = artist_name[len(prefix) + 1:] + ' ' + artist_name[:len(prefix)]
                 break
     record['artist_name'] = artist_name
     record['artist_firstname'] = artist_firstname
@@ -190,9 +196,43 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
             new_value = int(new_value)
 
     intro_message += ': {}'.format(new_value)
-    new_record[field_name] = new_value
+    if isinstance(new_value, set):
+        new_record[field_name] = ' / '.join(sorted(list(new_value)))
+    else:
+        new_record[field_name] = new_value
 
     return new_record, intro_message, fields
+
+
+def choose_from_similar_artists(similar_artists_in_database):
+    number_of_artists_in_database = len(similar_artists_in_database)
+    table_keys = list(similar_artists_in_database[0].keys())
+    table_keys.remove('similarity')
+    artist_chosen = None
+    if number_of_artists_in_database == 1:
+        print('The following artist was found in the database.')
+        print(pretty_table_from_dicts(similar_artists_in_database, table_keys))
+        decision = input('Is it the artist (y/n)? ')
+        if decision in {'y', 'Y'}:
+            artist_chosen = similar_artists_in_database[0]
+    else:
+        similar_artists_in_database.sort(key=lambda x: x['similarity'], reverse=True)
+        for idx, art in enumerate(similar_artists_in_database):
+            art['ord'] = idx + 1
+        table_keys.insert(0, 'ord')
+        print('The following artists were found in the database.')
+        print(pretty_table_from_dicts(similar_artists_in_database, table_keys))
+        while True:
+            decision = input('Choose the correct artist (1-{}) '
+                             'or 0 if it is not on the list. '.format(number_of_artists_in_database))
+            if decision.isdigit():
+                decision = int(decision)
+                if 1 <= decision <= number_of_artists_in_database:
+                    artist_chosen = similar_artists_in_database[decision - 1]
+                    break
+                elif decision == 0:
+                    break
+    return artist_chosen
 
 
 def get_artist_for_album(new_record, intro_message):
@@ -208,34 +248,10 @@ def get_artist_for_album(new_record, intro_message):
     artist_chosen = None
 
     if number_of_artists_in_database > 0:
-        table_keys = list(similar_artists_in_database[0].keys())
-        table_keys.remove('similarity')
-        if number_of_artists_in_database == 1:
-            print('The following artist was found in the database.')
-            print(pretty_table_from_dicts(similar_artists_in_database, table_keys))
-            decision = input('Is it the artist (y/n)? ')
-            if decision in {'y', 'Y'}:
-                artist_chosen = similar_artists_in_database[0]
-        else:
-            similar_artists_in_database.sort(key=lambda x: x['similarity'], reverse=True)
-            for idx, art in enumerate(similar_artists_in_database):
-                art['ord'] = idx + 1
-            table_keys.insert(0, 'ord')
-            print('The following artists were found in the database.')
-            print(pretty_table_from_dicts(similar_artists_in_database, table_keys))
-            decision = ''
-            while True:
-                decision = input('Choose the correct artist (1-{}) '
-                                 'or 0 if it is not on the list. '.format(number_of_artists_in_database))
-                if decision.isdigit():
-                    decision = int(decision)
-                    if 1 <= decision <= number_of_artists_in_database:
-                        artist_chosen = similar_artists_in_database[decision - 1]
-                    elif decision == 0:
-                        break
+        artist_chosen = choose_from_similar_artists(similar_artists_in_database)
     if artist_chosen is None:
         while True:
-            artist_chosen = add_artist_to_table()
+            artist_chosen = add_artist_to_table(from_album=True)
             if artist_chosen is not None:
                 break
     artist_name = artist_chosen['artist_name']
@@ -244,6 +260,77 @@ def get_artist_for_album(new_record, intro_message):
     new_record['main_artist_id'] = artist_chosen['artist_id']
 
     return new_record, intro_message
+
+
+def get_the_fields_for_album(new_record, intro_message, fields):
+    """
+    Repeated part of code in album.
+    Args:
+        new_record: dictionary with fields collected so far
+        intro_message: Information for a user about fields collected so far
+        fields: fields to be entered / chosen by a user
+
+    Returns:
+        changed input + number of parts of the record entered by a user
+    """
+    parts = 0
+    for field in fields:
+        if field[1] == 'artist_name':
+            # todo: deal with an option e.g. duo Blixa Bargeld & Taho Teardo
+            new_record, intro_message = get_artist_for_album(new_record, intro_message)
+        else:
+            new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
+            if field[1] == 'parts':
+                parts = new_record['parts']
+                if parts > 1:
+                    intro_message += '\n\n' + 'part 1 out of {}'.format(parts)
+    return new_record, intro_message, fields, parts
+
+
+def choose_fields_to_edit(fields, part):
+    def take_char():
+        # works on win only
+        a = ord(m.getch())
+        if a == 224:
+            b = ord(m.getch())
+        elif a == 0:
+            b = ord(m.getch())
+        else:
+            b = -1
+        return a, b
+
+    options = [str(field[0]) for field in fields]
+    choices = ['>> '] + ['   '] * len(options)
+    longest_option = max(len(max(options, key=len)) + 1, 10)
+    options.insert(0, '[' + 'confirm'.center(longest_option - 2) + ']')
+    marked = {i: False for i in range(len(options))}
+    choice = 0
+    while True:
+        clear_screen()
+        print('Which db fields for part {} will be different from part 1?'.format(part))
+        print()
+        for idx in range(len(choices)):
+            print(choices[idx] + ' ' + options[idx].ljust(longest_option, '.' if idx > 0 else ' ') + '*' * marked[idx])
+        print()
+        print('Use Up and DOWN arrows and confirm with ENTER.')
+        ch1, ch2 = take_char()
+        if ch1 == 224:
+            if ch2 == 72 and choice > 0:  # UP arrow
+                choices[choice] = "   "
+                choice -= 1
+                choices[choice] = ">> "
+            elif ch2 == 80 and choice < len(options) - 1:  # DOWN arrow
+                choices[choice] = "   "
+                choice += 1
+                choices[choice] = ">> "
+        elif ch1 == 13:  # ENTER
+            if choice == 0:
+                break
+            else:
+                marked[choice] = not marked[choice]
+    chosen_options = [options[idx] for idx in range(len(choices)) if marked[idx]]
+    chosen_fields = [field for field in fields if field[0] in chosen_options]
+    return chosen_fields
 
 
 def get_album_data_from_user(fields):
@@ -255,18 +342,54 @@ def get_album_data_from_user(fields):
     Returns:
         new_record - a dict where key = field and value = user's input
     """
-
     new_record = dict()
     intro_message = 'Adding new album'
 
-    for field in fields:
-        # todo: multiple parts
-        if field[1] == 'artist_name':
-            new_record, intro_message = get_artist_for_album(new_record, intro_message)
-        else:
-            new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
+    new_record, intro_message, fields, parts = get_the_fields_for_album(new_record, intro_message, fields)
+
+    if parts > 1:
+        # part 1 already done
+        new_record['part_id'] = 1
+        new_record = [new_record]
+        for part in range(2, parts + 1):
+            intro_message += '\n\n' + 'part {} out of {}'.format(part, parts)
+            fields = config.NEW_ALBUM_FIELDS
+            fields = remove_component_from_list_of_tuples(fields, 'number of parts')
+            fields = remove_component_from_list_of_tuples(fields, 'type of music')
+            fields_to_edit = choose_fields_to_edit(fields, part)
+            fields_to_copy = [field for field in fields if field not in fields_to_edit]
+
+            this_parts_record = dict()
+            this_parts_record, intro_message, fields, phantom_parts \
+                = get_the_fields_for_album(this_parts_record, intro_message, fields_to_edit)
+            fields_to_copy_db_names = [field[1] for field in fields_to_copy]
+            for field_name in fields_to_copy_db_names:
+                this_parts_record[field_name] = new_record[0][field_name]
+            if 'artist_name' in fields_to_copy_db_names:
+                this_parts_record['main_artist_id'] = new_record[0]['main_artist_id']
+            this_parts_record['parts'] = new_record[0]['parts']
+            this_parts_record['type'] = new_record[0]['type']
+            this_parts_record['part_id'] = part
+            new_record.append(this_parts_record)
 
     return new_record
+
+
+def add_album_to_table():
+    new_album = get_album_data_from_user(fields=config.NEW_ALBUM_FIELDS)
+    if isinstance(new_album, dict):
+        new_album = [new_album]
+    added_albums = list()
+    for album_part in new_album:
+        album_id = database.add_record_to_table(record=album_part, table='albums')
+        if album_id:
+            album_part['album_id'] = album_id
+            added_albums.append(album_part)
+    if added_albums:
+        print('The following album was added to the "albums" table.')
+        print(pretty_table_from_dicts(added_albums, database.get_db_columns()['albums']))
+    else:
+        print('The album was not added to the database.')
 
 
 def get_artist_data_from_user(fields):
@@ -284,19 +407,18 @@ def get_artist_data_from_user(fields):
 
     for field in fields:
         new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
-    print('*' * 50)
-    print(new_record)
-    _ = input()
     new_record = clear_artist_names(new_record['artist_type'], new_record)
-    print('*' * 50)
-    print(new_record)
-    _ = input()
     return new_record
 
 
-def add_artist_to_table():
+def add_artist_to_table(from_album=False):
     new_artist = get_artist_data_from_user(fields=config.NEW_ARTIST_FIELDS)
-    artist_id = database.add_record_to_table(record=new_artist, table='artists')
+    artist_id = database.add_record_to_table(record=new_artist, table='artists', artist_from_album=from_album)
+    if from_album:
+        new_artist = artist_id
+        # todo: not nice, that in this very case the whole dict, not just id is returned
+        #  change this and returned object in add_record_to_table
+        return new_artist
     if artist_id:
         new_artist['artist_id'] = artist_id
         print('The following artist was added to the "artists" table.')
@@ -361,11 +483,7 @@ def pretty_table_from_tuples(tuples, column_names=None):
 
 def main():
     # add_artist_to_table()
-    album = get_album_data_from_user(config.NEW_ALBUM_FIELDS)
-    print(album)
-    print()
-    print(pretty_table_from_dicts(album, database.get_db_columns()['albums']))
-
+    add_album_to_table()
 
 
 if __name__ == "__main__":

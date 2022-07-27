@@ -64,41 +64,57 @@ def get_db_columns():
     return ret_dict
 
 
-def add_record_to_table(record, table):
-    # todo: adding records to "albums" table
+def add_single_ready_record_to_table(record, table):
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    placeholder = ", ".join(['?'] * len(record))
+    stmt = "INSERT INTO {table} ({columns}) VALUES ({values});".format(table=table,
+                                                                       columns=",".join(record.keys()),
+                                                                       values=placeholder)
+    try:
+        cur.execute(stmt, list(record.values()))
+    except:
+        print(stmt)
+        print(list(record.values()))
+        quit()
+    conditions = ' AND '.join(str(k) + '="' + str(v) + '"' for k, v in record.items() if v)
+    cur.execute("SELECT {idx} FROM {table} WHERE {conditions}".format(idx=table[:-1] + '_id',
+                                                                      table=table,
+                                                                      conditions=conditions))
+    idx = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
+    return idx
+
+
+def add_record_to_table(record, table, artist_from_album=False):
     if table not in config.DB_TABLES:
         print('There is no table "{}" in the database.'.format(table))
         return
-    # "artists" - simple case
-    # check if there is such an artist in the database
-    similar_artists = find_similar_artist(record)
-    add_record = True
-    if similar_artists:
-        table_keys = list(similar_artists[0].keys())
-        table_keys.remove('similarity')
-        # table_keys.append('similarity')
-        print('The following artists were found in the database:')
-        print(api.pretty_table_from_dicts(similar_artists, table_keys))
-        decision = input('Do you still want to add the new artist (y/n)? ')
-        add_record = decision in {'y', 'Y'}
 
-    if add_record:
-        conn = sqlite3.connect(config.DATABASE)
-        cur = conn.cursor()
-        # add record
-        placeholder = ", ".join(['?'] * len(record))
-        stmt = "INSERT INTO {table} ({columns}) VALUES ({values});".format(table=table,
-                                                                           columns=",".join(record.keys()),
-                                                                           values=placeholder)
-        cur.execute(stmt, list(record.values()))
-        conditions = ' AND '.join(str(k) + '="' + str(v) +'"' for k, v in record.items() if v)
-        cur.execute("SELECT {idx} FROM {table} WHERE {conditions}".format(idx=table[:-1] + '_id',
-                                                                          table=table,
-                                                                          conditions=conditions))
-        idx = cur.fetchone()[0]
-        conn.commit()
-        cur.close()
-        return idx
+    if table == 'artists':
+        # "artists" - simple case
+        # check if there is such an artist in the database
+        similar_artists = find_similar_artist(record)
+        add_record = True
+        if similar_artists:
+            if artist_from_album:
+                artist_chosen = api.choose_from_similar_artists(similar_artists)
+                if artist_chosen:
+                    return artist_chosen  # ['artist_id']
+            else:
+                table_keys = list(similar_artists[0].keys())
+                table_keys.remove('similarity')
+                # table_keys.append('similarity')
+                print('The following artists were found in the database:')
+                print(api.pretty_table_from_dicts(similar_artists, table_keys))
+                decision = input('Do you still want to add the new artist (y/n)? ')
+                add_record = decision in {'y', 'Y'}
+
+        if add_record:
+            return add_single_ready_record_to_table(record, table)
+    elif table == 'albums':
+        return add_single_ready_record_to_table(record, table)
     return None
 
 
@@ -113,7 +129,7 @@ def dummy():
 if __name__ == '__main__':
     # print(get_db_columns())
     # quit()
-    find_empty_main_artist()
+    pass
 
 
 # todo: add artist_id index to albums table or a new table albums_artists:
