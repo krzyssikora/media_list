@@ -34,8 +34,39 @@ NEW_ARTIST_FIELDS = [('type of the artist', 'artist_type', list, ['person', 'ban
                      ('artist\'s role (what do they do)', 'artist_role', str, '')
                      ]
 
-# ALBUM_FIELDS = [x[1] for x in NEW_ALBUM_FIELDS]
+DB_ARTISTS_COLUMNS = [
+    'artist_id',
+    'artist_type',
+    'artist_name',
+    'artist_surname',
+    'artist_firstname',
+    'artist_role',
+    'sort_name'
+]
 
+DB_ALBUMS_COLUMNS = [
+    'album_id',
+    'parts',
+    'part_id',
+    'first_part_id',
+    'artist_name',
+    'sort_name',
+    'album_title',
+    'content',
+    'publisher',
+    'medium',
+    'date_orig',
+    'date_publ',
+    'notes',
+    'type',
+    'genre',
+    'main_artist_id'
+]
+
+DB_COLUMNS = {'albums': DB_ALBUMS_COLUMNS,
+              'artists': DB_ARTISTS_COLUMNS}
+
+# todo: do we need this? only to compare album being added to existing ones?
 MATCH_NEW_ALBUM_FIELDS = [('artist\'s name', 'artist_name', str, ''),
                           # ('artist\'s firstname', 'artist_firstname', str, ''),
                           # ('artist\'s surname', 'artist_surname', str, ''),
