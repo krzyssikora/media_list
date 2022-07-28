@@ -1,3 +1,5 @@
+import logging
+
 # DATABASE = "database/records_list.sqlite"
 DATABASE = "database/records_list_tmp.sqlite"
 
@@ -21,7 +23,7 @@ NEW_ALBUM_FIELDS = [('type of music', 'type', list, ('various', 'jazz', 'OSTR', 
                     ('publication date', 'date_publ', str, 'YYYY/MM/DD'),
                     ('notes', 'notes', str, ''),
                     # https://en.wikipedia.org/wiki/List_of_music_genres_and_styles
-                    ('genre', 'genre', set, ('', 'classical', 'jazz', 'blues', 'country',
+                    ('genre', 'genre', set, ('', 'classics', 'jazz', 'blues', 'country',
                                              'rock', 'metal', 'techno', 'electronic',
                                              'easy', 'experimental', 'folk', 'hip hop',
                                              'pop', 'r&b, soul', 'punk', 'World'))
@@ -85,3 +87,16 @@ MATCH_NEW_ALBUM_FIELDS = [('artist\'s name', 'artist_name', str, ''),
                                                    'easy', 'experimental', 'folk', 'hip hop',
                                                    'pop', 'r&b, soul', 'punk', 'World'])
                           ]
+
+# create logger
+_logger = logging.getLogger(__name__)
+_logger.setLevel(logging.DEBUG)
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# add formatter to ch
+ch.setFormatter(formatter)
+# add ch to logger
+_logger.addHandler(ch)

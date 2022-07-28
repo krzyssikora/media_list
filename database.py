@@ -4,6 +4,7 @@ import re
 from difflib import SequenceMatcher
 
 import config
+from config import _logger
 import api
 
 
@@ -120,7 +121,9 @@ def add_record_to_table(record, table, artist_from_album=False):
         add_record = True
         if similar_artists:
             if artist_from_album:
-                artist_chosen = api.choose_from_similar_artists(similar_artists)
+                artist_chosen = api.get_multiple_choice_from_list(choices=similar_artists,
+                                                                  noun_singular='artist',
+                                                                  sort_column='similarity')
                 if artist_chosen:
                     return artist_chosen['artist_id']
             else:
@@ -170,7 +173,27 @@ def get_record_from_table_by_id(table_name, idx):
     return None
 
 
-def find_incorrect_artists_names_in_albums():
+def update_records_field(table, record_dict, field, value):
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    conditions = ' AND '.join(str(k) + '="' + str(v) + '"' for k, v in record_dict.items() if v)
+    cur.execute("UPDATE {} SET {} = (?) WHERE {}".format(table, field, conditions), (value, ))
+    conn.commit()
+    cur.close()
+
+
+def update_records_fields(table, record_dict, fields, values):
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    conditions = ' AND '.join(str(k) + ' = ' + (('"' + str(v) + '"') if isinstance(v, str) else str(v)) + ' ' for k, v in record_dict.items() if v)
+    set_fields = ', '.join([field + ' = (?)' for field in fields])
+    print("UPDATE {} SET {} WHERE {}".format(table, set_fields, conditions), (*values, ))
+    cur.execute("UPDATE {} SET {} WHERE {}".format(table, set_fields, conditions), (*values, ))
+    conn.commit()
+    cur.close()
+
+
+def _find_incorrect_artists_names_in_albums():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute("""
@@ -183,12 +206,31 @@ def find_incorrect_artists_names_in_albums():
     print_lines = list()
     for line in lines:
         if line[2] != line[4]:
-            print_lines.append(tuple(str(elt)[:20] for elt in line))
+            print_lines.append(tuple(str(elt)[:50] for elt in line))
     table_columns = ['albums.album_id', 'albums.album_title', 'albums.artist_name', 'albums.main_artist_id',
-                     'artists.artist_id']
+                     'artists.artist_name', 'artists.artist_id']
     print(api.pretty_table_from_tuples(print_lines, table_columns))
     conn.commit()
     cur.close()
+
+
+def _merge_albums_with_artists():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("""
+    SELECT albums.album_id, albums.artist_name, albums.album_title, albums.main_artist_id,
+    artists.artist_id, artists.artist_name, artists.artist_surname, artists.artist_firstname
+    FROM albums JOIN artists
+    WHERE albums.main_artist_id = artists.artist_id""")
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    lines_print = list()
+    for line in lines:
+        lines_print.append(tuple(str(line[idx])[:40] for idx in range(len(line)) if idx != 4))
+    col_names = ['albums.album_id', 'albums.artist_name', 'albums.album_title', #'albums.main_artist_id',
+                 'artists.artist_id', 'artists.artist_name', 'artists.artist_surname', 'artists.artist_firstname']
+    print(api.pretty_table_from_tuples(lines_print, col_names))
 
 
 def dummy():
@@ -200,16 +242,23 @@ def dummy():
 
 
 if __name__ == '__main__':
-    r = get_record_from_table_by_id('albums', 457)
-    print(api.pretty_table_from_dicts(r))
+    _merge_albums_with_artists()
     quit()
-    find_incorrect_artists_names_in_albums()
+    _find_incorrect_artists_names_in_albums()
     quit()
     print(get_db_columns())
     pass
 
 
-# todo: add artist_id index to albums table or a new table albums_artists:
-#  album_id, artist_id(many)...
+# todo: add new tables:
+#  albums_artists:
+#    album_id, artist_id, function
+#    215       123        title
+#    215       678        other
+#  bands_members:
+#    band_id, artist_id, artist_roles,          active_from, active_to
+#    123      415        singer / lead guitar
+#    123      632        bass guitar
+
 # todo: check for incorrect artists names in albums
 # todo: add_record_to_table(record, table)
