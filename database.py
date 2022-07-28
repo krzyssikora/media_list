@@ -1,8 +1,17 @@
-import config
+import sys
 import sqlite3
 import re
 from difflib import SequenceMatcher
+
+import config
 import api
+
+
+class DBError(Exception):
+    def __init__(self, error_message=None):
+        if error_message:
+            print(error_message)
+        sys.exit(1)
 
 
 def similarity_ratio(a, b):
@@ -71,12 +80,7 @@ def add_single_ready_record_to_table(record, table):
     stmt = "INSERT INTO {table} ({columns}) VALUES ({values});".format(table=table,
                                                                        columns=",".join(record.keys()),
                                                                        values=placeholder)
-    try:
-        cur.execute(stmt, list(record.values()))
-    except:
-        print(stmt)
-        print(list(record.values()))
-        quit()
+    cur.execute(stmt, list(record.values()))
     conditions = ' AND '.join(str(k) + '="' + str(v) + '"' for k, v in record.items() if v)
     cur.execute("SELECT {idx} FROM {table} WHERE {conditions}".format(idx=table[:-1] + '_id',
                                                                       table=table,
@@ -88,6 +92,23 @@ def add_single_ready_record_to_table(record, table):
 
 
 def add_record_to_table(record, table, artist_from_album=False):
+    """
+    Adds a record to db table.
+
+    Args:
+        record (dict): keys is a subset of table column names
+        table (str): 'artists' or 'albums'
+        artist_from_album (bool): True when it is artist to be added called from adding album.
+            The user's input is compared with existing db records in 'artists' table.
+            User is shown matching (similar) records.
+            If called from adding artist (artist_from_album == False):
+                user is to decide whether to add a new or not.
+            If called from adding album (artist_from_album == True):
+                user is to decide which artist from similar is the one they want, or add a new one.
+    Returns:
+        id of the added record (album_id or artist_id depending on the table)
+
+    """
     if table not in config.DB_TABLES:
         print('There is no table "{}" in the database.'.format(table))
         return
@@ -101,7 +122,7 @@ def add_record_to_table(record, table, artist_from_album=False):
             if artist_from_album:
                 artist_chosen = api.choose_from_similar_artists(similar_artists)
                 if artist_chosen:
-                    return artist_chosen  # ['artist_id']
+                    return artist_chosen['artist_id']
             else:
                 table_keys = list(similar_artists[0].keys())
                 table_keys.remove('similarity')
@@ -118,6 +139,58 @@ def add_record_to_table(record, table, artist_from_album=False):
     return None
 
 
+def get_artist_from_db_by_id(idx):
+    return get_record_from_table_by_id('artists', idx)
+
+
+def get_album_from_db_by_id(idx):
+    return get_record_from_table_by_id('albums', idx)
+
+
+def get_record_from_table_by_id(table_name, idx):
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    idx_name = table_name[:-1] + '_id'
+    cur.execute("SELECT * FROM {} WHERE {} = (?)".format(table_name, idx_name), (idx, ))
+    record = cur.fetchall()
+    conn.commit()
+    cur.close()
+    if record:
+        if len(record) > 1:
+            raise DBError(table_name[:-1] + '_id = ' + str(idx) + ' is not unique!')
+
+        record_dict = dict()
+        record = record[0]
+        for field_id, field in enumerate(config.DB_COLUMNS[table_name]):
+            field_value = record[field_id]
+            if field_value:
+                record_dict[field] = field_value
+        return record_dict
+
+    return None
+
+
+def find_incorrect_artists_names_in_albums():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("""
+    SELECT albums.album_id, albums.album_title, albums.artist_name, albums.main_artist_id,
+    artists.artist_name, artists.artist_id 
+    FROM albums LEFT JOIN artists
+    WHERE albums.main_artist_id = artists.artist_id 
+    """)
+    lines = cur.fetchall()
+    print_lines = list()
+    for line in lines:
+        if line[2] != line[4]:
+            print_lines.append(tuple(str(elt)[:20] for elt in line))
+    table_columns = ['albums.album_id', 'albums.album_title', 'albums.artist_name', 'albums.main_artist_id',
+                     'artists.artist_id']
+    print(api.pretty_table_from_tuples(print_lines, table_columns))
+    conn.commit()
+    cur.close()
+
+
 def dummy():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
@@ -127,8 +200,12 @@ def dummy():
 
 
 if __name__ == '__main__':
-    # print(get_db_columns())
-    # quit()
+    r = get_record_from_table_by_id('albums', 457)
+    print(api.pretty_table_from_dicts(r))
+    quit()
+    find_incorrect_artists_names_in_albums()
+    quit()
+    print(get_db_columns())
     pass
 
 

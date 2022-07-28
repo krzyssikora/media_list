@@ -1,12 +1,16 @@
 import os
-import config
-import database
+import logging
 from prettytable import PrettyTable
 import msvcrt as m
 
+import config
+import database
+
+logging.basicConfig(level=logging.CRITICAL)
 
 def clear_screen():
     """Clears the terminal screen."""
+    # return
     if os.name == 'posix':
         # mac, linux
         _ = os.system('clear')
@@ -66,6 +70,8 @@ def remove_component_from_list_of_tuples(the_list, components, single=True):
     Returns:
         the_list with elements pointed by component removed
     """
+    logging.debug('removing {} from {}'.format(components, the_list))
+    print()
     if single:
         components = [components]
     items_to_be_removed = set()
@@ -375,8 +381,28 @@ def get_album_data_from_user(fields):
     return new_record
 
 
+def get_artist_data_from_user(fields):
+    """
+        Collects data about a new artist
+        Args:
+            fields: a list of tuples like config.NEW_ARTIST_FIELDS
+
+        Returns:
+            new_record - a dict where key = field and value = user's input
+        """
+
+    new_record = dict()
+    intro_message = 'Adding new artist'
+    print(fields)
+
+    for field in fields:
+        new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
+    new_record = clear_artist_names(new_record['artist_type'], new_record)
+    return new_record
+
+
 def add_album_to_table():
-    new_album = get_album_data_from_user(fields=config.NEW_ALBUM_FIELDS)
+    new_album = get_album_data_from_user(fields=config.NEW_ALBUM_FIELDS.copy())
     if isinstance(new_album, dict):
         new_album = [new_album]
     added_albums = list()
@@ -392,32 +418,11 @@ def add_album_to_table():
         print('The album was not added to the database.')
 
 
-def get_artist_data_from_user(fields):
-    """
-        Collects data about a new artist
-        Args:
-            fields: a list of tuples like config.NEW_ARTIST_FIELDS
-
-        Returns:
-            new_record - a dict where key = field and value = user's input
-        """
-
-    new_record = dict()
-    intro_message = 'Adding new artist'
-
-    for field in fields:
-        new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
-    new_record = clear_artist_names(new_record['artist_type'], new_record)
-    return new_record
-
-
 def add_artist_to_table(from_album=False):
-    new_artist = get_artist_data_from_user(fields=config.NEW_ARTIST_FIELDS)
+    new_artist = get_artist_data_from_user(fields=config.NEW_ARTIST_FIELDS.copy())
     artist_id = database.add_record_to_table(record=new_artist, table='artists', artist_from_album=from_album)
     if from_album:
-        new_artist = artist_id
-        # todo: not nice, that in this very case the whole dict, not just id is returned
-        #  change this and returned object in add_record_to_table
+        new_artist = database.get_artist_from_db_by_id(artist_id)
         return new_artist
     if artist_id:
         new_artist['artist_id'] = artist_id
@@ -429,7 +434,7 @@ def add_artist_to_table(from_album=False):
         return None
 
 
-def pretty_table_from_dicts(dicts, column_names):
+def pretty_table_from_dicts(dicts, column_names=None):
     """
     creates a nice table with values from each dict displayed in a separate row
     Args:
@@ -483,6 +488,7 @@ def pretty_table_from_tuples(tuples, column_names=None):
 
 def main():
     # add_artist_to_table()
+    logging.debug('START')
     add_album_to_table()
 
 
