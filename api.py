@@ -7,6 +7,18 @@ from config import _logger
 import database
 
 
+def take_char():
+    # works on win only
+    a = ord(m.getch())
+    if a == 224:
+        b = ord(m.getch())
+    elif a == 0:
+        b = ord(m.getch())
+    else:
+        b = -1
+    return a, b
+
+
 def clear_screen():
     """Clears the terminal screen."""
     # return
@@ -93,87 +105,6 @@ def get_multiple_choice_from_list(choices, noun_singular, noun_plural=None, sort
                 elif decision == 0:
                     break
     return object_chosen
-
-
-def remove_component_from_list_of_tuples(the_list, components, single=True):
-    """
-    Args:
-        the_list (list): a list of tuples
-        components:     it is supposed to be the first coordinate of a certain tuple in the list,
-                        it may be also an iterable of such first coordinates
-        single (bool):  True if component is just a single first coordinate,
-                        False if it is an iterable of such first coordinates
-    Returns:
-        the_list with elements pointed by component removed
-    """
-    _logger.debug('removing {} from {}'.format(components, the_list))
-    print()
-    if single:
-        components = [components]
-    items_to_be_removed = set()
-
-    # find elements to be removed
-    for component in components:
-        for elt in the_list:
-            if elt[0] == component:
-                try:
-                    items_to_be_removed.add(elt)
-                except TypeError:
-                    print(items_to_be_removed)
-                    print(elt)
-                    quit()
-    # remove the elements
-    for item in items_to_be_removed:
-        the_list.remove(item)
-
-    return the_list
-
-
-def clear_artist_names(artist_type, record):
-    """
-    The following exemplary data:
-    +--+-------------+--------------+------------------+----------------+--------------+
-    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
-    +--+-------------+--------------+------------------+----------------+--------------+
-    |1.| person      | Mike Patton  | None             | None           | None         |
-    |2.| band        | the Kills    | None             | None           | None         |
-    |3.| band        | Led Zeppelin | None             | None           | None         |
-    |4.| band        | Los Lobos    | None             | None           | None         |
-    +--+-------------+--------------+------------------+----------------+--------------+
-    will be changed into:
-    +--+-------------+--------------+------------------+----------------+--------------+
-    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
-    +--+-------------+--------------+------------------+----------------+--------------+
-    |1.| person      | Mike Patton  | Mike             | Patton         | Patton Mike  |
-    |2.| band        | the Kills    | None             | None           | Kills the    |
-    |3.| band        | Led Zeppelin | None             | None           | Led Zeppelin |
-    |4.| band        | Los Lobos    | None             | None           | Lobos Los    |
-    +--+-------------+--------------+------------------+----------------+--------------+
-    Args:
-        artist_type: person or different (band, other)
-        record: the whole record
-    Returns:
-        record with names cleared
-    """
-    artist_name = record.get('artist_name', None)
-    artist_firstname = record.get('artist_firstname', None)
-    artist_surname = record.get('artist_surname', None)
-    if artist_type == 'person':
-        if artist_name is None:
-            artist_name = ((artist_firstname or ' ') + ' ' + (artist_surname or ' ')).strip()
-        sort_name = (artist_surname + ' ' + artist_firstname).strip()
-    else:
-        sort_name = artist_name
-        prefixes_irrelevant_for_sort = ['the', 'los', 'las']
-        for prefix in prefixes_irrelevant_for_sort:
-            if artist_name.lower().startswith(prefix + ' '):
-                sort_name = artist_name[len(prefix) + 1:] + ' ' + artist_name[:len(prefix)]
-                break
-    record['artist_name'] = artist_name
-    record['artist_firstname'] = artist_firstname
-    record['artist_surname'] = artist_surname
-    record['sort_name'] = sort_name
-    return record
 
 
 def get_record_field_from_user(field_data, new_record, intro_message, fields):
@@ -308,17 +239,6 @@ def get_the_fields_for_album(new_record, intro_message, fields):
 
 
 def choose_fields_to_edit(fields, part):
-    def take_char():
-        # works on win only
-        a = ord(m.getch())
-        if a == 224:
-            b = ord(m.getch())
-        elif a == 0:
-            b = ord(m.getch())
-        else:
-            b = -1
-        return a, b
-
     options = [str(field[0]) for field in fields]
     choices = ['>> '] + ['   '] * len(options)
     longest_option = max(len(max(options, key=len)) + 1, 10)
@@ -412,6 +332,87 @@ def get_artist_data_from_user(fields):
         new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
     new_record = clear_artist_names(new_record['artist_type'], new_record)
     return new_record
+
+
+def remove_component_from_list_of_tuples(the_list, components, single=True):
+    """
+    Args:
+        the_list (list): a list of tuples
+        components:     it is supposed to be the first coordinate of a certain tuple in the list,
+                        it may be also an iterable of such first coordinates
+        single (bool):  True if component is just a single first coordinate,
+                        False if it is an iterable of such first coordinates
+    Returns:
+        the_list with elements pointed by component removed
+    """
+    _logger.debug('removing {} from {}'.format(components, the_list))
+    print()
+    if single:
+        components = [components]
+    items_to_be_removed = set()
+
+    # find elements to be removed
+    for component in components:
+        for elt in the_list:
+            if elt[0] == component:
+                try:
+                    items_to_be_removed.add(elt)
+                except TypeError:
+                    print(items_to_be_removed)
+                    print(elt)
+                    quit()
+    # remove the elements
+    for item in items_to_be_removed:
+        the_list.remove(item)
+
+    return the_list
+
+
+def clear_artist_names(artist_type, record):
+    """
+    The following exemplary data:
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |1.| person      | Mike Patton  | None             | None           | None         |
+    |2.| band        | the Kills    | None             | None           | None         |
+    |3.| band        | Led Zeppelin | None             | None           | None         |
+    |4.| band        | Los Lobos    | None             | None           | None         |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    will be changed into:
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |  | artist_type | artist_name  | artist_firstname | artist_surname | sort_name    |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    |1.| person      | Mike Patton  | Mike             | Patton         | Patton Mike  |
+    |2.| band        | the Kills    | None             | None           | Kills the    |
+    |3.| band        | Led Zeppelin | None             | None           | Led Zeppelin |
+    |4.| band        | Los Lobos    | None             | None           | Lobos Los    |
+    +--+-------------+--------------+------------------+----------------+--------------+
+    Args:
+        artist_type: person or different (band, other)
+        record: the whole record
+    Returns:
+        record with names cleared
+    """
+    artist_name = record.get('artist_name', None)
+    artist_firstname = record.get('artist_firstname', None)
+    artist_surname = record.get('artist_surname', None)
+    if artist_type == 'person':
+        if artist_name is None:
+            artist_name = ((artist_firstname or ' ') + ' ' + (artist_surname or ' ')).strip()
+        sort_name = (artist_surname + ' ' + artist_firstname).strip()
+    else:
+        sort_name = artist_name
+        prefixes_irrelevant_for_sort = ['the', 'los', 'las']
+        for prefix in prefixes_irrelevant_for_sort:
+            if artist_name.lower().startswith(prefix + ' '):
+                sort_name = artist_name[len(prefix) + 1:] + ' ' + artist_name[:len(prefix)]
+                break
+    record['artist_name'] = artist_name
+    record['artist_firstname'] = artist_firstname
+    record['artist_surname'] = artist_surname
+    record['sort_name'] = sort_name
+    return record
 
 
 def add_album_to_table():
@@ -516,5 +517,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# todo: display records with filters

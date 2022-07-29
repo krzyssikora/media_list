@@ -57,41 +57,6 @@ def find_similar_artist(artist_dict, similarity_level=0.7):
     return similar_artists
 
 
-def get_db_columns():
-    conn = sqlite3.connect(config.DATABASE)
-    cur = conn.cursor()
-    ret_dict = dict()
-    for table in config.DB_TABLES:
-        command = "SELECT sql FROM sqlite_master WHERE tbl_name = '{}' AND type = 'table'".format(table)
-        cur.execute(command)
-        my_string = cur.fetchall()[0][0].replace('\n', '')
-        pattern = r'\((.+)\)'
-        separated = re.search(pattern, my_string)[1].split(',')
-        columns = [elt.strip().split()[0] for elt in separated]
-        ret_dict[table] = columns
-    conn.commit()
-    cur.close()
-    return ret_dict
-
-
-def add_single_ready_record_to_table(record, table):
-    conn = sqlite3.connect(config.DATABASE)
-    cur = conn.cursor()
-    placeholder = ", ".join(['?'] * len(record))
-    stmt = "INSERT INTO {table} ({columns}) VALUES ({values});".format(table=table,
-                                                                       columns=",".join(record.keys()),
-                                                                       values=placeholder)
-    cur.execute(stmt, list(record.values()))
-    conditions = ' AND '.join(str(k) + '="' + str(v) + '"' for k, v in record.items() if v)
-    cur.execute("SELECT {idx} FROM {table} WHERE {conditions}".format(idx=table[:-1] + '_id',
-                                                                      table=table,
-                                                                      conditions=conditions))
-    idx = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
-    return idx
-
-
 def add_record_to_table(record, table, artist_from_album=False):
     """
     Adds a record to db table.
@@ -110,6 +75,24 @@ def add_record_to_table(record, table, artist_from_album=False):
         id of the added record (album_id or artist_id depending on the table)
 
     """
+
+    def add_single_ready_record_to_table(rec, tab):
+        conn = sqlite3.connect(config.DATABASE)
+        cur = conn.cursor()
+        placeholder = ", ".join(['?'] * len(rec))
+        stmt = "INSERT INTO {table} ({columns}) VALUES ({values});".format(table=tab,
+                                                                           columns=",".join(rec.keys()),
+                                                                           values=placeholder)
+        cur.execute(stmt, list(rec.values()))
+        conditions = ' AND '.join(str(k) + '="' + str(v) + '"' for k, v in rec.items() if v)
+        cur.execute("SELECT {idx} FROM {table} WHERE {conditions}".format(idx=tab[:-1] + '_id',
+                                                                          table=tab,
+                                                                          conditions=conditions))
+        idx = cur.fetchone()[0]
+        conn.commit()
+        cur.close()
+        return idx
+
     if table not in config.DB_TABLES:
         print('There is no table "{}" in the database.'.format(table))
         return
@@ -140,6 +123,23 @@ def add_record_to_table(record, table, artist_from_album=False):
     elif table == 'albums':
         return add_single_ready_record_to_table(record, table)
     return None
+
+
+def get_db_columns():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    ret_dict = dict()
+    for table in config.DB_TABLES:
+        command = "SELECT sql FROM sqlite_master WHERE tbl_name = '{}' AND type = 'table'".format(table)
+        cur.execute(command)
+        my_string = cur.fetchall()[0][0].replace('\n', '')
+        pattern = r'\((.+)\)'
+        separated = re.search(pattern, my_string)[1].split(',')
+        columns = [elt.strip().split()[0] for elt in separated]
+        ret_dict[table] = columns
+    conn.commit()
+    cur.close()
+    return ret_dict
 
 
 def get_artist_from_db_by_id(idx):
@@ -207,6 +207,30 @@ if __name__ == '__main__':
     print(get_db_columns())
     pass
 
-# todo: check for incorrect artists names in albums
-# todo: add_record_to_table(record, table)
+# todo: remove column 'artist_name' from albums, this will mess up with lots of api methods
+# todo: consider removing 'main_artis_id' from albums
 # todo: remove all prints from database.py
+# todo: CRUD
+#  create:
+#    ::DONE:: api.add_album_to_table()
+#    ::DONE:: api.add_artist_to_table()
+#  read:
+#    api.view_all()
+#    api.view_albums()
+#    api.view_artists()
+#    api.query() - like all artists who played with...
+#  update:
+#    api.edit_album()
+#      choice by album_name or artist_name
+#    api.edit_artist(artist_name)
+#    api.add_band_members(band_name)
+#      this should be a part of adding artist if it is a band
+#    api.add_artist_to_album(album_name)
+#  delete:
+#    delete_record_from_table_by_id(table, idx)
+#    api.delete_artist_from_db(artist_name)
+#      check similar
+#      remove also from albums_artists and bands_members
+#    api.delete_album_from_db(album_name)
+#      remove also from albums_artists
+#      what about other parts if parts > 1? (default: remove all, any other option?)
