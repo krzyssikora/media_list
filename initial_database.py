@@ -351,6 +351,97 @@ def old_merge_albums_with_artists():
     cur.close()
 
 
+def old_find_incorrect_artists_names_in_albums():
+    """
+    for each album / artist where:
+    1. albums.main_artist_id == artists.artist_id
+    but
+    2. albums.artist_name    != artists.artist_name
+    we do the following:
+
+    0. ask user if they want to add an artist
+     if NO, take next album / artist
+     if YES:
+    1. ask user to input an artist
+    2. find similar artists
+    3. ask to choose one
+    4. if chosen, ask for publ_role (title / other)
+    5. if chosen, add record to albums_artists:
+     album_id, artist_id, publ_role
+
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("""
+    SELECT albums.album_id, albums.album_title, albums.artist_name, albums.main_artist_id,
+    artists.artist_name, artists.artist_id 
+    FROM albums LEFT JOIN artists
+    WHERE albums.main_artist_id = artists.artist_id 
+    """)
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    records_to_consider = list()
+    for line in lines:
+        if line[2] != line[4]:
+            records_to_consider.append(tuple(str(elt)[:50] for elt in line))
+    table_columns = ['albums.album_id', 'albums.album_title', 'albums.artist_name', 'albums.main_artist_id',
+                     'artists.artist_name', 'artists.artist_id']
+    albums_artists_fields = ['album_id', 'artist_id', 'publ_role']
+    placeholder = ", ".join(["?"] * 3)
+    for album_record in records_to_consider:
+        album_id = album_record[0]
+        while True:
+            print(api.pretty_table_from_tuples(album_record, table_columns))
+            # show already existing artist connections to this album
+            conn = sqlite3.connect(config.DATABASE)
+            cur = conn.cursor()
+            cur.execute("""
+            SELECT albums_artists.album_id, albums_artists.artist_id, artists.artist_name
+            FROM albums_artists 
+            JOIN artists
+            WHERE albums_artists.album_id = (?) AND albums_artists.artist_id = artists.artist_id
+            """, (album_id, ))
+            existing_connections = cur.fetchall()
+            conn.commit()
+            cur.close()
+            if existing_connections:
+                print(api.pretty_table_from_tuples(existing_connections,
+                                                   ['al_ar.album_id', 'al_ar.artist_id', 'artists.artist_name']))
+            add_artist = api.get_single_choice_from_list(['YES', 'NO'],
+                                                         'Do you want to add artist/-s to this album?',
+                                                         do_clear_screen=False
+                                                         ) == 'YES'
+
+            if add_artist:
+                album_artist_record, intro = api.get_artist_for_album({}, 'enter artist\'s data', do_clear_screen=False)
+                artist_id = album_artist_record['main_artist_id']
+                # check if the record is already in the table
+                conn = sqlite3.connect(config.DATABASE)
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM albums_artists WHERE album_id = (?) AND artist_id = (?)",
+                            (album_id, artist_id))
+                if len(cur.fetchall()) > 0:
+                    conn.commit()
+                    cur.close()
+                    continue
+                conn.commit()
+                cur.close()
+                publ_role = api.get_single_choice_from_list(['title', 'other'],
+                                                            'artist\'s this publication role?',
+                                                            do_clear_screen=False)
+                stmt = "INSERT INTO albums_artists ({columns}) " \
+                       "VALUES ({values});".format(columns=",".join(albums_artists_fields),
+                                                   values=placeholder)
+                conn = sqlite3.connect(config.DATABASE)
+                cur = conn.cursor()
+                cur.execute(stmt, [album_id, artist_id, publ_role])
+                conn.commit()
+                cur.close()
+            else:
+                break
+
+
 if __name__ == '__main__':
     # tmp_artist_types()
     # print(find_similar_artist({'artist_name': 'paton'}, 0.6))

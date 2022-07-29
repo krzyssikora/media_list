@@ -18,7 +18,7 @@ def clear_screen():
         _ = os.system('cls')
 
 
-def get_user_input(message="Please enter", default='', intro=''):
+def get_user_input(message="Please enter", default='', intro='', do_clear_screen=True):
     """Collects a string from a user.
 
     Args:
@@ -26,7 +26,8 @@ def get_user_input(message="Please enter", default='', intro=''):
         default (str): Default value of the input, printed for user's verification.
         intro (str): Introduction message to display
     """
-    clear_screen()
+    if do_clear_screen:
+        clear_screen()
     if intro:
         print(intro)
     return_string = input(message + ": {}".format(default) + chr(8)*len(str(default)))
@@ -35,7 +36,7 @@ def get_user_input(message="Please enter", default='', intro=''):
     return return_string
 
 
-def get_single_choice_from_list(choices, intro=''):
+def get_single_choice_from_list(choices, intro='', do_clear_screen=True):
     """
     Prompts user to choose a value from a list until a choice is made.
     Args:
@@ -46,7 +47,8 @@ def get_single_choice_from_list(choices, intro=''):
         the choice made by the user, whatever type of object it was
     """
     while True:
-        clear_screen()
+        if do_clear_screen:
+            clear_screen()
         if intro:
             print(intro)
         for idx, choice in enumerate(choices):
@@ -244,9 +246,9 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
     return new_record, intro_message, fields
 
 
-def get_artist_for_album(new_record, intro_message):
+def get_artist_for_album(new_record, intro_message, do_clear_screen=True):
     intro_message += '\n' + 'artist\'s name'
-    users_artist = get_user_input(intro=intro_message)
+    users_artist = get_user_input(intro=intro_message, do_clear_screen=do_clear_screen)
 
     if users_artist:
         similar_artists_in_database = database.find_similar_artist(artist_dict={'artist_name': users_artist.strip()})
@@ -263,7 +265,8 @@ def get_artist_for_album(new_record, intro_message):
     if artist_chosen is None:
         while True:
             adding_options = ['add new artist to db',
-                              'add artist description for this album separately from main artist']
+                              'add artist description for this album separately from main artist '
+                              '(not implemented yet, don\'t choose it :)']
             decision = get_single_choice_from_list(adding_options, 'Would you like to:')
             if decision == adding_options[0]:
                 artist_chosen = add_artist_to_table(from_album=True)

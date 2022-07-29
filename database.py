@@ -4,8 +4,8 @@ import re
 from difflib import SequenceMatcher
 
 import config
-from config import _logger
 import api
+# from config import _logger
 
 
 class DBError(Exception):
@@ -185,31 +185,12 @@ def update_records_field(table, record_dict, field, value):
 def update_records_fields(table, record_dict, fields, values):
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
-    conditions = ' AND '.join(str(k) + ' = ' + (('"' + str(v) + '"') if isinstance(v, str) else str(v)) + ' ' for k, v in record_dict.items() if v)
+    conditions = ' AND '.join(str(k) + ' = ' + (('"' + str(v) + '"')
+                                                if isinstance(v, str) else str(v)) + ' '
+                              for k, v in record_dict.items() if v)
     set_fields = ', '.join([field + ' = (?)' for field in fields])
     print("UPDATE {} SET {} WHERE {}".format(table, set_fields, conditions), (*values, ))
     cur.execute("UPDATE {} SET {} WHERE {}".format(table, set_fields, conditions), (*values, ))
-    conn.commit()
-    cur.close()
-
-
-def _find_incorrect_artists_names_in_albums():
-    conn = sqlite3.connect(config.DATABASE)
-    cur = conn.cursor()
-    cur.execute("""
-    SELECT albums.album_id, albums.album_title, albums.artist_name, albums.main_artist_id,
-    artists.artist_name, artists.artist_id 
-    FROM albums LEFT JOIN artists
-    WHERE albums.main_artist_id = artists.artist_id 
-    """)
-    lines = cur.fetchall()
-    print_lines = list()
-    for line in lines:
-        if line[2] != line[4]:
-            print_lines.append(tuple(str(elt)[:50] for elt in line))
-    table_columns = ['albums.album_id', 'albums.album_title', 'albums.artist_name', 'albums.main_artist_id',
-                     'artists.artist_name', 'artists.artist_id']
-    print(api.pretty_table_from_tuples(print_lines, table_columns))
     conn.commit()
     cur.close()
 
@@ -223,23 +204,9 @@ def dummy():
 
 
 if __name__ == '__main__':
-    _merge_albums_with_artists()
-    quit()
-    _find_incorrect_artists_names_in_albums()
-    quit()
     print(get_db_columns())
     pass
 
-
-# todo: add new tables:
-#  albums_artists:
-#    album_id, artist_id, publ_role
-#    215       123        title
-#    215       678        other
-#  bands_members:
-#    band_id, artist_id, artist_roles,          active_from, active_to
-#    123      415        singer / lead guitar
-#    123      632        bass guitar
-
 # todo: check for incorrect artists names in albums
 # todo: add_record_to_table(record, table)
+# todo: remove all prints from database.py
