@@ -214,25 +214,6 @@ def _find_incorrect_artists_names_in_albums():
     cur.close()
 
 
-def _merge_albums_with_artists():
-    conn = sqlite3.connect(config.DATABASE)
-    cur = conn.cursor()
-    cur.execute("""
-    SELECT albums.album_id, albums.artist_name, albums.album_title, albums.main_artist_id,
-    artists.artist_id, artists.artist_name, artists.artist_surname, artists.artist_firstname
-    FROM albums JOIN artists
-    WHERE albums.main_artist_id = artists.artist_id""")
-    lines = cur.fetchall()
-    conn.commit()
-    cur.close()
-    lines_print = list()
-    for line in lines:
-        lines_print.append(tuple(str(line[idx])[:40] for idx in range(len(line)) if idx != 4))
-    col_names = ['albums.album_id', 'albums.artist_name', 'albums.album_title', #'albums.main_artist_id',
-                 'artists.artist_id', 'artists.artist_name', 'artists.artist_surname', 'artists.artist_firstname']
-    print(api.pretty_table_from_tuples(lines_print, col_names))
-
-
 def dummy():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
@@ -252,7 +233,7 @@ if __name__ == '__main__':
 
 # todo: add new tables:
 #  albums_artists:
-#    album_id, artist_id, function
+#    album_id, artist_id, publ_role
 #    215       123        title
 #    215       678        other
 #  bands_members:

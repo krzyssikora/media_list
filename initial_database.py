@@ -331,6 +331,26 @@ def old_find_incorrect_main_artist_id_in_albums():
                                                      'R.artist_surname']))
 
 
+def old_merge_albums_with_artists():
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("""
+    SELECT albums.album_id, albums.artist_name, albums.album_title, albums.main_artist_id,
+    artists.artist_id, artists.artist_name, artists.artist_surname, artists.artist_firstname
+    FROM albums JOIN artists
+    WHERE albums.main_artist_id = artists.artist_id""")
+    lines = cur.fetchall()
+    for line in lines:
+        fields = ['album_id', 'artist_id', 'publ_role']
+        record = [line[0], line[3], 'title']
+        placeholder = ", ".join(["?"] * 3)
+        stmt = "INSERT INTO albums_artists ({columns}) VALUES ({values});".format(columns=",".join(fields),
+                                                                                  values=placeholder)
+        cur.execute(stmt, record)
+    conn.commit()
+    cur.close()
+
+
 if __name__ == '__main__':
     # tmp_artist_types()
     # print(find_similar_artist({'artist_name': 'paton'}, 0.6))
