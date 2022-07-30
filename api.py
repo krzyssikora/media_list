@@ -72,7 +72,7 @@ def get_single_choice_from_list(choices, intro='', do_clear_screen=True):
                 return choices[users_choice - 1]
 
 
-def get_multiple_choice_from_list(choices, noun_singular, noun_plural=None, sort_column=None):
+def get_single_choice_from_db_list(choices, noun_singular, noun_plural=None, sort_column=None):
     if noun_plural is None:
         noun_plural = noun_singular + 's'
     number_of_choices = len(choices)
@@ -124,7 +124,7 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
 
     if field_type == list:
         new_value = get_single_choice_from_list(field_third, intro_message)
-        if field_name == 'artist_type':
+        if field_name == 'artist_type':  # when adding an artist
             if new_value == 'person':
                 # remove artist_name from the 'fields' list
                 fields = remove_component_from_list_of_tuples(fields, 'artist\'s name')
@@ -133,9 +133,9 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
                 fields = remove_component_from_list_of_tuples(fields,
                                                               ['artist\'s firstname', 'artist\'s surname'],
                                                               single=False)
+                # todo: add band members
         elif field_name == 'artist_name' and \
-                (new_record.get('main_artist_type', None) in {'other', ''} or
-                 new_record.get('artist_type', None) in {'other', ''}):
+                new_record.get('artist_type', None) in {'other', ''}:
             # remove firstname and surname from the 'fields' list
             fields = remove_component_from_list_of_tuples(fields,
                                                           ['artist\'s firstname', 'artist\'s surname'],
@@ -179,9 +179,11 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
 
 def get_artist_for_album(new_record, intro_message, do_clear_screen=True):
     intro_message += '\n' + 'artist\'s name'
+    # user inputs their artist
     users_artist = get_user_input(intro=intro_message, do_clear_screen=do_clear_screen)
 
     if users_artist:
+        # is there the artist in db?
         similar_artists_in_database = database.find_similar_artist(artist_dict={'artist_name': users_artist.strip()})
     else:
         similar_artists_in_database = list()
@@ -190,27 +192,38 @@ def get_artist_for_album(new_record, intro_message, do_clear_screen=True):
     artist_chosen = None
 
     if number_of_artists_in_database > 0:
-        artist_chosen = get_multiple_choice_from_list(choices=similar_artists_in_database,
-                                                      noun_singular='artist',
-                                                      sort_column='similarity')
+        artist_chosen = get_single_choice_from_db_list(choices=similar_artists_in_database,
+                                                       noun_singular='artist',
+                                                       sort_column='similarity')
+    publ_role = None
     if artist_chosen is None:
         while True:
-            adding_options = ['add new artist to db',
-                              'add artist description for this album separately from main artist '
-                              '(not implemented yet, don\'t choose it :)']
-            decision = get_single_choice_from_list(adding_options, 'Would you like to:')
-            if decision == adding_options[0]:
-                artist_chosen = add_artist_to_table(from_album=True)
-            else:
-                # todo: Blixa and Taho
-                pass
-            if artist_chosen is not None:
-                break
+            artist_chosen = add_artist_to_table(from_album=True)
+            break
+    publ_role = get_single_choice_from_list(['title', 'other'],
+                                            'artist\'s this publication role?',
+                                            do_clear_screen=False)
     artist_name = artist_chosen['artist_name']
     intro_message += ': {}'.format(artist_name)
-    new_record['artist_name'] = artist_name
-    new_record['main_artist_id'] = artist_chosen['artist_id']
 
+    artists_already_added = new_record.get('artist_name', None)
+    if artists_already_added:
+        new_record['artist_name'].append((artist_chosen['artist_id'], publ_role))
+    else:
+        new_record['artist_name'] = [(artist_chosen['artist_id'], publ_role)]
+
+    return new_record, intro_message
+
+
+def get_artists_for_album(new_record, intro_message, do_clear_screen=True):
+    while True:
+        new_record, intro_message = get_artist_for_album(new_record, intro_message, do_clear_screen)
+        stop_adding = get_single_choice_from_list(['YES', 'NO'],
+                                                  'Do you want to add another artist to this album?',
+                                                  do_clear_screen=False
+                                                  ) == 'NO'
+        if stop_adding:
+            break
     return new_record, intro_message
 
 
@@ -228,7 +241,7 @@ def get_the_fields_for_album(new_record, intro_message, fields):
     parts = 0
     for field in fields:
         if field[1] == 'artist_name':
-            new_record, intro_message = get_artist_for_album(new_record, intro_message)
+            new_record, intro_message = get_artists_for_album(new_record, intro_message)
         else:
             new_record, intro_message, fields = get_record_field_from_user(field, new_record, intro_message, fields)
             if field[1] == 'parts':
@@ -305,8 +318,6 @@ def get_album_data_from_user(fields):
             fields_to_copy_db_names = [field[1] for field in fields_to_copy]
             for field_name in fields_to_copy_db_names:
                 this_parts_record[field_name] = new_record[0][field_name]
-            if 'artist_name' in fields_to_copy_db_names:
-                this_parts_record['main_artist_id'] = new_record[0]['main_artist_id']
             this_parts_record['parts'] = new_record[0]['parts']
             this_parts_record['type'] = new_record[0]['type']
             this_parts_record['part_id'] = part
@@ -422,11 +433,21 @@ def add_album_to_table():
     added_albums = list()
     first_part_id = None
     for album_part in new_album:
+        album_artists_ids = album_part.pop('artist_name')
         album_id = database.add_record_to_table(record=album_part, table='albums')
         if first_part_id is None:
             first_part_id = album_id
         if album_id:
             album_part['album_id'] = album_id
+            for new_artist_id, new_publ_role in album_artists_ids:
+                album_artist_records = database.get_record_from_table(table='albums_artists',
+                                                                      fields=['album_id', 'artist_id'],
+                                                                      values=[album_id, new_artist_id])
+                if album_artist_records is not None:
+                    database.add_record_to_table(record={'album_id': album_id,
+                                                         'artist_id': new_artist_id,
+                                                         'publ_role': new_publ_role},
+                                                 table='albums_artists')
             added_albums.append(album_part)
     if added_albums:
         if len(added_albums) > 1:

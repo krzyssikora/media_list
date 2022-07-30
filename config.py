@@ -3,7 +3,7 @@ import logging
 # DATABASE = "database/records_list.sqlite"
 DATABASE = "database/records_list_tmp.sqlite"
 
-DB_TABLES = {'artists', 'albums'}  # tables that can be accessed by a user
+DB_TABLES = {'artists', 'albums', 'albums_artists', 'bands_members'}
 
 # 0. descriptions of database fields
 # 1. db field name
@@ -12,9 +12,8 @@ DB_TABLES = {'artists', 'albums'}  # tables that can be accessed by a user
 
 NEW_ALBUM_FIELDS = [('type of music', 'type', list, ('various', 'jazz', 'OSTR', 'classics')),
                     ('number of parts', 'parts', int, 1),
-                    # ('type of an artist', 'main_artist_type', list, ['person', 'band', 'other', '']),
-                    ('artist\'s name', 'artist_name', str, ''),
-                    # 'sort name': 'sort_name',
+                    ('artist\'s name', 'artist_name', str, ''),  # it is not a db field!!!
+                    # it is actually a list of tuples (artist_id, publ_role)
                     ('album title', 'album_title', str, ''),
                     ('content', 'content', str, ''),
                     ('publisher', 'publisher', str, ''),
@@ -51,7 +50,6 @@ DB_ALBUMS_COLUMNS = [
     'parts',
     'part_id',
     'first_part_id',
-    'artist_name',
     'sort_name',
     'album_title',
     'content',
@@ -62,7 +60,6 @@ DB_ALBUMS_COLUMNS = [
     'notes',
     'type',
     'genre',
-    'main_artist_id'
 ]
 
 DB_COLUMNS = {'albums': DB_ALBUMS_COLUMNS,
