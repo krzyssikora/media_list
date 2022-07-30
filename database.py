@@ -85,7 +85,8 @@ def add_record_to_table(record, table, artist_from_album=False):
                                                                            values=placeholder)
         cur.execute(stmt, list(rec.values()))
         conditions = ' AND '.join(str(k) + '="' + str(v) + '"' for k, v in rec.items() if v)
-        cur.execute("SELECT {idx} FROM {table} WHERE {conditions}".format(idx=tab[:-1] + '_id',
+        primary_key = 'item_id' if 'item_id' in get_db_columns()[tab] else tab[:-1] + '_id'
+        cur.execute("SELECT {idx} FROM {table} WHERE {conditions}".format(idx=primary_key,
                                                                           table=tab,
                                                                           conditions=conditions))
         idx = cur.fetchone()[0]
@@ -104,9 +105,9 @@ def add_record_to_table(record, table, artist_from_album=False):
         add_record = True
         if similar_artists:
             if artist_from_album:
-                artist_chosen = api.get_multiple_choice_from_list(choices=similar_artists,
-                                                                  noun_singular='artist',
-                                                                  sort_column='similarity')
+                artist_chosen = api.get_single_choice_from_db_list(choices=similar_artists,
+                                                                   noun_singular='artist',
+                                                                   sort_column='similarity')
                 if artist_chosen:
                     return artist_chosen['artist_id']
             else:
@@ -120,7 +121,8 @@ def add_record_to_table(record, table, artist_from_album=False):
 
         if add_record:
             return add_single_ready_record_to_table(record, table)
-    elif table == 'albums':
+    # elif table == 'albums':
+    else:
         return add_single_ready_record_to_table(record, table)
     return None
 
@@ -189,10 +191,31 @@ def update_records_fields(table, record_dict, fields, values):
                                                 if isinstance(v, str) else str(v)) + ' '
                               for k, v in record_dict.items() if v)
     set_fields = ', '.join([field + ' = (?)' for field in fields])
-    print("UPDATE {} SET {} WHERE {}".format(table, set_fields, conditions), (*values, ))
     cur.execute("UPDATE {} SET {} WHERE {}".format(table, set_fields, conditions), (*values, ))
     conn.commit()
     cur.close()
+
+
+def get_record_from_table(table, fields, values=None):
+    if isinstance(fields, dict):
+        fields_2 = list()
+        values = list()
+        for f, v in fields.items():
+            fields_2.append(f)
+            values.append(v)
+    else:
+        fields_2 = fields
+
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    conditions = ' AND '.join(str(field) + ' = ' + (('"' + str(value) + '"')
+                                                    if isinstance(value, str) else str(value)) + ' '
+                              for field, value in zip(fields_2, values) if value)
+    cur.execute("SELECT * FROM {} WHERE {}".format(table, conditions))
+    records = cur.fetchall()
+    conn.commit()
+    cur.close()
+    return records
 
 
 def dummy():
@@ -207,9 +230,7 @@ if __name__ == '__main__':
     print(get_db_columns())
     pass
 
-# todo: remove column 'artist_name' from albums, this will mess up with lots of api methods
-# todo: consider removing 'main_artis_id' from albums
-# todo: remove all prints from database.py
+
 # todo: CRUD
 #  create:
 #    ::DONE:: api.add_album_to_table()

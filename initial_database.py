@@ -1,7 +1,9 @@
-import config
 import csv
 import sqlite3
+
+import config
 import database
+import api
 
 
 def old_records_from_csv(my_file, albums_list):
@@ -261,7 +263,7 @@ def old_find_empty_main_artist():
     #         cur.execute("""
     #         UPDATE albums SET artist_name="various" WHERE album_id={}
     #         """.format(line[0]))
-    print(api.pretty_table_from_tuples(lines, get_db_columns()['albums']))
+    print(api.pretty_table_from_tuples(lines, database.get_db_columns()['albums']))
     conn.commit()
     cur.close()
 
