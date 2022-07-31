@@ -1,8 +1,7 @@
 import sys
 import sqlite3
 import re
-from difflib import SequenceMatcher
-
+import utils
 import config
 import api
 # from config import _logger
@@ -15,11 +14,7 @@ class DBError(Exception):
         sys.exit(1)
 
 
-def similarity_ratio(a, b):
-    return SequenceMatcher(None, a, b).ratio()
-
-
-def find_similar_artist(artist_dict, similarity_level=0.7):
+def get_similar_artists(artist_dict, similarity_level=0.7):
     """
     Args:
         artist_dict:  includes at least one of the following keys: artist_name, artist_surname, artist_firstname
@@ -48,8 +43,8 @@ def find_similar_artist(artist_dict, similarity_level=0.7):
             'artist_role': artist_role,
             'sort_name': sort_name
         }
-        current_similarity_ratio = max(similarity_ratio(str(artist_dict[field]).lower(),
-                                                        str(current_dict[field]).lower())
+        current_similarity_ratio = max(utils.similarity_ratio(str(artist_dict[field]).lower(),
+                                                              str(current_dict[field]).lower())
                                        for field in fields)
         if current_similarity_ratio >= similarity_level:
             current_dict['similarity'] = current_similarity_ratio
@@ -101,7 +96,7 @@ def add_record_to_table(record, table, artist_from_album=False):
     if table == 'artists':
         # "artists" - simple case
         # check if there is such an artist in the database
-        similar_artists = find_similar_artist(record)
+        similar_artists = get_similar_artists(record)
         add_record = True
         if similar_artists:
             if artist_from_album:
@@ -144,15 +139,160 @@ def get_db_columns():
     return ret_dict
 
 
-def get_artist_from_db_by_id(idx):
-    return get_record_from_table_by_id('artists', idx)
+def get_artist_by_id(idx):
+    return get_record_by_id('artists', idx)
 
 
-def get_album_from_db_by_id(idx):
-    return get_record_from_table_by_id('albums', idx)
+def get_album_by_id(idx):
+    return get_record_by_id('albums', idx)
 
 
-def get_record_from_table_by_id(table_name, idx):
+def get_artists_ids_from_album_id(album_id):
+    """
+    Args:
+        album_id:
+
+    Returns:
+        a list of artist_ids with connections to album_id (in albums_artists table)
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT artist_id FROM albums_artists WHERE album_id = (?)", (album_id, ))
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    return [line[0] for line in lines]
+
+
+def get_artists_from_album_id(album_id):
+    """
+    Args:
+        album_id:
+
+    Returns:
+        a list of artists (full dicts) with connections to album_id (in albums_artists table)
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT artist_id FROM albums_artists WHERE album_id = (?)", (album_id, ))
+    lines = cur.fetchall()
+    artists = list()
+    for line in lines:
+        cur.execute("SELECT * FROM artists WHERE artist_id = (?)", (line[0],))
+        artist_line = cur.fetchone()
+        artist_dict = utils.turn_tuple_into_dict(artist_line, config.DB_ARTISTS_COLUMNS)
+        artists.append(artist_dict)
+    conn.commit()
+    cur.close()
+    return artists
+
+
+def get_albums_ids_by_artist_id(artist_id):
+    """
+        Args:
+            artist_id:
+
+        Returns:
+            a list of album_ids with connections to artist_id (in albums_artists table)
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT album_id FROM albums_artists WHERE artist_id = (?)", (artist_id,))
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    return [line[0] for line in lines]
+
+
+def get_albums_by_artist_id(artist_id):
+    """
+        Args:
+            artist_id:
+
+        Returns:
+            a list of albums (full dicts) with connections to artist_id (in albums_artists table)
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT album_id FROM albums_artists WHERE artist_id = (?)", (artist_id,))
+    lines = cur.fetchall()
+    albums = list()
+    for line in lines:
+        cur.execute("SELECT * FROM albums WHERE album_id = (?)", (line[0],))
+        album_line = cur.fetchone()
+        album_dict = utils.turn_tuple_into_dict(album_line, config.DB_ALBUMS_COLUMNS)
+        albums.append(album_dict)
+    conn.commit()
+    cur.close()
+    return albums
+
+
+def get_albums_by_title(album_title, similarity_level=0.7):
+    """
+    Args:
+        album_title (str): album's name or its approximation
+        similarity_level (float between 0 and 1): only albums with name similar on at least this level will be returned
+
+    Returns:
+        a list of albums (full dicts) with name similar to album_title
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT album_id, album_title FROM albums")
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    # collect albums_ids
+    albums_ids = list()
+    for line in lines:
+        if line[1] and utils.similarity_ratio(album_title, line[1]) >= similarity_level:
+            albums_ids.append(line[0])
+    # get full album data
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    albums = list()
+    for album_id in albums_ids:
+        cur.execute("SELECT * FROM albums WHERE album_id = (?)", (album_id, ))
+        album_line = cur.fetchone()
+        album_dict = utils.turn_tuple_into_dict(album_line, config.DB_ALBUMS_COLUMNS)
+        albums.append(album_dict)
+    conn.commit()
+    cur.close()
+    return albums
+
+
+def get_albums_ids_by_title_or_artist(album_title=None, artist_name=None):
+    if album_title:
+        albums_by_title = get_albums_by_title(album_title)
+        albums_ids_by_title = set(album['album_id'] for album in albums_by_title)
+    else:
+        albums_ids_by_title = set()
+
+    if artist_name:
+        similar_artists_ids = [artist['artist_id'] for artist in get_similar_artists({'artist_name': artist_name})]
+        albums_ids_by_artist = set().union(*[get_albums_ids_by_artist_id(artist_id)
+                                             for artist_id in similar_artists_ids])
+    else:
+        albums_ids_by_artist = set()
+
+    if len(albums_ids_by_title) == 0 or len(albums_ids_by_artist) == 0:
+        albums_ids_by_title_and_artist = albums_ids_by_title.union(albums_ids_by_artist)
+    else:
+        albums_ids_by_title_and_artist = albums_ids_by_title.intersection(albums_ids_by_artist)
+
+    albums_ids_by_title_and_artist = list(albums_ids_by_title_and_artist)
+    albums_ids_by_title_and_artist.sort()
+
+    return albums_ids_by_title_and_artist
+
+
+def get_albums_by_title_or_artist(album_title=None, artist_name=None):
+    albums_ids_by_title_and_artist = get_albums_ids_by_title_or_artist(album_title, artist_name)
+    albums = [get_album_by_id(idx) for idx in albums_ids_by_title_and_artist]
+    return albums
+
+
+def get_record_by_id(table_name, idx):
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     idx_name = table_name[:-1] + '_id'
@@ -163,40 +303,35 @@ def get_record_from_table_by_id(table_name, idx):
     if record:
         if len(record) > 1:
             raise DBError(table_name[:-1] + '_id = ' + str(idx) + ' is not unique!')
-
-        record_dict = dict()
         record = record[0]
-        for field_id, field in enumerate(config.DB_COLUMNS[table_name]):
-            field_value = record[field_id]
-            if field_value:
-                record_dict[field] = field_value
+        record_dict = utils.turn_tuple_into_dict(record, config.DB_COLUMNS[table_name])
         return record_dict
 
     return None
 
 
-def update_records_field(table, record_dict, field, value):
+def update_records_field(table_name, record_dict, field, value):
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     conditions = ' AND '.join(str(k) + '="' + str(v) + '"' for k, v in record_dict.items() if v)
-    cur.execute("UPDATE {} SET {} = (?) WHERE {}".format(table, field, conditions), (value, ))
+    cur.execute("UPDATE {} SET {} = (?) WHERE {}".format(table_name, field, conditions), (value,))
     conn.commit()
     cur.close()
 
 
-def update_records_fields(table, record_dict, fields, values):
+def update_records_fields(table_name, record_dict, fields, values):
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     conditions = ' AND '.join(str(k) + ' = ' + (('"' + str(v) + '"')
                                                 if isinstance(v, str) else str(v)) + ' '
                               for k, v in record_dict.items() if v)
     set_fields = ', '.join([field + ' = (?)' for field in fields])
-    cur.execute("UPDATE {} SET {} WHERE {}".format(table, set_fields, conditions), (*values, ))
+    cur.execute("UPDATE {} SET {} WHERE {}".format(table_name, set_fields, conditions), (*values,))
     conn.commit()
     cur.close()
 
 
-def get_record_from_table(table, fields, values=None):
+def get_record(table_name, fields, values=None, return_as_tuples=False):
     if isinstance(fields, dict):
         fields_2 = list()
         values = list()
@@ -211,11 +346,22 @@ def get_record_from_table(table, fields, values=None):
     conditions = ' AND '.join(str(field) + ' = ' + (('"' + str(value) + '"')
                                                     if isinstance(value, str) else str(value)) + ' '
                               for field, value in zip(fields_2, values) if value)
-    cur.execute("SELECT * FROM {} WHERE {}".format(table, conditions))
+    cur.execute("SELECT * FROM {} WHERE {}".format(table_name, conditions))
     records = cur.fetchall()
     conn.commit()
     cur.close()
-    return records
+    if return_as_tuples:
+        return records or None
+    dicts_list = list()
+    table_columns = config.DB_COLUMNS[table_name]
+    for record in records:
+        record_dict = dict()
+        for idx in range(len(table_columns)):
+            field_value = record[idx]
+            if field_value:
+                record_dict[table_columns[idx]] = field_value
+        dicts_list.append(record_dict)
+    return dicts_list or None
 
 
 def dummy():
@@ -227,10 +373,15 @@ def dummy():
 
 
 if __name__ == '__main__':
+    print(utils.pretty_table_from_dicts(get_albums_by_title_or_artist('string', 'shostakovich'), config.DB_ALBUMS_COLUMNS, 40))
+    quit()
     print(get_db_columns())
     pass
 
-
+# todo:
+#   add tables:
+#     albums_tracks with columns:
+#       item_id, album_id, track_id, track_name, track_duration, notes
 # todo: CRUD
 #  create:
 #    ::DONE:: api.add_album_to_table()
@@ -242,16 +393,16 @@ if __name__ == '__main__':
 #    api.query() - like all artists who played with...
 #  update:
 #    api.edit_album()
-#      choice by album_name or artist_name
+#      choice by album_title or artist_name
 #    api.edit_artist(artist_name)
 #    api.add_band_members(band_name)
 #      this should be a part of adding artist if it is a band
-#    api.add_artist_to_album(album_name)
+#    api.add_artist_to_album(album_title)
 #  delete:
 #    delete_record_from_table_by_id(table, idx)
 #    api.delete_artist_from_db(artist_name)
 #      check similar
 #      remove also from albums_artists and bands_members
-#    api.delete_album_from_db(album_name)
+#    api.delete_album_from_db(album_title)
 #      remove also from albums_artists
 #      what about other parts if parts > 1? (default: remove all, any other option?)

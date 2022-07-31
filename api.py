@@ -1,9 +1,9 @@
 import os
-from prettytable import PrettyTable
 import msvcrt as m
 
 import config
 from config import _logger
+import utils
 import database
 
 
@@ -82,7 +82,7 @@ def get_single_choice_from_db_list(choices, noun_singular, noun_plural=None, sor
     object_chosen = None
     if number_of_choices == 1:
         print('The following {} was found in the database.'.format(noun_singular))
-        print(pretty_table_from_dicts(choices, table_keys))
+        print(utils.pretty_table_from_dicts(choices, table_keys))
         decision = input('Is it the {} (y/n)? '.format(noun_singular))
         if decision in {'y', 'Y'}:
             object_chosen = choices[0]
@@ -93,7 +93,7 @@ def get_single_choice_from_db_list(choices, noun_singular, noun_plural=None, sor
             art['ord'] = idx + 1
         table_keys.insert(0, 'ord')
         print('The following {} were found in the database.'.format(noun_plural))
-        print(pretty_table_from_dicts(choices, table_keys))
+        print(utils.pretty_table_from_dicts(choices, table_keys))
         while True:
             decision = input('Choose the correct {} (1-{}) '
                              'or 0 if it is not on the list. '.format(noun_singular, number_of_choices))
@@ -184,7 +184,7 @@ def get_artist_for_album(new_record, intro_message, do_clear_screen=True):
 
     if users_artist:
         # is there the artist in db?
-        similar_artists_in_database = database.find_similar_artist(artist_dict={'artist_name': users_artist.strip()})
+        similar_artists_in_database = database.get_similar_artists(artist_dict={'artist_name': users_artist.strip()})
     else:
         similar_artists_in_database = list()
     number_of_artists_in_database = len(similar_artists_in_database)
@@ -440,10 +440,10 @@ def add_album_to_table():
         if album_id:
             album_part['album_id'] = album_id
             for new_artist_id, new_publ_role in album_artists_ids:
-                album_artist_records = database.get_record_from_table(table='albums_artists',
-                                                                      fields=['album_id', 'artist_id'],
-                                                                      values=[album_id, new_artist_id])
-                if album_artist_records is not None:
+                album_artist_records = database.get_record(table_name='albums_artists',
+                                                           fields=['album_id', 'artist_id'],
+                                                           values=[album_id, new_artist_id])
+                if album_artist_records is None or len(album_artist_records) == 0:
                     database.add_record_to_table(record={'album_id': album_id,
                                                          'artist_id': new_artist_id,
                                                          'publ_role': new_publ_role},
@@ -452,13 +452,13 @@ def add_album_to_table():
     if added_albums:
         if len(added_albums) > 1:
             for album in added_albums:
-                database.update_records_field(table='albums',
+                database.update_records_field(table_name='albums',
                                               record_dict=album,
                                               field='first_part_id',
                                               value=first_part_id)
                 album['first_part_id'] = first_part_id
         print('The following album was added to the "albums" table.')
-        print(pretty_table_from_dicts(added_albums, database.get_db_columns()['albums']))
+        print(utils.pretty_table_from_dicts(added_albums, database.get_db_columns()['albums']))
     else:
         print('The album was not added to the database.')
 
@@ -467,68 +467,16 @@ def add_artist_to_table(from_album=False):
     new_artist = get_artist_data_from_user(fields=config.NEW_ARTIST_FIELDS.copy())
     artist_id = database.add_record_to_table(record=new_artist, table='artists', artist_from_album=from_album)
     if from_album:
-        new_artist = database.get_artist_from_db_by_id(artist_id)
+        new_artist = database.get_artist_by_id(artist_id)
         return new_artist
     if artist_id:
         new_artist['artist_id'] = artist_id
         print('The following artist was added to the "artists" table.')
-        print(pretty_table_from_dicts(new_artist, database.get_db_columns()['artists']))
+        print(utils.pretty_table_from_dicts(new_artist, database.get_db_columns()['artists']))
         return new_artist
     else:
         print('The artist was not added to the database.')
         return None
-
-
-def pretty_table_from_dicts(dicts, column_names=None):
-    """
-    creates a nice table with values from each dict displayed in a separate row
-    Args:
-        dicts: a single dict or a list of dicts
-        column_names (list): keys from the dicts, may be a subset or a superset
-    Returns:
-        a string with a nice table
-    """
-    if isinstance(dicts, dict):
-        dicts = [dicts]
-
-    table = PrettyTable()
-    table.align = 'l'
-    if column_names is None:
-        column_names = set()
-        for row_dict in dicts:
-            column_names = column_names.union(set(row_dict.keys()))
-    non_empty_columns = [column for column in column_names if any(row.get(column, None) for row in dicts)]
-    table.field_names = non_empty_columns
-    for row_dict in dicts:
-        row = [row_dict.get(column, '') or '' for column in non_empty_columns]
-        table.add_row(row)
-    return table
-
-
-def pretty_table_from_tuples(tuples, column_names=None):
-    """
-    creates a nice table with values from each tuple displayed in a separate row
-    Args:
-        tuples: a single tuple or a list of tuples
-        column_names (list): keys from the dicts, may be a subset or a superset
-    Returns:
-        a string with a nice table
-    """
-    if isinstance(tuples, tuple):
-        tuples = [tuples]
-
-    table = PrettyTable()
-    table.align = 'l'
-    if column_names is None:
-        column_names = [i for i in range(len(tuples[0]))]
-
-    non_empty_column_indices = [i for i in range(len(column_names)) if any(row[i] for row in tuples)]
-    table.field_names = [column_names[i] for i in non_empty_column_indices]
-    for row_tuple in tuples:
-        row = [elt if elt else '' for elt in row_tuple]
-        row = [row[i] for i in non_empty_column_indices]
-        table.add_row(row)
-    return table
 
 
 def main():

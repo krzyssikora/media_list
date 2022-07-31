@@ -62,8 +62,26 @@ DB_ALBUMS_COLUMNS = [
     'genre',
 ]
 
+DB_ALBUMS_ARTIST_COLUMNS = [
+    'item_id',
+    'album_id',
+    'artist_id',
+    'publ_role'
+]
+
+DB_BANDS_MEMBERS_COLUMNS = [
+    'item_id',
+    'band_id',
+    'member_id',
+    'artist_roles',
+    'active_from',
+    'active_to'
+]
+
 DB_COLUMNS = {'albums': DB_ALBUMS_COLUMNS,
-              'artists': DB_ARTISTS_COLUMNS}
+              'artists': DB_ARTISTS_COLUMNS,
+              'albums_artists': DB_ALBUMS_ARTIST_COLUMNS,
+              'bands_members': DB_BANDS_MEMBERS_COLUMNS}
 
 # todo: do we need this? only to compare album being added to existing ones?
 MATCH_NEW_ALBUM_FIELDS = [('artist\'s name', 'artist_name', str, ''),
