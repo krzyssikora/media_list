@@ -1,14 +1,9 @@
 import os
 import msvcrt as m
 
-# import music.config as config
-# from music.config import _logger
-# import music.utils as utils
-# import music.database as database
-import config
-from config import _logger
-import utils
-import database
+from music_flask import config, utils, database
+from music_flask.config import _logger
+
 
 def take_char():
     # works on win only

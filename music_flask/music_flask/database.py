@@ -2,13 +2,8 @@ import sys
 import sqlite3
 import re
 
-# import music.utils as utils
-# import music.config as config
-# import music.api as api
-# from config import _logger
-import utils
-import config
-import api
+from music_flask import utils, config, api
+from music_flask.config import _logger
 
 
 class DBError(Exception):
@@ -114,7 +109,7 @@ def add_record_to_table(record, table, artist_from_album=False):
                 table_keys.remove('similarity')
                 # table_keys.append('similarity')
                 print('The following artists were found in the database:')
-                print(api.pretty_table_from_dicts(similar_artists, table_keys))
+                print(utils.pretty_table_from_dicts(similar_artists, table_keys))
                 decision = input('Do you still want to add the new artist (y/n)? ')
                 add_record = decision in {'y', 'Y'}
 
@@ -377,8 +372,9 @@ def dummy():
 
 
 if __name__ == '__main__':
-    print(
-        utils.pretty_table_from_dicts(get_albums_by_title_or_artist('string', 'shostakovich'), config.DB_ALBUMS_COLUMNS, 40))
+    _logger(
+        utils.convert_dicts_to_list_of_tuples(get_albums_by_title_or_artist('string', 'shostakovich'),
+                                              config.DB_ALBUMS_COLUMNS))
     quit()
     print(get_db_columns())
     pass

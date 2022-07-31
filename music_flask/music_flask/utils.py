@@ -11,6 +11,14 @@ def turn_tuple_into_dict(the_tuple, the_keys):
     return the_dict
 
 
+def convert_dicts_to_list_of_tuples(dicts, keys):
+    table = list()
+    table.append(keys)
+    for row_dict in dicts:
+        table.append(tuple(row_dict.get(key, '') for key in keys))
+    return table
+
+
 def similarity_ratio_for_words(a, b):
     return SequenceMatcher(None, a, b).ratio()
 

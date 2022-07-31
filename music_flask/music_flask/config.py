@@ -1,7 +1,7 @@
 import logging
 
-# DATABASE = "database/records_list.sqlite"
-DATABASE = "database/records_list_tmp.sqlite"
+# DATABASE = "music_flask/database/records_list.sqlite"
+DATABASE = "music_flask/database/records_list_tmp.sqlite"
 
 DB_TABLES = {'artists', 'albums', 'albums_artists', 'bands_members'}
 
