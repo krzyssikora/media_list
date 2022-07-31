@@ -1,10 +1,14 @@
 import sys
 import sqlite3
 import re
+
+# import music.utils as utils
+# import music.config as config
+# import music.api as api
+# from config import _logger
 import utils
 import config
 import api
-# from config import _logger
 
 
 class DBError(Exception):
@@ -373,7 +377,8 @@ def dummy():
 
 
 if __name__ == '__main__':
-    print(utils.pretty_table_from_dicts(get_albums_by_title_or_artist('string', 'shostakovich'), config.DB_ALBUMS_COLUMNS, 40))
+    print(
+        utils.pretty_table_from_dicts(get_albums_by_title_or_artist('string', 'shostakovich'), config.DB_ALBUMS_COLUMNS, 40))
     quit()
     print(get_db_columns())
     pass

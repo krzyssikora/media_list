@@ -1,13 +1,13 @@
 
-database/records_list_tmp.sqlite
+music/database/records_list_tmp.sqlite
 
-database/records_list.sqbpro
+music/database/records_list.sqbpro
 
-database/records_list.sqlite
+music/database/records_list.sqlite
 
 flask_form/__pycache__/app.cpython-39.pyc
 
-flask_form/app.py
+flask_form/__init__.py
 
 flask_form/templates/about.html
 
@@ -2735,4 +2735,5 @@ spreadsheets/CD_list_4_klasyka.csv
 
 spreadsheets/CD_list.xlsx
 
-database/records_list.sqlite-journal
+music/database/records_list.sqlite-journal
+/music_flask/virtual/

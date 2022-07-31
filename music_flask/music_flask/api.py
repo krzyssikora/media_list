@@ -1,11 +1,14 @@
 import os
 import msvcrt as m
 
+# import music.config as config
+# from music.config import _logger
+# import music.utils as utils
+# import music.database as database
 import config
 from config import _logger
 import utils
 import database
-
 
 def take_char():
     # works on win only
@@ -37,6 +40,8 @@ def get_user_input(message="Please enter", default='', intro='', do_clear_screen
         message (str): A message to be printed when a user is asked for the input.
         default (str): Default value of the input, printed for user's verification.
         intro (str): Introduction message to display
+        do_clear_screen (bool): if True, screen is cleared when the method starts
+
     """
     if do_clear_screen:
         clear_screen()
@@ -54,6 +59,7 @@ def get_single_choice_from_list(choices, intro='', do_clear_screen=True):
     Args:
         choices (list):  items to choose from.
         intro (str): a message displayed
+        do_clear_screen (bool): if True, screen is cleared when the method starts
 
     Returns:
         the choice made by the user, whatever type of object it was
@@ -195,7 +201,6 @@ def get_artist_for_album(new_record, intro_message, do_clear_screen=True):
         artist_chosen = get_single_choice_from_db_list(choices=similar_artists_in_database,
                                                        noun_singular='artist',
                                                        sort_column='similarity')
-    publ_role = None
     if artist_chosen is None:
         while True:
             artist_chosen = add_artist_to_table(from_album=True)

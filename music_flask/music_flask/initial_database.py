@@ -2,7 +2,7 @@ import csv
 import sqlite3
 
 import config
-import database
+from music import database
 import api
 
 
