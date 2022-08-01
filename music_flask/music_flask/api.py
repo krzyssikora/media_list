@@ -480,9 +480,9 @@ def add_artist_to_table(from_album=False):
 
 
 def get_query(artist_name='szostakovich', album_title='symphony'):
-    table = utils.turn_dicts_to_list_of_tuples_for_html(database.get_albums_by_title_or_artist(album_title,
-                                                                                               artist_name),
-                                                        config.ALL_COLUMNS)
+    table = utils.turn_dicts_to_sliced_list_of_tuples_for_html(database.get_albums_by_title_or_artist(album_title,
+                                                                                                      artist_name),
+                                                               config.ALL_COLUMNS)
     query_dict = {
         'album': album_title,
         'artist': artist_name

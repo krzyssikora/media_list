@@ -12,7 +12,7 @@ def turn_tuple_into_dict(the_tuple, the_keys):
     return the_dict
 
 
-def turn_dicts_to_list_of_tuples_for_html(dicts, keys):
+def turn_dicts_to_sliced_list_of_tuples_for_html(dicts, keys, slice_length=10):
     non_empty_keys = list()
     display_keys = ['#']
     for key in keys:
@@ -28,6 +28,11 @@ def turn_dicts_to_list_of_tuples_for_html(dicts, keys):
                            else row_dict.get(key, '') for key in non_empty_keys]))
     return table
 
+    # sliced_table = [table[slice_no * slice_length: (slice_no + 1) * slice_length]
+    #                 for slice_no in range(len(table) // slice_length + 1)]
+    #
+    # return sliced_table
+
 
 def turn_dicts_to_list_of_tuples(dicts, keys):
     table = list()
@@ -38,8 +43,8 @@ def turn_dicts_to_list_of_tuples(dicts, keys):
 
 
 def similarity_ratio_for_words(a, b):
-    a = a.lower()
-    b = b.lower()
+    # a = clear_word(a)
+    # b = clear_word(b)
     return SequenceMatcher(None, a, b).ratio()
 
 
@@ -56,10 +61,19 @@ def _get_ratio_and_remove_best_match(word_a, words_b):
     return max_ratio, words_b
 
 
-def similarity_ratio(sentance_a, sentance_b):
+def similarity_ratio(sentence_a, sentence_b):
     from statistics import mean
-    words_a = sentance_a.split()
-    words_b = sentance_b.split()
+
+    def clear_string(string):
+        string = string.lower()
+        for char in '.,/\\!@#$%^&*()[]{};:\'\"-_=+':
+            string = string.replace(char, ' ')
+        return string
+
+    sentence_a = clear_string(sentence_a)
+    sentence_b = clear_string(sentence_b)
+    words_a = sentence_a.split()
+    words_b = sentence_b.split()
     min_len = min(len(words_a), len(words_b))
     ratios = list()
     for id_a, a in enumerate(words_a):
