@@ -13,7 +13,7 @@ class DBError(Exception):
         sys.exit(1)
 
 
-def get_similar_artists(artist_dict, similarity_level=0.7):
+def get_similar_artists(artist_dict, similarity_level=0.8):
     """
     Args:
         artist_dict:  includes at least one of the following keys: artist_name, artist_surname, artist_firstname
@@ -226,7 +226,7 @@ def get_albums_by_artist_id(artist_id):
     return albums
 
 
-def get_albums_by_title(album_title, similarity_level=0.7):
+def get_albums_by_title(album_title, similarity_level=0.8):
     """
     Args:
         album_title (str): album's name or its approximation
@@ -261,23 +261,37 @@ def get_albums_by_title(album_title, similarity_level=0.7):
 
 
 def get_albums_ids_by_title_or_artist(album_title=None, artist_name=None):
-    if album_title:
-        albums_by_title = get_albums_by_title(album_title)
-        albums_ids_by_title = set(album['album_id'] for album in albums_by_title)
+    album_title = album_title.strip() or None
+    artist_name = artist_name.strip() or None
+    if album_title is None and artist_name is None:
+        # all in
+        conn = sqlite3.connect(config.DATABASE)
+        cur = conn.cursor()
+        cur.execute("SELECT album_id FROM albums")
+        lines = cur.fetchall()
+        albums_ids_by_title_and_artist = [line[0] for line in lines]
+        conn.commit()
+        cur.close()
     else:
-        albums_ids_by_title = set()
+        if album_title:
+            album_title = album_title.strip()
+            albums_by_title = get_albums_by_title(album_title)
+            albums_ids_by_title = set(album['album_id'] for album in albums_by_title)
+        else:
+            albums_ids_by_title = set()
 
-    if artist_name:
-        similar_artists_ids = [artist['artist_id'] for artist in get_similar_artists({'artist_name': artist_name})]
-        albums_ids_by_artist = set().union(*[get_albums_ids_by_artist_id(artist_id)
-                                             for artist_id in similar_artists_ids])
-    else:
-        albums_ids_by_artist = set()
+        if artist_name:
+            artist_name = artist_name.strip()
+            similar_artists_ids = [artist['artist_id'] for artist in get_similar_artists({'artist_name': artist_name})]
+            albums_ids_by_artist = set().union(*[get_albums_ids_by_artist_id(artist_id)
+                                                 for artist_id in similar_artists_ids])
+        else:
+            albums_ids_by_artist = set()
 
-    if len(albums_ids_by_title) == 0 or len(albums_ids_by_artist) == 0:
-        albums_ids_by_title_and_artist = albums_ids_by_title.union(albums_ids_by_artist)
-    else:
-        albums_ids_by_title_and_artist = albums_ids_by_title.intersection(albums_ids_by_artist)
+        if len(albums_ids_by_title) == 0 or len(albums_ids_by_artist) == 0:
+            albums_ids_by_title_and_artist = albums_ids_by_title.union(albums_ids_by_artist)
+        else:
+            albums_ids_by_title_and_artist = albums_ids_by_title.intersection(albums_ids_by_artist)
 
     albums_ids_by_title_and_artist = list(albums_ids_by_title_and_artist)
     albums_ids_by_title_and_artist.sort()
@@ -287,7 +301,26 @@ def get_albums_ids_by_title_or_artist(album_title=None, artist_name=None):
 
 def get_albums_by_title_or_artist(album_title=None, artist_name=None):
     albums_ids_by_title_and_artist = get_albums_ids_by_title_or_artist(album_title, artist_name)
-    albums = [get_album_by_id(idx) for idx in albums_ids_by_title_and_artist]
+    # get ful albums
+    # add artists that perform on the albums
+    albums = list()
+    for idx in albums_ids_by_title_and_artist:
+        album = get_album_by_id(idx)
+        conn = sqlite3.connect(config.DATABASE)
+        cur = conn.cursor()
+        cur.execute("""
+        SELECT artists.artist_name 
+        FROM albums_artists JOIN artists
+        ON albums_artists.artist_id = artists.artist_id
+        WHERE albums_artists.publ_role LIKE 'title%'
+        AND albums_artists.album_id = {}
+        """.format(idx))
+        lines = cur.fetchall()
+        lines = [line[0] for line in lines]
+        album['artist_name'] = ', '.join(lines)
+        conn.commit()
+        cur.close()
+        albums.append(album)
     return albums
 
 
@@ -373,8 +406,8 @@ def dummy():
 
 if __name__ == '__main__':
     _logger(
-        utils.convert_dicts_to_list_of_tuples(get_albums_by_title_or_artist('string', 'shostakovich'),
-                                              config.DB_ALBUMS_COLUMNS))
+        utils.turn_dicts_to_list_of_tuples(get_albums_by_title_or_artist('string', 'shostakovich'),
+                                           config.DB_ALBUMS_COLUMNS))
     quit()
     print(get_db_columns())
     pass

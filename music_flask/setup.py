@@ -8,4 +8,5 @@ setup(
         'flask',
         'prettytable'
     ],
+    devtool='inline-source-map',
 )

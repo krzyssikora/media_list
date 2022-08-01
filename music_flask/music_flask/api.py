@@ -143,10 +143,10 @@ def get_record_field_from_user(field_data, new_record, intro_message, fields):
                                                           single=False)
             # add sort_name to the 'fields' list
             fields.append(('sort name', 'sort_name', str, ''))
-        elif field_name == 'type' and new_value == 'classical':
-            print('I am not ready for it yet')
-            # todo: get ready for classical
-            quit()
+        # elif field_name == 'type' and new_value == 'classical':
+        #     print('I am not ready for it yet')
+        #     # todo: get ready for classical
+        #     quit()
     elif field_type == set:
         # allow many choices,
         # the value in new_record will be a set which will be later put into a separate db table
@@ -477,6 +477,23 @@ def add_artist_to_table(from_album=False):
     else:
         print('The artist was not added to the database.')
         return None
+
+
+def get_query(artist_name='szostakovich', album_title='symphony'):
+    table = utils.turn_dicts_to_list_of_tuples_for_html(database.get_albums_by_title_or_artist(album_title,
+                                                                                               artist_name),
+                                                        config.ALL_COLUMNS)
+    query_dict = {
+        'album': album_title,
+        'artist': artist_name
+    }
+    query = ', '.join(['{}: {}'.format(k, v) for k, v in query_dict.items() if v])
+    if query == '':
+        query = '---'
+    else:
+        many = len(table) - 1
+        query += ' ({} item{} found)'.format(many, '' if many == 1 else 's')
+    return query, table
 
 
 def main():

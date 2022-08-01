@@ -1,5 +1,6 @@
 from difflib import SequenceMatcher
 from prettytable import PrettyTable
+from music_flask import config
 
 
 def turn_tuple_into_dict(the_tuple, the_keys):
@@ -11,7 +12,24 @@ def turn_tuple_into_dict(the_tuple, the_keys):
     return the_dict
 
 
-def convert_dicts_to_list_of_tuples(dicts, keys):
+def turn_dicts_to_list_of_tuples_for_html(dicts, keys):
+    non_empty_keys = list()
+    display_keys = ['#']
+    for key in keys:
+        display_key = config.DISPLAY_COLUMNS.get(key, None) \
+            if any(row.get(key, None) for row in dicts) else None
+        if display_key:
+            non_empty_keys.append(key)
+            display_keys.append(display_key)
+    table = [tuple(display_keys)]
+    for idx, row_dict in enumerate(dicts):
+        table.append(tuple([idx + 1] + [str(row_dict.get(key, '')) + '/' + str(row_dict.get('parts', ''))
+                           if (key == 'part_id' and row_dict.get('parts', None))
+                           else row_dict.get(key, '') for key in non_empty_keys]))
+    return table
+
+
+def turn_dicts_to_list_of_tuples(dicts, keys):
     table = list()
     table.append(keys)
     for row_dict in dicts:
@@ -20,6 +38,8 @@ def convert_dicts_to_list_of_tuples(dicts, keys):
 
 
 def similarity_ratio_for_words(a, b):
+    a = a.lower()
+    b = b.lower()
     return SequenceMatcher(None, a, b).ratio()
 
 

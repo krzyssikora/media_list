@@ -35,6 +35,27 @@ NEW_ARTIST_FIELDS = [('type of the artist', 'artist_type', list, ['person', 'ban
                      ('artist\'s role (what do they do)', 'artist_role', str, '')
                      ]
 
+DISPLAY_COLUMNS = {
+    'order': '#',
+    'album_id': None,  # 'id',
+    'parts': None,
+    'part_id': 'part',
+    'first_part_id': None,
+    'sort_name': None,
+    'album_title': 'title',
+    'content': 'content',
+    'publisher': 'publisher',
+    'medium': 'medium',
+    'date_orig': 'recorded',
+    'date_publ': 'published',
+    'notes': 'notes',
+    'type': None,
+    'genre': 'genre',
+    'artist_name': 'artist /-s',
+    # 'artist_surname': 'surname',
+    # 'artist_firstname': 'firstname',
+    'artist_role': 'role',
+}
 DB_ARTISTS_COLUMNS = [
     'artist_id',
     'artist_type',
@@ -83,26 +104,29 @@ DB_COLUMNS = {'albums': DB_ALBUMS_COLUMNS,
               'albums_artists': DB_ALBUMS_ARTIST_COLUMNS,
               'bands_members': DB_BANDS_MEMBERS_COLUMNS}
 
-# todo: do we need this? only to compare album being added to existing ones?
-MATCH_NEW_ALBUM_FIELDS = [('artist\'s name', 'artist_name', str, ''),
-                          # ('artist\'s firstname', 'artist_firstname', str, ''),
-                          # ('artist\'s surname', 'artist_surname', str, ''),
-                          ('artist\'s role', 'artist_role', str, ''),
-                          # 'sort name': 'sort_name',
-                          ('album title', 'album_title', str, ''),
-                          ('content', 'content', str, ''),
-                          ('publisher', 'publisher', str, ''),
-                          ('medium', 'medium', list, ['CD', 'vinyl', 'DVD', 'blu-ray', '']),
-                          ('recording date', 'date_orig', str, 'YYYY/MM/DD'),
-                          ('publication date', 'date_publ', str, 'YYYY/MM/DD'),
-                          ('notes', 'notes', str, ''),
-                          # https://en.wikipedia.org/wiki/List_of_music_genres_and_styles
-                          ('genre', 'genre', set, ['', 'classical', 'jazz', 'blues', 'country',
-                                                   'rock', 'metal', 'techno', 'electronic',
-                                                   'easy', 'experimental', 'folk', 'hip hop',
-                                                   'pop', 'r&b, soul', 'punk', 'World'])
-                          ]
-
+ALL_COLUMNS = [
+    'order',
+    'album_id',
+    'parts',
+    'part_id',
+    'first_part_id',
+    'sort_name',
+    'album_title',
+    'content',
+    'publisher',
+    'medium',
+    'date_orig',
+    'date_publ',
+    'notes',
+    'type',
+    'genre',
+    'artist_id',
+    'artist_type',
+    'artist_name',
+    'artist_surname',
+    'artist_firstname',
+    'artist_role',
+]
 # create logger
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)

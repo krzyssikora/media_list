@@ -1,0 +1,110 @@
+body {
+  background-color: lightgray;
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+}
+
+#search {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  min-width: 50%;
+}
+
+.form-group {
+  display: inline-block;
+  min-width: 20%;
+}
+
+.form {
+  font-size: large;
+}
+
+#btn-submit {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+table, th, td {
+  background-color: white;
+  border-collapse: collapse;
+  padding: 5px;
+  border: 1px solid;
+  color: gray;
+}
+
+th {
+  font-weight: bold;
+  background-color: rgb(144, 144, 144);
+  color:midnightblue;
+}
+
+table {
+  width: 100%;
+}
+
+#menu-bar {
+  font-size: x-large;
+	width: 100%;
+	display: flex;
+	background-color: rgb(169, 168, 168);
+	justify-content: flex-start;
+}
+
+.menu-item {
+  display: block;
+  padding: 10px;
+	/* color: #fff; */
+  color: rgb(188, 55, 188);
+  text-decoration: none;
+	/* font-weight: bold; */
+	/* text-align: center; */
+	min-width: 80px;
+	/* background-color: #666; */
+}
+
+#menu-item-main {
+  font-weight: bold;
+}
+
+.menu-item:hover {
+  font-weight: bold;
+  background-color: rgb(128, 128, 128);
+  color: rgb(255, 141, 255); 
+}
+
+
+#pages-controls {
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	background-color: rgb(169, 168, 168);
+	justify-content: space-between;
+}
+
+#pages-controls .slide {
+	display: block;
+  padding-top: 10px;
+  padding-bottom: 10px;
+	color: #fff;
+	font-weight: bold;
+	text-transform: uppercase;
+	text-decoration: none;
+	text-align: center;
+	width: 150px;
+	background-color: #666;
+}
+
+#page-info {
+  display: block;
+  padding-top: 10px;
+  padding-bottom: 10px;
+	text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.results {
+  /* position: absolute; */
+  bottom: 20px;
+} 
