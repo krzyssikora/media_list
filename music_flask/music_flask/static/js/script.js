@@ -3,22 +3,19 @@
 
     window.addEventListener("load", function() {
         // DOM elements
-        // page number
-        const page_number = document.querySelector("#page-number");
-        const page_number_bottom = document.querySelector("#page-number-bottom");
-        // how many pages?
-        const pageCount = document.querySelector("#pages");
-        // next button
-        const next = document.getElementById("next");
-        const next_bottom = document.getElementById("next-bottom");
-        // previous button
-        const previous = document.getElementById("prev");
-        const previous_bottom = document.getElementById("prev-bottom");
+        // pages-control
+        var pages_controls = document.getElementById('pages-controls');
+        var pages_controls_bottom = document.getElementById('pages-controls-bottom');
+        
         // table content
         var table_str = document.getElementById("hidden-table").innerHTML;
         var table = JSON.parse(table_str);
         // table position
         const query_table = this.document.getElementById('results');
+        // conditional
+        var page_number
+        var page_number_bottom
+        var pageCount
         // data properties
         const items_per_page = 10;
         const table_length = table.length - 1
@@ -26,7 +23,51 @@
         const last_page_length = table_length % items_per_page;
         var counter = 1;
         query_table.innerHTML = getQueryTable();
-        pageCount.innerHTML = number_of_pages;
+
+        if (number_of_pages > 1) {
+            // upper div for pages controls
+            pages_controls.innerHTML = `<a href="#" id="prev" class="slide">Previous</a> <a id="page-info"><span id="page-number">${counter}</span>/<span id="pages">${number_of_pages}</span> </a> <a href="#" id="next" class="slide">Next</a>`
+            // lower div for pages controls
+            pages_controls_bottom.innerHTML = `<a href="#" id="prev-bottom" class="slide">Previous</a> <a id="page-info"><span id="page-number-bottom">${counter}</span>/<span id="pages-bottom">${number_of_pages}</span> </a> <a href="#" id="next-bottom" class="slide">Next</a>`
+            // next buttons
+            const next = document.getElementById("next");
+            const next_bottom = document.getElementById("next-bottom");
+            // previous buttons
+            const previous = document.getElementById("prev");
+            const previous_bottom = document.getElementById("prev-bottom");
+        
+            // page number
+            page_number = document.querySelector("#page-number");
+            page_number_bottom = document.querySelector("#page-number-bottom");
+            // number of pages
+            pageCount = document.querySelector("#pages");
+            pageCount.innerHTML = number_of_pages;
+
+            next.addEventListener("click", function(evt){
+                evt.preventDefault();
+                changePage(1);
+            })
+        
+            next_bottom.addEventListener("click", function(evt){
+                evt.preventDefault();
+                changePage(1);
+            })
+        
+            previous.addEventListener("click", function(evt){
+                evt.preventDefault();
+                changePage(-1);
+            })
+    
+            previous_bottom.addEventListener("click", function(evt){
+                evt.preventDefault();
+                changePage(-1);
+            })
+        };
+
+        function updatePagesControls() {
+            pages_controls_text = `<a href="#" id="prev" class="slide">Previous</a> <a id="page-info"><span id="page-number">${counter}</span>/<span id="pages">${number_of_pages}</span>  </a> <a href="#" id="next" class="slide">Next</a>`
+            pages_controls.innerHTML = pages_controls_text
+        };
 
         function changePage(change) {
             counter += change;
@@ -39,26 +80,6 @@
             page_number_bottom.innerHTML = counter;
             query_table.innerHTML = getQueryTable();
         };
-    
-        next.addEventListener("click", function(evt){
-            evt.preventDefault();
-            changePage(1);
-        })
-    
-        next_bottom.addEventListener("click", function(evt){
-            evt.preventDefault();
-            changePage(1);
-        })
-    
-        previous.addEventListener("click", function(evt){
-            evt.preventDefault();
-            changePage(-1);
-        })
-
-        previous_bottom.addEventListener("click", function(evt){
-            evt.preventDefault();
-            changePage(-1);
-        })
 
         // function sendPageNumber() {
         //     var request = new XMLHttpRequest()
