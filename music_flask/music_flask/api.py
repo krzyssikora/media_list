@@ -484,15 +484,14 @@ def get_query(artist_name='szostakovich', album_title='symphony'):
                                                                                                       artist_name),
                                                                config.ALL_COLUMNS)
     query_dict = {
-        'album': album_title,
-        'artist': artist_name
+        'album': album_title.strip(),
+        'artist': artist_name.strip()
     }
     query = ', '.join(['{}: {}'.format(k, v) for k, v in query_dict.items() if v])
     if query == '':
         query = '---'
-    else:
-        many = len(table) - 1
-        query += ' ({} item{} found)'.format(many, '' if many == 1 else 's')
+    many = len(table) - 1
+    query += ' ({} item{} found)'.format(many, '' if many == 1 else 's')
     return query, table
 
 

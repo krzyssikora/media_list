@@ -72,6 +72,14 @@ table {
   color: rgb(255, 141, 255); 
 }
 
+#pages-controls {
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	background-color: rgb(169, 168, 168);
+	justify-content: space-between;
+  align-items: stretch;
+}
 
 #pages-controls {
 	bottom: 0;
@@ -79,9 +87,19 @@ table {
 	display: flex;
 	background-color: rgb(169, 168, 168);
 	justify-content: space-between;
+  align-items: stretch;
 }
 
-#pages-controls .slide {
+#pages-controls-bottom {
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	background-color: rgb(169, 168, 168);
+	justify-content: space-between;
+  align-items: stretch;
+}
+
+.slide {
 	display: block;
   padding-top: 10px;
   padding-bottom: 10px;
@@ -91,6 +109,8 @@ table {
 	text-decoration: none;
 	text-align: center;
 	width: 150px;
+  height: 40px;
+  line-height: 40px;
 	background-color: #666;
 }
 
@@ -102,9 +122,29 @@ table {
   font-weight: bold;
   text-transform: uppercase;
   color: #fff;
+  height: 30px;
+  line-height: 30px;
 }
 
-.results {
+#page-info-bottom {
+  display: block;
+  padding-top: 10px;
+  padding-bottom: 10px;
+	text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+  height: 30px;
+  line-height: 30px;
+}
+
+#results {
   /* position: absolute; */
+  width: 100%;
   bottom: 20px;
+  overflow: scroll;
 } 
+
+
+/* # for id
+   . for class */

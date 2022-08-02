@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 import json
 from music_flask import config, utils, api
 from music_flask.config import _logger
@@ -11,7 +11,7 @@ counter_value = 1
 def index():
     global counter_value
     title = 'my music'
-    get_page_number(counter=counter_value, func='index')
+    # get_page_number(counter=counter_value, func='index')
     users_query, table = api.get_query()
     return render_template('index.html',
                            title=title,
@@ -28,7 +28,7 @@ def query():
     artist_name = request.form.get('artist_name')
     album_title = request.form.get('album_title')
     title = 'my music'
-    get_page_number(counter=counter_value, func='query')
+    # get_page_number(counter=counter_value, func='query')
     users_query, table = api.get_query(artist_name, album_title)
     return render_template('index.html',
                            title=title,

@@ -2,46 +2,62 @@
     "use strict";
 
     window.addEventListener("load", function() {
-        // how many pages?
-        // const pageCount = 3;  // to be changed
         // DOM elements
         // page number
         const page_number = document.querySelector("#page-number");
-        // pages
-        const pageCount = parseInt(document.querySelector("#pages").innerHTML);
+        const page_number_bottom = document.querySelector("#page-number-bottom");
+        // how many pages?
+        const pageCount = document.querySelector("#pages");
         // next button
         const next = document.getElementById("next");
+        const next_bottom = document.getElementById("next-bottom");
         // previous button
         const previous = document.getElementById("prev");
+        const previous_bottom = document.getElementById("prev-bottom");
         // table content
         var table_str = document.getElementById("hidden-table").innerHTML;
         var table = JSON.parse(table_str);
         // table position
         const query_table = this.document.getElementById('results');
+        // data properties
         const items_per_page = 10;
-        var number_of_pages = Math.ceil((table.length - 1)/items_per_page);
-        var last_page_length = (table.length - 1)% items_per_page;
+        const table_length = table.length - 1
+        const number_of_pages = Math.ceil(table_length / items_per_page);
+        const last_page_length = table_length % items_per_page;
         var counter = 1;
         query_table.innerHTML = getQueryTable();
+        pageCount.innerHTML = number_of_pages;
+
+        function changePage(change) {
+            counter += change;
+            if(counter > number_of_pages){
+                counter = 1;
+            } else if(counter < 1){
+                counter = number_of_pages;
+            };
+            page_number.innerHTML = counter;
+            page_number_bottom.innerHTML = counter;
+            query_table.innerHTML = getQueryTable();
+        };
     
         next.addEventListener("click", function(evt){
             evt.preventDefault();
-            counter++;
-            if(counter > pageCount){
-                counter = 1;
-            };
-            page_number.innerHTML = counter;
-            query_table.innerHTML = getQueryTable();
+            changePage(1);
+        })
+    
+        next_bottom.addEventListener("click", function(evt){
+            evt.preventDefault();
+            changePage(1);
         })
     
         previous.addEventListener("click", function(evt){
             evt.preventDefault();
-            counter--;
-            if(counter < 1){
-                counter = pageCount;
-            };
-            page_number.innerHTML = counter;
-            query_table.innerHTML = getQueryTable();
+            changePage(-1);
+        })
+
+        previous_bottom.addEventListener("click", function(evt){
+            evt.preventDefault();
+            changePage(-1);
         })
 
         // function sendPageNumber() {

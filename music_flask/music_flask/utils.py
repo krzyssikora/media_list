@@ -17,7 +17,7 @@ def turn_dicts_to_sliced_list_of_tuples_for_html(dicts, keys, slice_length=10):
     display_keys = ['#']
     for key in keys:
         display_key = config.DISPLAY_COLUMNS.get(key, None) \
-            if any(row.get(key, None) for row in dicts) else None
+            if any(str(row.get(key, '')).strip() for row in dicts) else None
         if display_key:
             non_empty_keys.append(key)
             display_keys.append(display_key)
