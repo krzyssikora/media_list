@@ -26,13 +26,27 @@
 
         if (number_of_pages > 1) {
             // upper div for pages controls
-            pages_controls.innerHTML = `<a href="#" id="prev" class="slide">Previous</a> <a id="page-info"><span id="page-number">${counter}</span>/<span id="pages">${number_of_pages}</span> </a> <a href="#" id="next" class="slide">Next</a>`
+            pages_controls.innerHTML = 
+            `<a href="#" id="first" class="slide">\<\<</a>
+             <a href="#" id="prev" class="slide">\<</a> 
+             <a id="page-info"><span id="page-number">${counter}</span>/<span id="pages">${number_of_pages}</span></a> 
+             <a href="#" id="next" class="slide">\></a>
+             <a href="#" id="last" class="slide">\>\></a>`
             // lower div for pages controls
-            pages_controls_bottom.innerHTML = `<a href="#" id="prev-bottom" class="slide">Previous</a> <a id="page-info"><span id="page-number-bottom">${counter}</span>/<span id="pages-bottom">${number_of_pages}</span> </a> <a href="#" id="next-bottom" class="slide">Next</a>`
-            // next buttons
+            pages_controls_bottom.innerHTML = 
+            `<a href="#" id="first-bottom" class="slide">\<\<</a>
+             <a href="#" id="prev-bottom" class="slide">\<</a> 
+             <a id="page-info"><span id="page-number-bottom">${counter}</span>/<span id="pages-bottom">${number_of_pages}</span></a> 
+             <a href="#" id="next-bottom" class="slide">\></a>
+             <a href="#" id="last-bottom" class="slide">\>\></a>`
+            // forward buttons
             const next = document.getElementById("next");
             const next_bottom = document.getElementById("next-bottom");
-            // previous buttons
+            const last = this.document.getElementById('last');
+            const last_bottom = this.document.getElementById('last-bottom');
+            // backward buttons
+            const first = this.document.getElementById('first');
+            const first_bottom = this.document.getElementById('first-bottom');
             const previous = document.getElementById("prev");
             const previous_bottom = document.getElementById("prev-bottom");
         
@@ -45,22 +59,50 @@
 
             next.addEventListener("click", function(evt){
                 evt.preventDefault();
-                changePage(1);
+                counter ++;
+                changePage();
             })
         
             next_bottom.addEventListener("click", function(evt){
                 evt.preventDefault();
-                changePage(1);
+                counter ++;
+                changePage();
+            })
+
+            last.addEventListener("click", function(evt){
+                evt.preventDefault();
+                counter = number_of_pages;
+                changePage();
+            })
+
+            last_bottom.addEventListener("click", function(evt){
+                evt.preventDefault();
+                counter = number_of_pages;
+                changePage();
             })
         
             previous.addEventListener("click", function(evt){
                 evt.preventDefault();
-                changePage(-1);
+                counter --;
+                changePage();
             })
     
             previous_bottom.addEventListener("click", function(evt){
                 evt.preventDefault();
-                changePage(-1);
+                counter --;
+                changePage();
+            })
+
+            first.addEventListener("click", function(evt){
+                evt.preventDefault();
+                counter = 1;
+                changePage();
+            })
+
+            first_bottom.addEventListener("click", function(evt){
+                evt.preventDefault();
+                counter = 1;
+                changePage();
             })
         };
 
@@ -69,8 +111,7 @@
             pages_controls.innerHTML = pages_controls_text
         };
 
-        function changePage(change) {
-            counter += change;
+        function changePage() {
             if(counter > number_of_pages){
                 counter = 1;
             } else if(counter < 1){
