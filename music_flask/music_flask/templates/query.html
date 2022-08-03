@@ -1,17 +1,25 @@
-{% extends "layout.html" %}
-{% block content %}
-<div class="container">
-    <h1>what is this?</h1>
-    <div>
-        <p>
-            You can browse here my music records, for now mostly CDs, byt vinyls will come soon.
-        </p>
-    </div>
+{% extends "browse.html" %}
+{% block browse %}
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<div id="query">
+    <p>
+        {% if query %}
+        <b>query</b>: {{ query }}
+        {% endif %}
+    </p>
 </div>
+<div id="pages-controls"> <!-- place for changing pages controls --> </div>
+<div id="results"> <!-- table with query results will be here --> </div>
+<div id="pages-controls-bottom"> <!-- place for changing pages controls --> </div>
 
 <!-- optional javascript -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <!-- jquery first, then Popper.js, then Bootstrap JS-->
 <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>-->
 <!--<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>-->
 <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy" crossorigin="anonymous"></script>-->
+
+<p hidden id="hidden-table">{{ table_json }}</p>
 {% endblock %}

@@ -12,14 +12,9 @@ def index():
     global counter_value
     title = 'my music'
     # get_page_number(counter=counter_value, func='index')
-    users_query, table = api.get_query()
     return render_template('index.html',
                            title=title,
-                           table=table,  # [counter - 1],
-                           table_json=json.dumps(table),
-                           query=users_query,
-                           counter=counter_value,
-                           pages=len(table) // 10 + 1)
+                           )
 
 
 @app.route('/query', methods=['POST'])
@@ -28,15 +23,23 @@ def query():
     artist_name = request.form.get('artist_name')
     album_title = request.form.get('album_title')
     title = 'my music'
-    # get_page_number(counter=counter_value, func='query')
     users_query, table = api.get_query(artist_name, album_title)
-    return render_template('index.html',
+    return render_template('query.html',
                            title=title,
                            table=table,  # [counter - 1],
                            table_json=json.dumps(table),
                            query=users_query,
                            counter=counter_value,
-                           pages=len(table) // 10 + 1)
+                           pages=len(table) // 10 + 1,
+                           )
+
+
+@app.route('/browse')
+def browse():
+    title = 'my music'
+    return render_template('browse.html',
+                           title=title,
+                           )
 
 
 # @app.route('/get_page_number/<string:counter>', methods=['POST'])
