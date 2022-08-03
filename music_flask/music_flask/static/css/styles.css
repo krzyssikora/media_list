@@ -64,13 +64,9 @@ table {
 .menu-item {
   display: block;
   padding: 10px;
-	/* color: #fff; */
   color: rgb(188, 55, 188);
   text-decoration: none;
-	/* font-weight: bold; */
-	/* text-align: center; */
 	min-width: 80px;
-	/* background-color: #666; */
 }
 
 #menu-item-main {
@@ -179,6 +175,60 @@ table {
   height: 100px;
   width: 100px;
   position: absolute;
+}
+
+/* for edit.html */
+#tabs {
+  width: 80%;
+	margin: auto;
+}
+
+#tabs > ul {
+	text-align: center;
+  list-style-type: none;
+	display: flex;
+  padding: 0;
+  margin: 0;
+}
+
+#tabs > ul > li {
+  padding-top: 10px;
+  min-width: 20%;
+  font-size: large;
+  font-weight: bold;
+}
+
+#tabs > ul > li > a {
+	display: block;
+	height: 60px;
+	/* line-height: 30px; */
+	margin-right: 2px;
+  background-color: rgb(169, 168, 168);
+	color: rgb(188, 55, 188);
+  text-decoration: none;
+	/* padding: 0 10px; */
+	border-radius: 3px 3px 0 0;
+  overflow: hidden;
+}
+
+#tabs > div {
+	padding: 15px;
+	background: #EAEAEA;
+	transition: opacity 200ms linear;
+}
+
+#tabs .active {
+	background: #eaeaea;
+	color: #333;
+}
+
+#tabs .hidden { display: none; }
+#tabs .visible { display: block; }
+#tabs .visuallyhidden { opacity: 0; }
+
+p {
+	line-height: 1.5em;
+	/* margin-bottom: 1em; */
 }
 
 /* # for id

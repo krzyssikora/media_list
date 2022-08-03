@@ -13,6 +13,7 @@ def turn_tuple_into_dict(the_tuple, the_keys):
 
 
 def turn_dicts_to_sliced_list_of_tuples_for_html(dicts, keys, slice_length=10):
+    # todo: change order of displaying albums
     non_empty_keys = list()
     display_keys = ['#']
     for key in keys:

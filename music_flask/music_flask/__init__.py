@@ -49,6 +49,13 @@ def browse():
                            )
 
 
+@app.route('/edit')
+def edit():
+    title = 'edit database'
+    return render_template('edit.html',
+                           title=title,
+                           )
+
 # @app.route('/get_page_number/<string:counter>', methods=['POST'])
 # def get_page_number(counter, func=None):
 #     global counter_value

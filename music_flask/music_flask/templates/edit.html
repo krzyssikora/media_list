@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% block content %}
+<div>
+    <h1>{{ title }}</h1>
+    <div id="tabs">
+		<ul>
+			<li><a href="#tabs-1" class="active">add album</a></li>
+			<li><a href="#tabs-2">add artist</a></li>
+			<li><a href="#tabs-3">add artists to album</a></li>
+			<li><a href="#tabs-4">edit album</a></li>
+			<li><a href="#tabs-5">edit artist</a></li>
+		</ul>
+
+		<div id="tabs-1" class="visible">
+			<p>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque molestie ligula eu lorem ornare lacinia. In ac dolor risus. Aenean posuere laoreet ipsum vestibulum rhoncus. Etiam dapibus aliquam scelerisque. Ut auctor orci metus, a suscipit neque tempus vitae. Nunc volutpat dictum finibus. Aenean sit amet sem sit amet risus ultricies consequat. Donec sit amet elit quis nisl malesuada vulputate vel id dui.
+			</p>
+
+			<p>
+				Curabitur vitae fermentum massa. Sed nec ex semper, imperdiet nisl at, auctor velit. Nullam a nibh velit. Duis sit amet est tempor dui tristique mollis quis ut augue. Sed convallis tortor orci, sed tempus nulla placerat a. Donec leo velit, fringilla a volutpat sit amet, interdum ac mi. Maecenas iaculis molestie turpis, vitae pharetra nisi egestas vel. Donec est leo, faucibus vel tempor ut, vehicula vel ante. Phasellus sit amet lorem ut turpis elementum varius.
+			</p>
+		</div>
+
+		<div id="tabs-2" class="hidden">
+			<p>
+				Ut suscipit augue vehicula, commodo magna eget, aliquet eros. Aliquam ullamcorper ipsum ut ipsum molestie interdum. Donec in rutrum augue, at dictum enim. Cras id lobortis massa. Duis id faucibus turpis. Donec et pretium ligula. Nam et arcu vitae ante suscipit molestie.
+			</p>
+
+			<p>
+				In hac habitasse platea dictumst. Phasellus at accumsan dui. Aenean sem ante, egestas eget risus vitae, bibendum placerat lacus. In justo enim, laoreet vitae feugiat in, rutrum eu tellus. Suspendisse eu ullamcorper lorem. Suspendisse gravida quam ac urna feugiat venenatis vitae commodo dui. Phasellus id nulla id eros ultricies tincidunt eget ac massa. Proin vel purus maximus, imperdiet mi vel, faucibus sem. Nullam interdum volutpat leo, pellentesque auctor odio tempor sed.
+			</p>
+		</div>
+		<div id="tabs-3" class="hidden">
+			<p>
+				Integer ut lobortis ligula. Maecenas vestibulum laoreet erat non mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vestibulum viverra elementum turpis vitae consequat. Aliquam sagittis lobortis bibendum. Sed feugiat efficitur libero et blandit. Morbi elementum tristique tellus, eu dapibus nisi sollicitudin non. Proin fringilla eleifend eros, sed aliquam nisi eleifend eu. Vivamus porttitor augue at iaculis euismod. Donec vestibulum semper orci, quis efficitur arcu. Integer elementum lectus ac ultrices dignissim. Etiam non lectus vel urna eleifend feugiat. Morbi cursus justo nec dapibus pharetra. Quisque convallis at magna sed malesuada. Cras sagittis ante libero, nec placerat justo iaculis eget. Fusce maximus augue nibh, nec rhoncus velit sagittis convallis.
+			</p>
+
+			<p>
+				Morbi lobortis turpis quis fermentum porttitor. Aenean et lacinia mauris, et semper eros. Suspendisse libero tortor, tincidunt a ornare vitae, vehicula vitae quam. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Nullam sem dui, semper ut vulputate quis, eleifend in ligula. Mauris sollicitudin metus sit amet arcu blandit vehicula. Etiam imperdiet lacinia lectus in sollicitudin. Proin sit amet mollis metus, eget commodo lacus. Nam quis justo imperdiet, elementum lorem eget, cursus elit. Phasellus iaculis nulla id justo tristique, porta mattis massa luctus. Phasellus sagittis, diam quis congue suscipit, metus sapien congue ipsum, vel varius enim odio id nulla. Vivamus sollicitudin aliquet leo sed consectetur. Cras et ligula libero. Maecenas luctus elementum ligula ut efficitur. Nunc eu posuere massa, vitae sollicitudin nisi. Mauris in lacus eu sem consequat placerat vel sit amet nulla.
+			</p>
+		</div>
+        <div id="tabs-4" class="hidden">
+			<p>
+				Phasellus a arcu magna. Morbi facilisis eu magna eget semper. Pellentesque at pretium nunc. Nunc vel massa semper velit laoreet tincidunt. Maecenas vehicula ornare tempor. Suspendisse tincidunt tempus purus ac auctor. Etiam dignissim sagittis venenatis. Nunc vitae diam tincidunt, consectetur est non, scelerisque augue. Nam mauris odio, ullamcorper vitae tincidunt ac, mattis et lacus. Etiam nec nulla sed eros aliquam fermentum non id odio. Nam mollis ipsum nec aliquam ornare. Fusce sodales id lorem lobortis condimentum. Etiam viverra tincidunt velit ut tincidunt.
+			</p>
+
+			<p>
+				Ut auctor tellus id cursus aliquet. Nullam augue felis, ultricies a porttitor at, euismod porta magna. Vestibulum in rutrum felis. Sed in dui id urna hendrerit facilisis sed eget metus. Aliquam placerat enim sed dui vehicula, sed lacinia nulla hendrerit. Duis dui velit, pulvinar in lacus a, vehicula condimentum dolor. Integer euismod nunc in mi vulputate iaculis. Nunc blandit erat fermentum nisl malesuada ornare. Praesent sed diam sapien. Duis ultrices ante massa, non eleifend purus congue et. Maecenas mattis dignissim pharetra. Vivamus sapien nunc, mollis id orci nec, suscipit laoreet lectus. Vivamus vulputate ligula eu metus aliquet, sit amet vulputate tortor tincidunt. Quisque facilisis dapibus sapien, eu fermentum purus blandit in.
+			</p>
+		</div>
+        <div id="tabs-5" class="hidden">
+			<p>
+				Sed aliquam, augue vitae vehicula tempus, velit eros dignissim purus, a placerat tellus est eget purus. Praesent feugiat mauris a risus sollicitudin feugiat. Vivamus sapien nibh, dapibus ut ligula non, ornare placerat est. Aliquam in mattis purus. Aliquam dictum porttitor massa, at faucibus purus tincidunt ac. Donec maximus varius ante a dapibus. Nullam nec lorem tempus, ultricies felis pharetra, iaculis mauris.
+			</p>
+
+			<p>
+				Phasellus sit amet porta velit, ac vulputate ligula. Nullam dapibus eleifend leo vel tristique. Proin eget luctus lorem. Phasellus id eros in tortor venenatis congue. Proin lorem mauris, ultricies in mi in, venenatis semper elit. Nam facilisis turpis ac erat scelerisque, vitae hendrerit justo fermentum. Sed auctor nisi vel posuere lacinia. Curabitur aliquet massa ut euismod fringilla. Morbi suscipit rhoncus tempus. Donec laoreet ex mi, ut dignissim metus facilisis vitae. Aenean rhoncus interdum leo eget ultrices.
+			</p>
+		</div>
+	</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="{{ url_for('static', filename='js/script_edit.js') }}"></script>
+{% endblock %}
