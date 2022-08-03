@@ -1,22 +1,31 @@
 (function() {
     "use strict";
 
+    // TODOs:
+    // place the number of items hidden in page, so that it does not change when new query is called
+    // highlight the number of items per page
+    // change hidden objects to display: none
 
-    // TODO highlight the number of items per page
-    
     window.addEventListener("load", function() {
         // data properties
-        var items_per_page = 10;
         var counter = 1;
         // DOM elements
         // submit query button
-        const button_submit = document.getElementById('btn-submit');
+        // const button_submit = document.getElementById('btn-submit');
         // table position
         var query_table = this.document.getElementById('results');
         // table content
-        var table_str = document.getElementById("hidden-table").innerHTML;
+        var hidden_table = document.getElementById("hidden-table");
+        var table_str = hidden_table.innerHTML;
         var table = JSON.parse(table_str);
-        const table_length = table.length - 1
+        hidden_table.style.display = 'none';
+        
+        var hidden_items_per_page = document.getElementById('hidden-items-per-page');
+        var items_per_page_str = hidden_items_per_page.innerHTML;
+        var items_per_page = parseInt(items_per_page_str);
+        // hidden_items_per_page.style.display = 'none';
+
+        const table_length = table.length - 1;
         var number_of_pages = Math.ceil(table_length / items_per_page);
         var last_page_length = table_length % items_per_page;
         var counter = 1;
@@ -36,7 +45,7 @@
          <button type="submit" id="btn-20">20</button>
          <button type="submit" id="btn-50">50</button>
          <a href="#" id="next" class="slide">\></a>
-         <a href="#" id="last" class="slide">\>\></a>`
+         <a href="#" id="last" class="slide">\>\></a>` 
         // lower div for pages controls
         pages_controls_bottom.innerHTML = 
         `<a href="#" id="first-bottom" class="slide">\<\<</a>
@@ -72,18 +81,6 @@
 
         addAllListeners();
 
-        // function updatePagesControls() {
-        //     if (number_of_pages == 1) {
-        //         // hide pages controls
-        //         pages_controls.style.display = 'none';
-        //         pages_controls_bottom.style.display = 'none';
-        //     } else {
-        //         // show pages controls
-        //         pages_controls.style.display = 'grid';
-        //         pages_controls_bottom.style.display = 'grid';
-        //     };
-        // };
-
         function changePage() {
             if(counter > number_of_pages){
                 counter = 1;
@@ -95,12 +92,12 @@
             query_table.innerHTML = getQueryTable();
         };
 
-        // function sendPageNumber() {
-        //     var request = new XMLHttpRequest()
-        //     var counter_str = JSON.stringify(counter)
-        //     request.open('POST', `/get_page_number/${counter_str}`)
-        //     request.send();        
-        // };
+        function sendItemsPerPage() {
+            var request = new XMLHttpRequest()
+            var items_per_page_str = JSON.stringify(items_per_page)
+            request.open('POST', `/get_items_per_page/${items_per_page_str}`)
+            request.send();        
+        };
         
         function getQueryTable() {
             if (counter == number_of_pages) {
@@ -139,6 +136,10 @@
                 page_number_buttons[btn].addEventListener("click", function(evt){
                     evt.preventDefault();
                     items_per_page = btn;
+                    hidden_items_per_page.style.display = 'inline';
+                    hidden_items_per_page.innerHTML = items_per_page;
+                    sendItemsPerPage();
+                    hidden_items_per_page.style.display = 'none';
                     number_of_pages = Math.ceil(table_length / items_per_page);
                     last_page_length = table_length % items_per_page;
                     // updatePagesControls();
