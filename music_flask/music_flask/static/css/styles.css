@@ -4,11 +4,10 @@ body {
 }
 
 div.trim {
-  /* max-width: 90%;
-  max-height: 30%; */
   position: absolute;
-  top: 10%; right: 10%; bottom: 10%; left: 10%;
+  top: 130px; right: 10%; bottom: 10%; left: 10%;
   overflow: hidden;
+  border-radius: 0% 40%;
 }
 
 #search {
@@ -88,7 +87,7 @@ table {
 	bottom: 0;
 	width: 100%;
 	display: grid;
-  grid-template-columns: 40px 40px auto 40px 40px;
+  grid-template-columns: 40px 40px auto 40px 40px 40px 40px 40px 40px;
   column-gap: 2px;
   justify-items:	stretch;
 	background-color: rgb(169, 168, 168);
@@ -137,16 +136,49 @@ table {
   padding-left: 10px;
 }
 
-button {
+.button-off {
   border-style: none;
   border-radius: 5px;
-  border-style: none;
   min-height: 30px;
-  min-width: 40px;
+  min-width: 30px;
   margin: 2px;
   color: rgb(188, 55, 188);
   font-weight: bolder;
   font-stretch: ultra-expanded;
+  font-size: medium;
+}
+
+.button-on {
+  border-style: none;
+  border-radius: 5px;
+  min-height: 30px;
+  min-width: 30px;
+  margin: 2px;
+  color: white;
+  background-color: rgb(188, 55, 188);
+  font-weight: bolder;
+  font-stretch: ultra-expanded;
+  font-size: larger;
+}
+
+.button-phantom {
+  border-style: none;
+  border-radius: 5px;
+  border-style: none;
+  min-height: 30px;
+  min-width: 30px;
+  margin: 2px;
+  opacity: 0;
+}
+
+#about-info {
+  width: 60%;
+}
+
+#vinyl {
+  height: 100px;
+  width: 100px;
+  position: absolute;
 }
 
 /* # for id

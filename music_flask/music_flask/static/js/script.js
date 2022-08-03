@@ -2,9 +2,11 @@
     "use strict";
 
     // TODOs:
-    // place the number of items hidden in page, so that it does not change when new query is called
-    // highlight the number of items per page
-    // change hidden objects to display: none
+    // fix position after changing items_per_page
+    // change order of displaying albums
+    // display info that the databese is searched through
+    // new menu position: modify (add / delete album / artist)
+
 
     window.addEventListener("load", function() {
         // data properties
@@ -23,8 +25,8 @@
         var hidden_items_per_page = document.getElementById('hidden-items-per-page');
         var items_per_page_str = hidden_items_per_page.innerHTML;
         var items_per_page = parseInt(items_per_page_str);
-        // hidden_items_per_page.style.display = 'none';
-
+        hidden_items_per_page.style.display = 'none';
+        
         const table_length = table.length - 1;
         var number_of_pages = Math.ceil(table_length / items_per_page);
         var last_page_length = table_length % items_per_page;
@@ -40,20 +42,51 @@
          <a href="#" id="prev" class="slide">\<</a> 
          <a id="page-info"><span id="page-number">${counter}</span>
          /<span id="pages">${number_of_pages}</span></a> 
-         <button type="submit" id="btn-5">5</button>
-         <button type="submit" id="btn-10">10</button>
-         <button type="submit" id="btn-20">20</button>
-         <button type="submit" id="btn-50">50</button>
+         <button class="button-off" type="submit" id="btn-5">5</button>
+         <button class="button-off" type="submit" id="btn-10">10</button>
+         <button class="button-off" type="submit" id="btn-20">20</button>
+         <button class="button-off" type="submit" id="btn-50">50</button>
          <a href="#" id="next" class="slide">\></a>
          <a href="#" id="last" class="slide">\>\></a>` 
+        // make 50 dissapear for small screens
+        if (window.innerWidth < 420) {
+            this.document.getElementById('btn-20').style.display = 'none'
+        };
+        if (window.innerWidth < 450) {
+            this.document.getElementById('btn-50').style.display = 'none'
+        };
+        window.onresize = function() {
+            var width = window.innerWidth;
+            if (width < 420) {
+                console.log(`below: ${width}`)
+                document.getElementById('btn-20').style.display = 'none'
+                document.getElementById('btn-50').style.display = 'none'
+            };
+            if (width >= 420 & width < 450) {
+                console.log(`between ${width}`)
+                document.getElementById('btn-20').style.display = 'inline'
+                document.getElementById('btn-50').style.display = 'none'
+            };
+            if (width >= 450) {
+                console.log(`over ${width}`)
+                document.getElementById('btn-20').style.display = 'inline'
+                document.getElementById('btn-50').style.display = 'inline'
+            };
+        };
         // lower div for pages controls
         pages_controls_bottom.innerHTML = 
         `<a href="#" id="first-bottom" class="slide">\<\<</a>
          <a href="#" id="prev-bottom" class="slide">\<</a> 
          <a id="page-info"><span id="page-number-bottom">${counter}</span>
          /<span id="pages-bottom">${number_of_pages}</span></a> 
+         <button class="button-phantom"></button>
+         <button class="button-phantom"></button>
+         <button class="button-phantom"></button>
+         <button class="button-phantom"></button>
          <a href="#" id="next-bottom" class="slide">\></a>
          <a href="#" id="last-bottom" class="slide">\>\></a>`
+        // switch on the button for current number of items per page
+        document.getElementById(`btn-${items_per_page}`).className = 'button-on';
         // forward buttons
         const next = document.getElementById("next");
         const next_bottom = document.getElementById("next-bottom");
@@ -139,6 +172,12 @@
                     hidden_items_per_page.style.display = 'inline';
                     hidden_items_per_page.innerHTML = items_per_page;
                     sendItemsPerPage();
+                    // change all buttons' class to off
+                    for (let nbr of page_numbers) {
+                        page_number_buttons[nbr].className = 'button-off';
+                    };
+                    page_number_buttons[btn].className = 'button-on';
+                    // change chosen button's class to on
                     hidden_items_per_page.style.display = 'none';
                     number_of_pages = Math.ceil(table_length / items_per_page);
                     last_page_length = table_length % items_per_page;
