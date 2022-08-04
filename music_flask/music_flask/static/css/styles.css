@@ -47,7 +47,7 @@ div.trim {
   background-color: #eee;
   color: #444;
   cursor: pointer;
-  padding: 15px;
+  padding: 10px 0px 10px 15px;
   width: 100%;
   text-align: left;
   /* outline: none; */
@@ -62,7 +62,6 @@ div.trim {
 
 .collapsible:after {
   content: '\02795'; /* Unicode character for "plus" sign (+) */
-  /* font-size: 13px; */
   color: white;
   float: right;
   margin-left: 5px;
@@ -75,13 +74,13 @@ div.trim {
 /* Style the collapsible content. Note: hidden by default */
 .content {
   border-radius: 15px;
-  padding: 0 15px;
+  padding: 0 0 10px 10px;
   display: none;
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.2s ease-out;
   margin: 5px;
-  width: 97.5%;   /* THIS MAKES NO SENSE, but it works :( */
+  width: 100%;  /*97.5%;   /* THIS MAKES NO SENSE, but it works :( */
 }
 
 #search {
