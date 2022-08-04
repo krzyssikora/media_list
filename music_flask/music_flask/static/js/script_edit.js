@@ -18,7 +18,7 @@
 			tab.removeAttribute("class");
 		});
 
-		event.target.className = "active";
+		event.target.className = "edit-active";
 
 		const thisTab = event.target.getAttribute("href");
 		const thisContent = document.querySelector(thisTab);

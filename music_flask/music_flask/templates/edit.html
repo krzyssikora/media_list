@@ -10,7 +10,7 @@
     <h1>{{ title }}</h1>
     <div id="tabs">
 		<ul>
-			<li><a href="#tabs-1" class="active">add album</a></li>
+			<li><a href="#tabs-1" class="edit-active">add album</a></li>
 			<li><a href="#tabs-2">add artist</a></li>
 			<li><a href="#tabs-3">add artists to album</a></li>
 			<li><a href="#tabs-4">edit album</a></li>
@@ -63,4 +63,5 @@
 
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="{{ url_for('static', filename='js/script_edit.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script_main_menu.js') }}"></script>
 {% endblock %}

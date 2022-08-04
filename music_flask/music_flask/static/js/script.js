@@ -1,17 +1,18 @@
 (function() {
     "use strict";
-
     // TODOs:
     // display info that the databese is searched through
-    // new menu position: modify (add / delete album / artist)
-
-
+    
+    const button_submit = document.getElementById('btn-submit');
+    button_submit.addEventListener('click', function() {
+        document.getElementById('queryy').innerHTML = '<b>query</b>: {{ query }}'
+    });
     window.addEventListener("load", function() {
         // data properties
         var counter = 1;
         // DOM elements
         // submit query button
-        // const button_submit = document.getElementById('btn-submit');
+        
         // table position
         var query_table = this.document.getElementById('results');
         // table content
