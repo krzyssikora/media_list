@@ -53,24 +53,24 @@
         if (window.innerWidth < 450) {
             this.document.getElementById('btn-50').style.display = 'none'
         };
+        
+        // get rid of some buttons if window too small
         window.onresize = function() {
             var width = window.innerWidth;
             if (width < 420) {
-                console.log(`below: ${width}`)
                 document.getElementById('btn-20').style.display = 'none'
                 document.getElementById('btn-50').style.display = 'none'
             };
             if (width >= 420 & width < 450) {
-                console.log(`between ${width}`)
                 document.getElementById('btn-20').style.display = 'inline'
                 document.getElementById('btn-50').style.display = 'none'
             };
             if (width >= 450) {
-                console.log(`over ${width}`)
                 document.getElementById('btn-20').style.display = 'inline'
                 document.getElementById('btn-50').style.display = 'inline'
             };
         };
+
         // lower div for pages controls
         pages_controls_bottom.innerHTML = 
         `<a href="#" id="first-bottom" class="slide">\<\<</a>

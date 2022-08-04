@@ -3,6 +3,8 @@
 
     const tabs = document.querySelectorAll("#tabs > ul > li > a");
 
+	resizeTabs();
+
 	/*for ( let eachTab of tabs){ eachTab.addEventListener("click", selectTab);}*/
 
 	tabs.forEach(tab => {
@@ -30,6 +32,32 @@
 				thisContent.classList.remove("visuallyhidden")
 			}, 20);
 		}, {capture:false, once:true, passive:false});
-	};    
+	};
+	
+	function resizeTabs() {
+		var width = window.innerWidth;
+		if (width > 1100) {
+			tabs.forEach(function(elt){
+				elt.style.height = '30px'
+			})
+		} else if (width > 600) {
+			tabs.forEach(function(elt){
+				elt.style.height = '60px'
+			})
+		} else if (width > 500) {
+			tabs.forEach(function(elt){
+				elt.style.height = '90px'
+			})
+		} else {
+			tabs.forEach(function(elt){
+				elt.style.height = '120px'
+			})
+		};
+	}
+
+	window.onresize = function() {
+		resizeTabs();
+	};
+
 })();
 

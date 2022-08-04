@@ -192,7 +192,6 @@ table {
 }
 
 #tabs > ul > li {
-  padding-top: 10px;
   min-width: 20%;
   font-size: large;
   font-weight: bold;
@@ -200,15 +199,15 @@ table {
 
 #tabs > ul > li > a {
 	display: block;
-	height: 60px;
-	/* line-height: 30px; */
+	height: 30px;
 	margin-right: 2px;
   background-color: rgb(169, 168, 168);
 	color: rgb(188, 55, 188);
   text-decoration: none;
-	/* padding: 0 10px; */
 	border-radius: 3px 3px 0 0;
   overflow: hidden;
+  position: relative;
+  bottom: 0;
 }
 
 #tabs > div {

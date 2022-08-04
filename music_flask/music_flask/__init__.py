@@ -77,5 +77,11 @@ def about():
     return render_template('about.html', title=title)
 
 
+@app.route('/edit_test')
+def edit_test():
+    title = 'test'
+    return render_template('edit_test.html', title=title)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
