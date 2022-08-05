@@ -132,11 +132,7 @@
         };
         
         function adjustBottomBorder() {
-            // adjust width of bottom border, parameter width is the window width 
-            // var coll = document.getElementsByClassName("collapsible");
-            // for (let i = 0; i < coll.length; i++) {
-            //     var content = coll[i].nextElementSibling;
-            //     content.style.width = (coll[i].offsetWidth - 27) + 'px';
+            // adjust width of bottom border
             var width = document.getElementById('menu-bar').clientWidth;
             // var width = document.getElementById('menu-bar').offsetWidth;
             // var width = window.screen.width;
@@ -146,8 +142,8 @@
                 content = coll[i].nextElementSibling;
             };
             console.log('width: ' + width)
-            coll[0].style.width = (width - 50) + 'px';
-            content.style.width = (width - 60) + 'px';
+            coll[0].style.width = (width - 30) + 'px';
+            content.style.width = (width - 40) + 'px';
         };
 
         function getQueryTable() {

@@ -3,7 +3,7 @@
 <div>
     <h1>{{ title }}</h1>
     <button type="button" class="collapsible" id="query" id="active">
-      {% if query %}<b>query</b>: {{ query }}{% else %}Enter your query.{% endif %}
+      {% if query %}<u>query</u>: {{ query }}{% else %}Enter your query.{% endif %}
     </button>
     <div id="search" class="content">
         <form action="/query" method="POST">

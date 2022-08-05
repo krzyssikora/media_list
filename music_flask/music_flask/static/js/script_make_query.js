@@ -45,6 +45,17 @@
 
 	document.getElementById('btn-submit').addEventListener('click', function() {
 		sendChosenMedia();
-	})
+	});
+
+	// change keywords in query displayed to strong
+	var query = document.getElementById('query');
+	var query_str = query.innerHTML;
+	const keywords = ['media', 'album', 'artist'];
+	for (let keyword of keywords) {
+		if (query_str.includes(keyword)) {
+			query_str = query_str.replace(keyword, `<strong>${keyword}</strong>`)
+		};
+	};
+	query.innerHTML = query_str;
 })();
 
