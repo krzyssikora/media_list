@@ -26,9 +26,7 @@ def query():
     album_title = request.form.get('album_title')
     title = 'my music'
     get_items_per_page(items_pp=items_per_page)
-    _logger.debug('query, items_per_page: {}'.format(items_per_page))
     get_media(media_list=chosen_media)
-    _logger.debug('the chosen media: {}, {}'.format(chosen_media, type(chosen_media)))
     users_query, table = api.get_query(artist_name, album_title, chosen_media)
     return render_template('query.html',
                            title=title,

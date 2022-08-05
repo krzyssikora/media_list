@@ -7,17 +7,19 @@
     </button>
     <div id="search" class="content">
         <form action="/query" method="POST">
-            <button type="submit" class="button-off" id="btn-submit">submit</button>
-            </br>
+            <p class="query-info">media:</p>
             <div id="medium-buttons"> 
                 <!-- buttons for choice of medium: CD, DVD, vinyl, ebook, book -->
             </div>
+            <p class="query-info">query:</p>
             <div class="form-group">
                 <input type="text" class="form" placeholder="artist name" name="artist_name">
             </div>
             <div class="form-group">
                 <input type="text" class="form" placeholder="album title" name="album_title">
             </div>
+            </br>
+            <button type="submit" class="button-off" id="btn-submit">submit</button>
         </form>
     </div>
 

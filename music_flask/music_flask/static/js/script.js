@@ -1,8 +1,8 @@
 (function() {
     "use strict";
     // TODOs:
+    // remember filter (media buttons, placeholders) 
     // links to other queries (i.e. artists - each artist is a link and publishers)
-    // filter by medium
     // advanced filters
     // cascading filters
     

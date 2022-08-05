@@ -102,6 +102,12 @@ div.trim {
 }
 
 /* query entered */
+.query-info {
+  line-height: normal;
+  font-weight: bold;
+  margin: 0;
+}
+
 #query {
   margin-top: 5px;
   margin-bottom: 5px;
