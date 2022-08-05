@@ -132,12 +132,22 @@
         };
         
         function adjustBottomBorder() {
-            // adjust width of bottom border
+            // adjust width of bottom border, parameter width is the window width 
+            // var coll = document.getElementsByClassName("collapsible");
+            // for (let i = 0; i < coll.length; i++) {
+            //     var content = coll[i].nextElementSibling;
+            //     content.style.width = (coll[i].offsetWidth - 27) + 'px';
+            var width = document.getElementById('menu-bar').clientWidth;
+            // var width = document.getElementById('menu-bar').offsetWidth;
+            // var width = window.screen.width;
             var coll = document.getElementsByClassName("collapsible");
+            var content;
             for (let i = 0; i < coll.length; i++) {
-                var content = coll[i].nextElementSibling;
-                content.style.width = (coll[i].offsetWidth - 10) + 'px';
+                content = coll[i].nextElementSibling;
             };
+            console.log('width: ' + width)
+            coll[0].style.width = (width - 50) + 'px';
+            content.style.width = (width - 60) + 'px';
         };
 
         function getQueryTable() {
