@@ -1,5 +1,16 @@
+:root {
+  --colour-main-background: lightgrey;
+  --colour-dark-magenta: rgb(188, 55, 188);
+  --colour-light-magenta: rgb(255, 141, 255);
+  --colour-menu-gray: rgb(168, 168, 168);
+  --colour-border: gray;
+  --colour-text-gray: rgb(99, 99, 99);
+  --colour-text-white: white;
+  --colour-table-background: white;
+}
+
 body {
-  background-color: lightgray;
+  background-color: var(--colour-main-background);
   font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
 }
 
@@ -14,14 +25,14 @@ div.trim {
   font-size: x-large;
 	width: 100%;
 	display: flex;
-	background-color: rgb(169, 168, 168);
+	background-color: var(--colour-menu-gray);
 	justify-content: flex-start;
 }
 
 .menu-item {
   display: block;
   padding: 10px;
-  color: rgb(188, 55, 188);
+  color: var(--colour-dark-magenta);
   text-decoration: none;
 	min-width: 80px;
 }
@@ -34,18 +45,18 @@ div.trim {
 .menu-item:hover {
   font-weight: bold;
   background-color: rgb(128, 128, 128);
-  color: rgb(255, 141, 255); 
+  color: var(--colour-light-magenta); 
 }
 
 /* Style the button that is used to open and close the collapsible content */
 .collapsible {
-  border-top: 1px solid #666;
-  border-bottom: 1px solid #666;
+  border-top: 1px solid var(--colour-border);
+  border-bottom: 1px solid var(--colour-border);
   border-left: none;
   border-right: none;
   border-radius: 15px;
   background-color: #eee;
-  color: #444;
+  color: var(--colour-text-gray);
   cursor: pointer;
   padding: 10px 0px 10px 15px;
   width: 100%;
@@ -57,12 +68,12 @@ div.trim {
 
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
 .active, .collapsible:hover {
-  background-color: lightgray;
+  background-color: var(--colour-main-background);
 }
 
 .collapsible:after {
   content: '\02795'; /* Unicode character for "plus" sign (+) */
-  color: white;
+  color: var(--colour-text-white);
   float: right;
   margin-left: 5px;
 }
@@ -80,7 +91,7 @@ div.trim {
   overflow: hidden;
   transition: max-height 0.2s ease-out;
   margin: 5px;
-  width: 100%;  /*97.5%;   /* THIS MAKES NO SENSE, but it works :( */
+  width: 100%;
 }
 
 #search {
@@ -92,8 +103,8 @@ div.trim {
 #query {
   margin-top: 5px;
   margin-bottom: 5px;
-  border-top: 1px solid #666;
-  border-bottom: 1px solid #666;
+  border-top: 1px solid var(--colour-border);
+  border-bottom: 1px solid var(--colour-border);
   border-radius: 15px;
   padding-left: 10px;
 }
@@ -119,11 +130,11 @@ div.trim {
 }
 
 table, th, td {
-  background-color: white;
+  background-color: var(--colour-table-background);
   border-collapse: collapse;
   padding: 5px;
   border: 1px solid;
-  color: gray;
+  color: var(--colour-text-gray);
 }
 
 th {
@@ -144,7 +155,7 @@ table {
   grid-template-columns: 40px 40px auto 40px 40px 40px 40px 40px 40px;
   column-gap: 2px;
   justify-items:	stretch;
-	background-color: rgb(169, 168, 168);
+	background-color: var(--colour-menu-gray);
 }
 
 #pages-controls {
@@ -154,14 +165,14 @@ table {
 .slide {
   padding-top: 10px;
   padding-bottom: 10px;
-	color: #fff;
+	color: var(--colour-text-white);
 	font-weight: bold;
 	text-transform: uppercase;
 	text-decoration: none;
 	text-align: center;
   height: 30px;
   line-height: 30px;
-	background-color: #666;
+	background-color: var(--colour-border);
 }
 
 #page-info, #page-info-bottom {
@@ -170,7 +181,7 @@ table {
 	text-align: center;
   font-weight: bold;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--colour-text-white);
   height: 30px;
   line-height: 30px;
 }
@@ -187,7 +198,7 @@ table {
   min-height: 30px;
   min-width: 30px;
   margin: 2px;
-  color: rgb(188, 55, 188);
+  color: var(--colour-dark-magenta);
   font-weight: bolder;
   font-stretch: ultra-expanded;
   font-size: medium;
@@ -199,8 +210,8 @@ table {
   min-height: 30px;
   min-width: 30px;
   margin: 2px;
-  color: white;
-  background-color: rgb(188, 55, 188);
+  color: var(--colour-text-white);
+  background-color: var(--colour-dark-magenta);
   font-weight: bolder;
   font-stretch: ultra-expanded;
   font-size: larger;
@@ -250,8 +261,8 @@ table {
 	display: block;
 	height: 30px;
 	margin-right: 2px;
-  background-color: rgb(169, 168, 168);
-	color: rgb(188, 55, 188);
+  background-color: var(--colour-menu-gray);
+	color: var(--colour-dark-magenta);
   text-decoration: none;
 	border-radius: 3px 3px 0 0;
   overflow: hidden;
