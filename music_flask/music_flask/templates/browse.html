@@ -2,8 +2,8 @@
 {% block content %}
 <div>
     <h1>{{ title }}</h1>
-    <button type="button" class="collapsible" id="queryy" id="active">
-        <b>query</b>{% if query %}: {{ query }}{% endif %}
+    <button type="button" class="collapsible" id="query" id="active">
+      {% if query %}<b>query</b>: {{ query }}{% else %}Enter your query.{% endif %}
     </button>
     <div id="search" class="content">
         <form action="/query" method="POST">
@@ -19,8 +19,10 @@
 
     {% block browse %}
     {% endblock %}
+
 </div>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="{{ url_for('static', filename='js/script_main_menu.js') }}"></script>
 <script src="{{ url_for('static', filename='js/script_collapsible.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script_download_message.js') }}"></script>
 {% endblock %}

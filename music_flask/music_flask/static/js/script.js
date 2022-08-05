@@ -1,12 +1,11 @@
 (function() {
     "use strict";
     // TODOs:
-    // display info that the databese is searched through
+    // links to other queries (i.e. artists - each artist is a link and publishers)
+    // filter by medium
+    // advanced filters
+    // cascading filters
     
-    const button_submit = document.getElementById('btn-submit');
-    button_submit.addEventListener('click', function() {
-        document.getElementById('queryy').innerHTML = '<b>query</b>: {{ query }}'
-    });
     window.addEventListener("load", function() {
         // data properties
         var counter = 1;
