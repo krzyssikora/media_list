@@ -138,6 +138,21 @@ def get_db_columns():
     return ret_dict
 
 
+def filter_media(media):
+    if media:
+        conn = sqlite3.connect(config.DATABASE)
+        cur = conn.cursor()
+        conditions = ' OR '.join(['medium="{}"'.format(medium) for medium in media])
+        _logger.debug('SQL query: {}'.format("SELECT * FROM albums WHERE " + conditions))
+        cur.execute("SELECT * FROM albums WHERE " + conditions)
+        lines = cur.fetchall()
+        conn.commit()
+        cur.close()
+        return [utils.turn_tuple_into_dict(line, config.DB_ALBUMS_COLUMNS) for line in lines]
+    else:
+        return None
+
+
 def get_artist_by_id(idx):
     return get_record_by_id('artists', idx)
 
@@ -299,28 +314,40 @@ def get_albums_ids_by_title_or_artist(album_title=None, artist_name=None):
     return albums_ids_by_title_and_artist
 
 
-def get_albums_by_title_or_artist(album_title=None, artist_name=None):
+def get_albums_by_title_or_artist(album_title=None, artist_name=None, table=None):
+    """
+    Args:
+        album_title (str): approximation of an album title
+        artist_name (str): approximation of the artist's name
+        table: table of albums already filtered
+
+    Returns:
+    A list of album dicts with artists' names added.
+    """
+    # get albums ids from table
+    albums_ids = list() if table is None else [album.get('album_id') for album in table]
     albums_ids_by_title_and_artist = get_albums_ids_by_title_or_artist(album_title, artist_name)
-    # get ful albums
+    # get full albums
     # add artists that perform on the albums
     albums = list()
     for idx in albums_ids_by_title_and_artist:
-        album = get_album_by_id(idx)
-        conn = sqlite3.connect(config.DATABASE)
-        cur = conn.cursor()
-        cur.execute("""
-        SELECT artists.artist_name 
-        FROM albums_artists JOIN artists
-        ON albums_artists.artist_id = artists.artist_id
-        WHERE albums_artists.publ_role LIKE 'title%'
-        AND albums_artists.album_id = {}
-        """.format(idx))
-        lines = cur.fetchall()
-        lines = [line[0] for line in lines]
-        album['artist_name'] = ', '.join(lines)
-        conn.commit()
-        cur.close()
-        albums.append(album)
+        if table is None or idx in albums_ids:
+            album = get_album_by_id(idx)
+            conn = sqlite3.connect(config.DATABASE)
+            cur = conn.cursor()
+            cur.execute("""
+            SELECT artists.artist_name 
+            FROM albums_artists JOIN artists
+            ON albums_artists.artist_id = artists.artist_id
+            WHERE albums_artists.publ_role LIKE 'title%'
+            AND albums_artists.album_id = {}
+            """.format(idx))
+            lines = cur.fetchall()
+            lines = [line[0] for line in lines]
+            album['artist_name'] = ', '.join(lines)
+            conn.commit()
+            cur.close()
+            albums.append(album)
     return albums
 
 

@@ -69,6 +69,7 @@
                 document.getElementById('btn-20').style.display = 'inline'
                 document.getElementById('btn-50').style.display = 'inline'
             };
+            adjustBottomBorder();
         };
 
         // lower div for pages controls
@@ -130,6 +131,15 @@
             request.send();        
         };
         
+        function adjustBottomBorder() {
+            // adjust width of bottom border
+            var coll = document.getElementsByClassName("collapsible");
+            for (let i = 0; i < coll.length; i++) {
+                var content = coll[i].nextElementSibling;
+                content.style.width = (coll[i].offsetWidth - 10) + 'px';
+            };
+        };
+
         function getQueryTable() {
             if (counter == number_of_pages) {
                 var number_of_items = last_page_length;
@@ -142,6 +152,7 @@
                 table_str += add_row(counter * items_per_page + i + 1 - items_per_page);
             };
             table_str += '</table>';
+            adjustBottomBorder();
             return table_str;
         };
 

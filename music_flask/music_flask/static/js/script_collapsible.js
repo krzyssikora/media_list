@@ -23,7 +23,7 @@
             content.style.borderBottom = '1px solid #666';
             content.style.width = (coll[i].offsetWidth - 10) + 'px';
         };
-        };
+    };
     
     for (i = 0; i < coll.length; i++) {
         coll[i].addEventListener("click", function() {

@@ -7,6 +7,7 @@ app = Flask(__name__)
 
 counter_value = 1
 items_per_page = 10
+chosen_media = list()
 
 
 @app.route('/')
@@ -24,12 +25,11 @@ def query():
     artist_name = request.form.get('artist_name')
     album_title = request.form.get('album_title')
     title = 'my music'
-    # if 'items_per_page' not in vars():
-    #     _logger.debug('query, items_per_page does not exist, set to 10')
-    #     items_per_page = 10
     get_items_per_page(items_pp=items_per_page)
     _logger.debug('query, items_per_page: {}'.format(items_per_page))
-    users_query, table = api.get_query(artist_name, album_title)
+    get_media(media_list=chosen_media)
+    _logger.debug('the chosen media: {}, {}'.format(chosen_media, type(chosen_media)))
+    users_query, table = api.get_query(artist_name, album_title, chosen_media)
     return render_template('query.html',
                            title=title,
                            table=table,  # [counter - 1],
@@ -55,6 +55,20 @@ def edit():
     return render_template('edit.html',
                            title=title,
                            )
+
+
+@app.route('/get_active_media/<string:media_list>', methods=['POST'])
+def get_media(media_list):
+    global chosen_media
+    _logger.debug('media_list: {}, {}'.format(media_list, type(media_list)))
+    # chosen_media = json.load(media_list)
+    try:
+        chosen_media = eval(media_list)
+    except TypeError as e:
+        _logger.error('type: {}, {}'.format(type(chosen_media), e))
+    _logger.debug('media: {}, type {}'.format(chosen_media, type(chosen_media)))
+    return '/'
+
 
 # @app.route('/get_page_number/<string:counter>', methods=['POST'])
 # def get_page_number(counter, func=None):

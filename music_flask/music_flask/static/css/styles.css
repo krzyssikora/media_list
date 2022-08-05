@@ -94,12 +94,14 @@ div.trim {
   width: 100%;
 }
 
+/* part for the whole search */
 #search {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
 }
 
+/* query entered */
 #query {
   margin-top: 5px;
   margin-bottom: 5px;
@@ -109,7 +111,25 @@ div.trim {
   padding-left: 10px;
 }
 
+#medium-buttons {
+  display: flex;
+}
 
+.medium-button {
+  margin: 5px;
+  padding: 5px;
+  border: none;
+  font-size: large;
+}
+
+.clicked {
+  background-color: var(--colour-border);
+  color: var(--colour-text-white);
+}
+
+.medium-button:hover {
+  color: var(--colour-dark-magenta);
+}
 
 .form-group {
   display: inline-block;

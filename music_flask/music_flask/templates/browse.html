@@ -8,6 +8,10 @@
     <div id="search" class="content">
         <form action="/query" method="POST">
             <button type="submit" class="button-off" id="btn-submit">submit</button>
+            </br>
+            <div id="medium-buttons"> 
+                <!-- buttons for choice of medium: CD, DVD, vinyl, ebook, book -->
+            </div>
             <div class="form-group">
                 <input type="text" class="form" placeholder="artist name" name="artist_name">
             </div>
@@ -23,6 +27,7 @@
 </div>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="{{ url_for('static', filename='js/script_main_menu.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script_make_query.js') }}"></script>
 <script src="{{ url_for('static', filename='js/script_collapsible.js') }}"></script>
 <script src="{{ url_for('static', filename='js/script_download_message.js') }}"></script>
 {% endblock %}

@@ -479,17 +479,20 @@ def add_artist_to_table(from_album=False):
         return None
 
 
-def get_query(artist_name='szostakovich', album_title='symphony'):
+def get_query(artist_name, album_title, media):
+    table = database.filter_media(media)
     table = utils.turn_dicts_to_sliced_list_of_tuples_for_html(database.get_albums_by_title_or_artist(album_title,
-                                                                                                      artist_name),
+                                                                                                      artist_name,
+                                                                                                      table),
                                                                config.ALL_COLUMNS)
     query_dict = {
+        'media': ', '.join(media),
         'album': album_title.strip(),
         'artist': artist_name.strip()
     }
     query = ', '.join(['{}: {}'.format(k, v) for k, v in query_dict.items() if v])
-    if query == '':
-        query = '---'
+    # if query == '':
+    #     query = '---'
     many = len(table) - 1
     query += ' ({} item{} found)'.format(many, '' if many == 1 else 's')
     return query, table
