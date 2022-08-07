@@ -1,11 +1,28 @@
 (function() {
     "use strict";
     // TODOs:
-    // remember filter (media buttons, placeholders) 
+    // fix error when query returns empty table
     // links to other queries (i.e. artists - each artist is a link and publishers)
     // advanced filters
     // cascading filters
     
+    function getHiddenData(data_id, data_type) {
+        // data_id (str): id from html
+        // data_type (str): either 'int' or 'object'
+        var dom_elt = document.getElementById(data_id);
+        var elt_string = dom_elt.innerHTML;
+        var ret_object;
+        if (elt_string.length == 0) {
+            ret_object = ''
+        } else if (data_type == 'int') {
+            ret_object = parseInt(elt_string)
+        } else if (data_type == 'object') {
+            ret_object = JSON.parse(elt_string); 
+        };
+        dom_elt.style.display = 'hidden';
+        return ret_object;
+    };
+
     window.addEventListener("load", function() {
         // data properties
         var counter = 1;
@@ -13,23 +30,19 @@
         // submit query button
         
         // table position
-        var query_table = this.document.getElementById('results');
+        var query_table = document.getElementById('results');
         // table content
-        var hidden_table = document.getElementById("hidden-table");
-        var table_str = hidden_table.innerHTML;
-        var table = JSON.parse(table_str);
-        hidden_table.style.display = 'none';
-        
-        var hidden_items_per_page = document.getElementById('hidden-items-per-page');
-        var items_per_page_str = hidden_items_per_page.innerHTML;
-        var items_per_page = parseInt(items_per_page_str);
-        hidden_items_per_page.style.display = 'none';
+        var table = getHiddenData('hidden-table', 'object');
+        var items_per_page = getHiddenData('hidden-items-per-page', 'int');
         
         const table_length = table.length - 1;
         var number_of_pages = Math.ceil(table_length / items_per_page);
         var last_page_length = table_length % items_per_page;
         var counter = 1;
         query_table.innerHTML = getQueryTable();
+
+        // previous filter
+        // var user_filter = getHiddenData('hidden-filter', 'object');
         
         // pages-controls
         var pages_controls = document.getElementById('pages-controls');
@@ -141,7 +154,6 @@
             for (let i = 0; i < coll.length; i++) {
                 content = coll[i].nextElementSibling;
             };
-            console.log('width: ' + width)
             coll[0].style.width = (width - 30) + 'px';
             content.style.width = (width - 40) + 'px';
         };
@@ -183,8 +195,9 @@
             for (let btn of page_numbers) {
                 page_number_buttons[btn].addEventListener("click", function(evt){
                     evt.preventDefault();
-                    var old_items_per_page = items_per_page
+                    var old_items_per_page = items_per_page;
                     items_per_page = btn;
+                    var hidden_items_per_page = document.getElementById('hidden-items-per-page');
                     hidden_items_per_page.style.display = 'inline';
                     hidden_items_per_page.innerHTML = items_per_page;
                     sendItemsPerPage();
@@ -194,7 +207,7 @@
                     };
                     page_number_buttons[btn].className = 'button-on';
                     // change chosen button's class to on
-                    hidden_items_per_page.style.display = 'none';
+                    hidden_items_per_page.style.display = 'hidden';
                     // find new pages values
                     var first_item_on_page = (counter - 1) * old_items_per_page + 1;
                     counter = Math.ceil(first_item_on_page / items_per_page);

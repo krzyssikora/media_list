@@ -27,12 +27,13 @@ def query():
     title = 'my music'
     get_items_per_page(items_pp=items_per_page)
     get_media(media_list=chosen_media)
-    users_query, table = api.get_query(artist_name, album_title, chosen_media)
+    users_query_string, users_query_object, table = api.get_query(artist_name, album_title, chosen_media)
     return render_template('query.html',
                            title=title,
                            table=table,  # [counter - 1],
                            table_json=json.dumps(table),
-                           query=users_query,
+                           query=users_query_string,
+                           user_filter=users_query_object,
                            items_per_page=items_per_page,
                            counter=counter_value,
                            pages=len(table) // items_per_page + 1,
@@ -44,6 +45,7 @@ def browse():
     title = 'my music'
     return render_template('browse.html',
                            title=title,
+                           user_filter=str({'media': ['CD', 'vinyl', 'DVD'], 'album': '', 'artist': ''})
                            )
 
 

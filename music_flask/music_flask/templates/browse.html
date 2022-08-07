@@ -9,14 +9,18 @@
         <form action="/query" method="POST">
             <p class="query-info">media:</p>
             <div id="medium-buttons"> 
-                <!-- buttons for choice of medium: CD, DVD, vinyl, ebook, book -->
+                <button type="button" id="button-CD" class="medium-button">CD</button>
+                <button type="button" id="button-vinyl" class="medium-button">vinyl</button>
+                <button type="button" id="button-DVD" class="medium-button">DVD</button>
+                <button type="button" id="button-ebook" class="medium-button">ebook</button>
+                <button type="button" id="button-book" class="medium-button">book</button>
             </div>
             <p class="query-info">query:</p>
-            <div class="form-group">
-                <input type="text" class="form" placeholder="artist name" name="artist_name">
+            <div class='form-group'>
+                <input type='text' class='form' placeholder='artist name' name='artist_name' id='artist_name'>
             </div>
-            <div class="form-group">
-                <input type="text" class="form" placeholder="album title" name="album_title">
+            <div class='form-group'>
+                <input type='text' class='form' placeholder='album title' name='album_title' id='album_title'>
             </div>
             </br>
             <button type="submit" class="button-off" id="btn-submit">submit</button>

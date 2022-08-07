@@ -1,26 +1,11 @@
 (function() {
     "use strict";
 
-    const medium_buttons_div = document.getElementById('medium-buttons');
-	const media = ['CD', 'DVD', 'vinyl', 'ebook', 'book'];
-	var active_media = ['CD', 'DVD', 'vinyl'];
+	var all_media = ['CD', 'vinyl', 'DVD', 'ebook', 'book']
+	var active_media = [];
 
-	// add buttons
-	// make some of them active
-	for (var medium of media) {
-		var button = document.createElement('button');
-		button.innerHTML = medium;
-		button.setAttribute('id', `button-${medium}`);
-		if (active_media.includes(medium)) {
-			button.setAttribute('class', 'medium-button clicked')
-		} else {
-			button.setAttribute('class', 'medium-button');
-		};
-		button.setAttribute('type', 'button');
-		medium_buttons_div.appendChild(button);
-	};
 
-	// make them clickable
+	// make the buttons for choice of media clickable
 	var medium_buttons = document.getElementsByClassName('medium-button');
 	for (let medium_button of medium_buttons) {
 		medium_button.addEventListener('click', function(evt) {
@@ -36,7 +21,7 @@
 	};
 
 	function sendChosenMedia() {
-		console.log('sending choice of media..')
+		// getActiveMedia();
 		var request = new XMLHttpRequest()
 		var active_media_str = JSON.stringify(active_media)
 		request.open('POST', `/get_active_media/${active_media_str}`)
@@ -57,5 +42,34 @@
 		};
 	};
 	query.innerHTML = query_str;
+
+	var artist_field = document.getElementById('artist_name'); 
+	var album_field = document.getElementById('album_title'); 
+	var user_filter;
+    $.getScript('/static/js/module.js', function(){
+		user_filter = getHiddenData('hidden-filter', 'object');
+		if (user_filter == '') {
+			artist_field.value = '';
+			album_field.value = '';
+		} else {
+			if (user_filter.artist.length > 0) {
+				artist_field.value = user_filter.artist
+			};
+			if (user_filter.album.length > 0) {
+				album_field.value = user_filter.album
+			};
+			for (var medium of user_filter.media) {
+				document.getElementById(`button-${medium}`).setAttribute('class', 'medium-button clicked');
+			};
+		};
+
+		var media_clicked = document.getElementsByClassName('clicked');
+		for( var i=0; i < media_clicked.length; i++) {
+			if (!active_media.includes(media_clicked[i].innerHTML)) {
+				active_media.push(media_clicked[i].innerHTML)
+			};
+		};
+    });
+	
 })();
 
