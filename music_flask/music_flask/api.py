@@ -2,7 +2,7 @@ import os
 import msvcrt as m
 
 from music_flask import config, utils, database
-# from music_flask.config import _logger
+from music_flask.config import _logger
 
 
 def take_char():
@@ -480,10 +480,11 @@ def add_artist_to_table(from_album=False):
 
 def get_query(artist_name, album_title, media):
     table = database.get_albums_ids_by_medium(media)
-    table = utils.turn_dicts_to_sliced_list_of_tuples_for_html(database.get_albums_by_title_or_artist(album_title,
-                                                                                                      artist_name,
-                                                                                                      table),
-                                                               config.ALL_COLUMNS)
+    _logger.debug('artist_name: {}, album_title: {}, media: {}'.format(artist_name, album_title, media))
+    table = utils.turn_dicts_into_list_of_tuples_for_html(database.get_albums_by_title_or_artist(album_title,
+                                                                                                 artist_name,
+                                                                                                 table),
+                                                          config.ALL_COLUMNS)
     query_dict = {
         'media': media,
         'album': album_title.strip(),

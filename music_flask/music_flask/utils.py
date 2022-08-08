@@ -12,8 +12,9 @@ def turn_tuple_into_dict(the_tuple, the_keys):
     return the_dict
 
 
-def turn_dicts_to_sliced_list_of_tuples_for_html(dicts, keys, slice_length=10):
+def turn_dicts_into_list_of_tuples_for_html(dicts, keys):
     # todo: change order of displaying albums
+    dicts = dicts or []
     non_empty_keys = list()
     display_keys = ['#']
     for key in keys:
@@ -28,11 +29,6 @@ def turn_dicts_to_sliced_list_of_tuples_for_html(dicts, keys, slice_length=10):
                            if (key == 'part_id' and row_dict.get('parts', None))
                            else row_dict.get(key, '') for key in non_empty_keys]))
     return table
-
-    # sliced_table = [table[slice_no * slice_length: (slice_no + 1) * slice_length]
-    #                 for slice_no in range(len(table) // slice_length + 1)]
-    #
-    # return sliced_table
 
 
 def turn_dicts_to_list_of_tuples(dicts, keys):

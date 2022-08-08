@@ -62,9 +62,9 @@ def get_media(media_list):
     global chosen_media
     # chosen_media = json.load(media_list)
     try:
-        chosen_media = eval(media_list)
+        chosen_media = eval(str(media_list))
     except TypeError as e:
-        _logger.error('type: {}, {}'.format(type(chosen_media), e))
+        _logger.error('type before: {}, {}'.format(type(media_list), e))
     return '/'
 
 

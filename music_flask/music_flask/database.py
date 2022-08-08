@@ -3,7 +3,7 @@ import sqlite3
 import re
 
 from music_flask import utils, config, api
-# from music_flask.config import _logger
+from music_flask.config import _logger
 
 
 class DBError(Exception):
@@ -199,24 +199,6 @@ def get_record_by_id(table_name, idx):
             raise DBError(table_name[:-1] + '_id = ' + str(idx) + ' is not unique!')
         record = record[0]
         record_dict = utils.turn_tuple_into_dict(record, config.DB_COLUMNS[table_name])
-        if table_name == 'albums':
-            conn = sqlite3.connect(config.DATABASE)
-            cur = conn.cursor()
-            # todo collect artists roles / functions, too (like: guitar, composer, bass OR writer, translator)
-            #  - it needs artist role / function to be in albums_artists table;
-            #  they could be then displayed in the form 'Mike Patton (vocal, keyboard), Tomasz Mann (writer)'
-            cur.execute("""
-                        SELECT artists.artist_name 
-                        FROM albums_artists JOIN artists
-                        ON albums_artists.artist_id = artists.artist_id
-                        WHERE albums_artists.publ_role LIKE 'title%'
-                        AND albums_artists.album_id = {}
-                        """.format(idx))
-            lines = cur.fetchall()
-            lines = [line[0] for line in lines]
-            record_dict['artist_name'] = ', '.join(lines)
-            conn.commit()
-            cur.close()
         return record_dict or None
 
     return None
@@ -227,7 +209,26 @@ def get_artist_by_id(idx):
 
 
 def get_album_by_id(idx):
-    return get_record_by_id('albums', idx)
+    record_dict = get_record_by_id('albums', idx)
+    if record_dict:
+        conn = sqlite3.connect(config.DATABASE)
+        cur = conn.cursor()
+        # todo collect artists roles / functions, too (like: guitar, composer, bass OR writer, translator)
+        #  - it needs artist role / function to be in albums_artists table;
+        #  they could be then displayed in the form 'Mike Patton (vocal, keyboard), Tomasz Mann (writer)'
+        cur.execute("""
+                                SELECT artists.artist_name 
+                                FROM albums_artists JOIN artists
+                                ON albums_artists.artist_id = artists.artist_id
+                                WHERE albums_artists.publ_role LIKE 'title%'
+                                AND albums_artists.album_id = {}
+                                """.format(idx))
+        lines = cur.fetchall()
+        lines = [line[0] for line in lines]
+        record_dict['artist_name'] = ', '.join(lines)
+        conn.commit()
+        cur.close()
+    return record_dict
 
 
 def get_artists_ids_from_album_id(album_id):
@@ -339,6 +340,7 @@ def get_albums_by_title_or_artist(album_title=None, artist_name=None, table=None
     # get full albums
     # add artists that perform on the albums
     albums = list()
+    _logger.debug('album ids retrived: {}'.format(albums_ids_by_title_and_artist))
     for idx in albums_ids_by_title_and_artist:
         # if table is None or idx in albums_ids:
         if idx in albums_ids:
@@ -346,6 +348,7 @@ def get_albums_by_title_or_artist(album_title=None, artist_name=None, table=None
             if album:
                 albums.append(album)
     # todo sort by sortname?
+    _logger.debug('albums: {}'.format(albums))
     return albums or None
 
 
@@ -355,21 +358,37 @@ def get_records_ids_from_query(table_name,
                                conjunction='AND'):
     # split fields from their values if given together
     if isinstance(fields, dict):
-        fields_2 = list()
-        values = list()
-        for f, v in fields.items():
-            fields_2.append(f)
-            values.append(v)
+        db_fields = list()
+        db_values = list()
+        for field, value in fields.items():
+            # change value-list into a string
+            if isinstance(value, list):
+                value = ['(' + ' OR '.join(str(field) + ' = "' + str(v) + '"' for v in value) + ')']
+                field = ''
+            # print('>>{}<<>>{}<<'.format(field, value))
+            db_fields.append(field)
+            db_values.append(value)
     else:
-        fields_2 = fields
+        db_fields = fields
+        # change value-list into a string
+        db_values = list()
+        for idx, value in enumerate(values):
+            if isinstance(value, list):
+                db_values.append(['(' + ' OR '.join(str(db_fields[idx]) + ' = "' + str(v) + '"' for v in value) + ')'])
+                db_fields[idx] = ''
+            else:
+                db_values.append(value)
 
     idx_name = utils.get_primary_key_name(table_name)
 
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
-    conditions = ' AND '.join(str(field) + ' = ' + (('"' + str(value) + '"')
-                                                    if isinstance(value, str) else str(value)) + ' '
-                              for field, value in zip(fields_2, values) if value)
+    conditions = ' AND '.join(str(field)
+                              + (' = ' if field != '' else '')
+                              + (('"' + str(value) + '"')
+                                 if isinstance(value, str) else
+                                 (str(value[0]) if isinstance(value, list) else str(value))) + ' '
+                              for field, value in zip(db_fields, db_values) if value)
     cur.execute("SELECT {} FROM {} WHERE {}".format(idx_name, table_name, conditions))
     record_ids = cur.fetchall()
     conn.commit()
@@ -383,6 +402,25 @@ def get_records_ids_from_query(table_name,
             record_ids = record_ids.union(record_ids_already_chosen)
 
     return record_ids or None
+
+
+def get_records_from_query(table_name,
+                           fields, values=None,
+                           record_ids_already_chosen=None,
+                           conjunction='AND'):
+    records_ids = get_records_ids_from_query(table_name,
+                                             fields, values,
+                                             record_ids_already_chosen,
+                                             conjunction)
+    if table_name == 'albums':
+        records = [get_album_by_id(idx) for idx in records_ids]
+    elif table_name == 'artists':
+        records = [get_artist_by_id(idx) for idx in records_ids]
+    else:
+        records = [get_record_by_id(table_name, idx) for idx in records_ids]
+    # todo sorting
+    return records
+
 
 
 def update_records_field(table_name, record_dict, field, value):
@@ -407,6 +445,7 @@ def update_records_fields(table_name, record_dict, fields, values):
 
 
 def get_records(table_name, fields, values=None, return_as_tuples=False):
+    # now used only in adding new album, redundant later?
     if isinstance(fields, dict):
         fields_2 = list()
         values = list()
@@ -531,6 +570,7 @@ def get_albums_by_title(album_title, similarity_level=0.8):
 
 
 if __name__ == '__main__':
+    get_records_ids_from_query('aaa', [])
     print(get_db_columns())
 
 # todo:
