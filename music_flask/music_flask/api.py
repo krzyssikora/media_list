@@ -2,7 +2,7 @@ import os
 import msvcrt as m
 
 from music_flask import config, utils, database
-from music_flask.config import _logger
+# from music_flask.config import _logger
 
 
 def take_char():
@@ -356,7 +356,6 @@ def remove_component_from_list_of_tuples(the_list, components, single=True):
     Returns:
         the_list with elements pointed by component removed
     """
-    _logger.debug('removing {} from {}'.format(components, the_list))
     print()
     if single:
         components = [components]

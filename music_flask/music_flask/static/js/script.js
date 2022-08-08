@@ -1,7 +1,6 @@
 (function() {
     "use strict";
     // TODOs:
-    // fix error when query returns empty table
     // links to other queries (i.e. artists - each artist is a link and publishers)
     // advanced filters
     // cascading filters
@@ -163,6 +162,9 @@
                 var number_of_items = last_page_length;
             } else {
                 var number_of_items = items_per_page
+            };
+            if (table.length <= 1) {
+                return '';
             };
             var table_str = '<table>';
             table_str += add_top_row();

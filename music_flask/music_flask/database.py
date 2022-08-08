@@ -3,7 +3,7 @@ import sqlite3
 import re
 
 from music_flask import utils, config, api
-from music_flask.config import _logger
+# from music_flask.config import _logger
 
 
 class DBError(Exception):
@@ -143,7 +143,6 @@ def filter_media(media):
         conn = sqlite3.connect(config.DATABASE)
         cur = conn.cursor()
         conditions = ' OR '.join(['medium="{}"'.format(medium) for medium in media])
-        _logger.debug('SQL query: {}'.format("SELECT * FROM albums WHERE " + conditions))
         cur.execute("SELECT * FROM albums WHERE " + conditions)
         lines = cur.fetchall()
         conn.commit()
@@ -331,7 +330,8 @@ def get_albums_by_title_or_artist(album_title=None, artist_name=None, table=None
     # add artists that perform on the albums
     albums = list()
     for idx in albums_ids_by_title_and_artist:
-        if table is None or idx in albums_ids:
+        # if table is None or idx in albums_ids:
+        if idx in albums_ids:
             album = get_album_by_id(idx)
             conn = sqlite3.connect(config.DATABASE)
             cur = conn.cursor()
@@ -432,10 +432,6 @@ def dummy():
 
 
 if __name__ == '__main__':
-    _logger(
-        utils.turn_dicts_to_list_of_tuples(get_albums_by_title_or_artist('string', 'shostakovich'),
-                                           config.DB_ALBUMS_COLUMNS))
-    quit()
     print(get_db_columns())
     pass
 

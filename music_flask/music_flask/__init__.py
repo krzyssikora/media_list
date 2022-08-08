@@ -60,13 +60,11 @@ def edit():
 @app.route('/get_active_media/<string:media_list>', methods=['POST'])
 def get_media(media_list):
     global chosen_media
-    _logger.debug('media_list: {}, {}'.format(media_list, type(media_list)))
     # chosen_media = json.load(media_list)
     try:
         chosen_media = eval(media_list)
     except TypeError as e:
         _logger.error('type: {}, {}'.format(type(chosen_media), e))
-    _logger.debug('media: {}, type {}'.format(chosen_media, type(chosen_media)))
     return '/'
 
 
@@ -81,7 +79,6 @@ def get_media(media_list):
 def get_items_per_page(items_pp):
     global items_per_page
     items_per_page = int(items_pp)
-    _logger.debug('items_per_page: {}, type {}'.format(items_per_page, type(items_per_page)))
     return '/'
 
 
