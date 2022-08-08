@@ -139,3 +139,10 @@ def pretty_table_from_tuples(tuples, column_names=None, max_column_width=None):
             row = [str(elt)[:max_column_width] for elt in row]
         table.add_row(row)
     return table
+
+
+def get_primary_key_name(table_name):
+    if table_name in {'albums', 'artists'}:
+        return table_name[:-1] + '_id'
+    else:
+        return 'item_id'

@@ -439,9 +439,9 @@ def add_album_to_table():
         if album_id:
             album_part['album_id'] = album_id
             for new_artist_id, new_publ_role in album_artists_ids:
-                album_artist_records = database.get_record(table_name='albums_artists',
-                                                           fields=['album_id', 'artist_id'],
-                                                           values=[album_id, new_artist_id])
+                album_artist_records = database.get_records(table_name='albums_artists',
+                                                            fields=['album_id', 'artist_id'],
+                                                            values=[album_id, new_artist_id])
                 if album_artist_records is None or len(album_artist_records) == 0:
                     database.add_record_to_table(record={'album_id': album_id,
                                                          'artist_id': new_artist_id,
@@ -479,7 +479,7 @@ def add_artist_to_table(from_album=False):
 
 
 def get_query(artist_name, album_title, media):
-    table = database.filter_media(media)
+    table = database.get_albums_ids_by_medium(media)
     table = utils.turn_dicts_to_sliced_list_of_tuples_for_html(database.get_albums_by_title_or_artist(album_title,
                                                                                                       artist_name,
                                                                                                       table),
