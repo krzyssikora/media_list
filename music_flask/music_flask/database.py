@@ -73,18 +73,15 @@ def get_similar_artists_ids(artist_dict, similarity_level=0.8):
         artist_id, artist_type, artist_name, artist_surname, artist_firstname, artist_role, sort_name = row
         current_dict = {
             'artist_id': artist_id,
-            'artist_type': artist_type,
             'artist_name': artist_name,
             'artist_surname': artist_surname,
-            'artist_firstname': artist_firstname,
-            'artist_role': artist_role,
-            'sort_name': sort_name
+            'artist_firstname': artist_firstname
         }
         current_similarity_ratio = max(utils.similarity_ratio(str(artist_dict[field]).lower(),
                                                               str(current_dict[field]).lower())
                                        for field in fields)
         if current_similarity_ratio >= similarity_level:
-            similar_artists_ids.add(current_dict)
+            similar_artists_ids.add(artist_id)
     return similar_artists_ids or None
 
 
@@ -184,7 +181,7 @@ def get_albums_ids_by_medium(media):
         lines = cur.fetchall()
         conn.commit()
         cur.close()
-        return set(lines) or None
+        return set(line[0] for line in lines) or None
     else:
         return None
 
@@ -202,6 +199,24 @@ def get_record_by_id(table_name, idx):
             raise DBError(table_name[:-1] + '_id = ' + str(idx) + ' is not unique!')
         record = record[0]
         record_dict = utils.turn_tuple_into_dict(record, config.DB_COLUMNS[table_name])
+        if table_name == 'albums':
+            conn = sqlite3.connect(config.DATABASE)
+            cur = conn.cursor()
+            # todo collect artists roles / functions, too (like: guitar, composer, bass OR writer, translator)
+            #  - it needs artist role / function to be in albums_artists table;
+            #  they could be then displayed in the form 'Mike Patton (vocal, keyboard), Tomasz Mann (writer)'
+            cur.execute("""
+                        SELECT artists.artist_name 
+                        FROM albums_artists JOIN artists
+                        ON albums_artists.artist_id = artists.artist_id
+                        WHERE albums_artists.publ_role LIKE 'title%'
+                        AND albums_artists.album_id = {}
+                        """.format(idx))
+            lines = cur.fetchall()
+            lines = [line[0] for line in lines]
+            record_dict['artist_name'] = ', '.join(lines)
+            conn.commit()
+            cur.close()
         return record_dict or None
 
     return None
@@ -308,6 +323,7 @@ def get_albums_ids_by_title_or_artist(album_title=None, artist_name=None):
 
 
 def get_albums_by_title_or_artist(album_title=None, artist_name=None, table=None):
+    # we will not need this one later, we will just perform consecutive queries joining them with 'AND'
     """
     Args:
         album_title (str): approximation of an album title
@@ -327,21 +343,8 @@ def get_albums_by_title_or_artist(album_title=None, artist_name=None, table=None
         # if table is None or idx in albums_ids:
         if idx in albums_ids:
             album = get_album_by_id(idx)
-            conn = sqlite3.connect(config.DATABASE)
-            cur = conn.cursor()
-            cur.execute("""
-            SELECT artists.artist_name 
-            FROM albums_artists JOIN artists
-            ON albums_artists.artist_id = artists.artist_id
-            WHERE albums_artists.publ_role LIKE 'title%'
-            AND albums_artists.album_id = {}
-            """.format(idx))
-            lines = cur.fetchall()
-            lines = [line[0] for line in lines]
-            album['artist_name'] = ', '.join(lines)
-            conn.commit()
-            cur.close()
-            albums.append(album)
+            if album:
+                albums.append(album)
     # todo sort by sortname?
     return albums or None
 
@@ -371,6 +374,7 @@ def get_records_ids_from_query(table_name,
     record_ids = cur.fetchall()
     conn.commit()
     cur.close()
+
     record_ids = set(record_ids)
     if record_ids_already_chosen:
         if conjunction == 'AND':
