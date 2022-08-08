@@ -439,6 +439,8 @@ if __name__ == '__main__':
 #   add tables:
 #     albums_tracks with columns:
 #       item_id, album_id, track_id, track_name, track_duration, notes
+#     albums_tags with columns:  (change notes???)
+#       item_id, album_id, tag
 # todo: CRUD
 #  create:
 #    ::DONE:: api.add_album_to_table()
