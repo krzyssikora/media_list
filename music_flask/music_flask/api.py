@@ -479,26 +479,27 @@ def add_artist_to_table(from_album=False):
 
 
 def get_simple_query(artist_name, album_title, media):
-    # if isinstance(album_title, str):
-    #     album_title = album_title.strip()
+    # get the data
     fields = dict()
     table = set()
     if media:
         fields['medium'] = media
         if artist_name:
+            artist_name = artist_name.strip()
             fields['artist_name'] = artist_name
         if album_title:
+            album_title = album_title.strip()
             fields['album_title'] = album_title
         table = database.get_records_from_query(table_name='albums',
                                                 fields=fields)
-    # todo: the above shows different approach in similarity in albums and artists
 
     table = utils.turn_dicts_into_list_of_tuples_for_html(table, config.ALL_COLUMNS)
 
+    # get the query dict and string
     query_dict = {
         'media': media,
-        'album': album_title.strip(),
-        'artist': artist_name.strip()
+        'album': album_title,
+        'artist': artist_name
     }
     query = ', '.join(['{}: {}'.format(k, ', '.join(v) if isinstance(v, list) else v)
                        for k, v in query_dict.items() if v])
