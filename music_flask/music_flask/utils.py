@@ -13,8 +13,8 @@ def turn_tuple_into_dict(the_tuple, the_keys):
     return the_dict
 
 
-def turn_dicts_into_list_of_tuples_for_html(dicts, keys):
-    # todo: change order of displaying albums
+def turn_dicts_into_list_of_tuples_for_html(dicts, keys,
+                                            sort_keys=('sort_name', 'date_orig', 'date_publ', 'album_title', 'part')):
     dicts = dicts or []
     non_empty_keys = list()
     display_keys = ['#']
@@ -24,12 +24,25 @@ def turn_dicts_into_list_of_tuples_for_html(dicts, keys):
         if display_key:
             non_empty_keys.append(key)
             display_keys.append(display_key)
-    table = [tuple(display_keys)]
-    for idx, row_dict in enumerate(dicts):
-        table.append(tuple([idx + 1] + [str(row_dict.get(key, '')) + '/' + str(row_dict.get('parts', ''))
+
+    # change dicts into tuples
+    table = list()
+    for row_dict in dicts:
+        table.append(tuple([''] + [str(row_dict.get(key, '')) + '/' + str(row_dict.get('parts', ''))
                            if (key == 'part_id' and row_dict.get('parts', None))
                            else row_dict.get(key, '') for key in non_empty_keys]))
-    return table
+    # sort them
+    if sort_keys:
+        sorting_keys = [config.DISPLAY_COLUMNS[k] for k in sort_keys if k in non_empty_keys]
+        sorting_ids = [display_keys.index(k) for k in sorting_keys]
+        sorting_ids.reverse()
+        for idx in sorting_ids:
+            table.sort(key=lambda x: x[idx])
+    # add numbering
+    final_table = [tuple(display_keys)]
+    for idx, row in enumerate(table):
+        final_table.append(tuple((idx + 1,) + row[1:]))
+    return final_table
 
 
 def turn_dicts_to_list_of_tuples(dicts, keys):
