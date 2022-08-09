@@ -14,6 +14,19 @@ class DBError(Exception):
 
 
 def get_similar(table_name, item_dict, return_field=None, similarity_level=0.8):
+    """
+    Args:
+        table_name: db table name
+        item_dict: A dict whose keys are subset of table column names and values are supposed to be table entries
+        return_field: A field which is to be returned.
+                        If None - primary key will be returned.
+                        If 'all' - whole dicts will be returned
+        similarity_level: a float between 0 and 1, where 1 means that
+                        each word from a shorter string is identical to a word in a longer string
+
+    Returns:
+        a set of entries from return_field column, or whole dicts
+    """
     if return_field is None:
         return_field = utils.get_primary_key_name(table_name)
     table_column_names = config.DB_COLUMNS[table_name]
@@ -24,133 +37,34 @@ def get_similar(table_name, item_dict, return_field=None, similarity_level=0.8):
     lines = cur.fetchall()
     conn.commit()
     cur.close()
-    similar_items = list()
+    similar_items = set()
     for row in lines:
         current_dict = dict()
         for c, r in zip(table_column_names, row):
             current_dict[c] = r
-        try:
-            current_similarity_ratio = max(utils.similarity_ratio(str(item_dict[field]).lower(),
-                                                                  str(current_dict[field]).lower())
-                                           for field in fields)
-        except KeyError as e:
-            print(row)
-            print(current_dict)
-            quit()
+        current_similarity_ratio = max(utils.similarity_ratio(str(item_dict[field]).lower(),
+                                                              str(current_dict[field]).lower())
+                                       for field in fields)
 
         if current_similarity_ratio >= similarity_level:
             current_dict['similarity'] = current_similarity_ratio
             if return_field == 'all':
-                similar_items.append(current_dict)
+                similar_items.add(current_dict)
             else:
-                similar_items.append(current_dict[return_field])
+                similar_items.add(current_dict[return_field])
     return similar_items or None
 
 
 def get_similar_artists(artist_dict, similarity_level=0.8):
-    """
-    Args:
-        artist_dict:  includes at least one of the following keys: artist_name, artist_surname, artist_firstname
-        similarity_level: only artists for which at least one field is similar on at least this level will be returned
-
-    Returns:
-        a list of dicts with artists similar to the one in question
-    """
-    conn = sqlite3.connect(config.DATABASE)
-    cur = conn.cursor()
-    cur.execute('''SELECT * FROM artists''')
-    lines = cur.fetchall()
-    conn.commit()
-    cur.close()
-    similar_artists = list()
-    fields = {'artist_name', 'artist_surname', 'artist_firstname'}.intersection(f for f in artist_dict.keys()
-                                                                                if artist_dict.get(f, None))
-    for row in lines:
-        artist_id, artist_type, artist_name, artist_surname, artist_firstname, artist_role, sort_name = row
-        current_dict = {
-            'artist_id': artist_id,
-            'artist_type': artist_type,
-            'artist_name': artist_name,
-            'artist_surname': artist_surname,
-            'artist_firstname': artist_firstname,
-            'artist_role': artist_role,
-            'sort_name': sort_name
-        }
-        current_similarity_ratio = max(utils.similarity_ratio(str(artist_dict[field]).lower(),
-                                                              str(current_dict[field]).lower())
-                                       for field in fields)
-        if current_similarity_ratio >= similarity_level:
-            current_dict['similarity'] = current_similarity_ratio
-            similar_artists.append(current_dict)
-    return similar_artists or None
+    return get_similar('artists', artist_dict, 'all', similarity_level=similarity_level)
 
 
 def get_similar_artists_ids(artist_dict, similarity_level=0.8):
-    """
-    Args:
-        artist_dict:  includes at least one of the following keys: artist_name, artist_surname, artist_firstname
-        similarity_level: only artists for which at least one field is similar on at least this level will be returned
-
-    Returns:
-        a set of ids of artists similar to the one in question
-    """
-    conn = sqlite3.connect(config.DATABASE)
-    cur = conn.cursor()
-    cur.execute('''SELECT * FROM artists''')
-    lines = cur.fetchall()
-    conn.commit()
-    cur.close()
-    similar_artists_ids = set()
-    fields = {'artist_name', 'artist_surname', 'artist_firstname'}.intersection(f for f in artist_dict.keys()
-                                                                                if artist_dict.get(f, None))
-    for row in lines:
-        artist_id, artist_type, artist_name, artist_surname, artist_firstname, artist_role, sort_name = row
-        current_dict = {
-            'artist_id': artist_id,
-            'artist_name': artist_name,
-            'artist_surname': artist_surname,
-            'artist_firstname': artist_firstname
-        }
-        current_similarity_ratio = max(utils.similarity_ratio(str(artist_dict[field]).lower(),
-                                                              str(current_dict[field]).lower())
-                                       for field in fields)
-        if current_similarity_ratio >= similarity_level:
-            similar_artists_ids.add(artist_id)
-    return similar_artists_ids or None
+    return get_similar('artists', artist_dict, 'artist_id', similarity_level=similarity_level)
 
 
 def get_similar_artists_names(artist_dict, similarity_level=0.8):
-    """
-    Args:
-        artist_dict:  includes at least one of the following keys: artist_name, artist_surname, artist_firstname
-        similarity_level: only artists for which at least one field is similar on at least this level will be returned
-
-    Returns:
-        a set of ids of artists similar to the one in question
-    """
-    conn = sqlite3.connect(config.DATABASE)
-    cur = conn.cursor()
-    cur.execute('''SELECT * FROM artists''')
-    lines = cur.fetchall()
-    conn.commit()
-    cur.close()
-    similar_artists_ids = set()
-    fields = {'artist_name', 'artist_surname', 'artist_firstname'}.intersection(f for f in artist_dict.keys()
-                                                                                if artist_dict.get(f, None))
-    for row in lines:
-        artist_id, artist_type, artist_name, artist_surname, artist_firstname, artist_role, sort_name = row
-        current_dict = {
-            'artist_id': artist_id,
-            'artist_name': artist_name,
-            'artist_surname': artist_surname,
-            'artist_firstname': artist_firstname
-        }
-        current_similarity_ratio = max(utils.similarity_ratio(str(artist_dict[field]).lower(),
-                                                              str(current_dict[field]).lower())
-                                       for field in fields)
-        if current_similarity_ratio >= similarity_level:
-            similar_artists_ids.add(artist_name)
-    return similar_artists_ids or None
+    return get_similar('artists', artist_dict, 'artist_name', similarity_level=similarity_level)
 
 
 def add_record_to_table(record, table, artist_from_album=False):
@@ -207,7 +121,7 @@ def add_record_to_table(record, table, artist_from_album=False):
                 if artist_chosen:
                     return artist_chosen['artist_id']
             else:
-                table_keys = list(similar_artists[0].keys())
+                table_keys = list(list(similar_artists)[0].keys())
                 table_keys.remove('similarity')
                 # table_keys.append('similarity')
                 print('The following artists were found in the database:')
@@ -445,26 +359,23 @@ def get_records_ids_from_query(table_name,
     idx_name = utils.get_primary_key_name(table_name)
 
     if db_fields:
-        _logger.debug('db_fields: {}, {}'.format(db_fields, db_values))
         conditions = ' AND '.join(str(field)
                                   + (' = ' if field != '' else '')
                                   + (('"' + str(value) + '"')
                                      if isinstance(value, str) else
                                      (str(value[0]) if isinstance(value, list) else str(value))) + ' '
                                   for field, value in zip(db_fields, db_values) if value)
-        _logger.debug('conditions: {}'.format(conditions))
 
         conn = sqlite3.connect(config.DATABASE)
         cur = conn.cursor()
-        _logger.debug('QUERY: {}'.format("SELECT {} FROM {} WHERE {}".format(idx_name, table_name, conditions)))
         cur.execute("SELECT {} FROM {} WHERE {}".format(idx_name, table_name, conditions))
         record_ids = cur.fetchall()
         conn.commit()
         cur.close()
 
         record_ids = set(idx[0] for idx in record_ids) if record_ids else set()
-        if albums_ids_from_artists_and_albums:
-            record_ids = record_ids.intersection(albums_ids_from_artists_and_albums)
+
+        record_ids = record_ids.intersection(albums_ids_from_artists_and_albums)
     else:
         record_ids = albums_ids_from_artists_and_albums
 

@@ -79,7 +79,7 @@ def similarity_ratio(sentence_a, sentence_b):
         ratios.append(ratio_a)
     ratios.sort(reverse=True)
     ratios = ratios[:min_len]
-    return mean(ratios)
+    return mean(ratios) if ratios else 0
 
 
 def pretty_table_from_dicts(dicts, column_names=None, max_column_width=None):
@@ -143,3 +143,7 @@ def get_primary_key_name(table_name):
         return table_name[:-1] + '_id'
     else:
         return 'item_id'
+
+
+if __name__ == '__main__':
+    print(similarity_ratio('to be or not', '   '))

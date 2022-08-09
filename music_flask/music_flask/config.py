@@ -4,7 +4,8 @@ import logging
 DATABASE = "music_flask/database/records_list_tmp.sqlite"
 
 # the one below is for local debugging only:
-# DATABASE = 'c:/Users/krzys/Documents/Python/lekcje/music_list/music_flask/music_flask/database/records_list_tmp.sqlite'
+# DATABASE =
+# 'c:/Users/krzys/Documents/Python/lekcje/music_list/music_flask/music_flask/database/records_list_tmp.sqlite'
 
 DB_TABLES = {'artists', 'albums', 'albums_artists', 'bands_members'}
 

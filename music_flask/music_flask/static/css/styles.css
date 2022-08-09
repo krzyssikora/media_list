@@ -42,6 +42,10 @@ div.trim {
   background-color: rgb(182, 182, 182);
 }
 
+/* #menu-item-main {
+  font-weight: bold;
+} */
+
 .menu-item:hover {
   font-weight: bold;
   background-color: rgb(128, 128, 128);

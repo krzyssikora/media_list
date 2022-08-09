@@ -479,6 +479,8 @@ def add_artist_to_table(from_album=False):
 
 
 def get_simple_query(artist_name, album_title, media):
+    # if isinstance(album_title, str):
+    #     album_title = album_title.strip()
     fields = dict()
     table = set()
     if media:
@@ -487,7 +489,6 @@ def get_simple_query(artist_name, album_title, media):
             fields['artist_name'] = list(database.get_similar_artists_names({'artist_name': artist_name}))
         if album_title:
             fields['album_title'] = album_title
-        _logger.debug('initial fields: {}'.format(fields))
         table = database.get_records_from_query(table_name='albums',
                                                 fields=fields)
     # todo: the above shows different approach in similarity in albums and artists
