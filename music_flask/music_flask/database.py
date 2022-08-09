@@ -13,6 +13,40 @@ class DBError(Exception):
         sys.exit(1)
 
 
+def get_similar(table_name, item_dict, return_field=None, similarity_level=0.8):
+    if return_field is None:
+        return_field = utils.get_primary_key_name(table_name)
+    table_column_names = config.DB_COLUMNS[table_name]
+    fields = set(table_column_names).intersection(f for f in item_dict.keys() if item_dict.get(f, None))
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM {}'.format(table_name))
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    similar_items = list()
+    for row in lines:
+        current_dict = dict()
+        for c, r in zip(table_column_names, row):
+            current_dict[c] = r
+        try:
+            current_similarity_ratio = max(utils.similarity_ratio(str(item_dict[field]).lower(),
+                                                                  str(current_dict[field]).lower())
+                                           for field in fields)
+        except KeyError as e:
+            print(row)
+            print(current_dict)
+            quit()
+
+        if current_similarity_ratio >= similarity_level:
+            current_dict['similarity'] = current_similarity_ratio
+            if return_field == 'all':
+                similar_items.append(current_dict)
+            else:
+                similar_items.append(current_dict[return_field])
+    return similar_items or None
+
+
 def get_similar_artists(artist_dict, similarity_level=0.8):
     """
     Args:
@@ -206,21 +240,6 @@ def get_db_columns():
     return ret_dict
 
 
-def get_albums_ids_by_medium(media):
-    # redundant?
-    if media:
-        conn = sqlite3.connect(config.DATABASE)
-        cur = conn.cursor()
-        conditions = ' OR '.join(['medium="{}"'.format(medium) for medium in media])
-        cur.execute("SELECT album_id FROM albums WHERE " + conditions)
-        lines = cur.fetchall()
-        conn.commit()
-        cur.close()
-        return set(line[0] for line in lines) or None
-    else:
-        return None
-
-
 def get_record_by_id(table_name, idx):
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
@@ -267,6 +286,7 @@ def get_album_by_id(idx):
 
 
 def get_artists_ids_from_album_id(album_id):
+    # redundant?
     """
     Args:
         album_id:
@@ -284,6 +304,7 @@ def get_artists_ids_from_album_id(album_id):
 
 
 def get_albums_ids_by_artist_id(artist_id):
+    # redundant?
     """
         Args:
             artist_id:
@@ -321,68 +342,6 @@ def get_album_ids_by_title(album_title, similarity_level=0.8):
         if line[1] and utils.similarity_ratio(album_title, line[1]) >= similarity_level:
             albums_ids.add(line[0])
     return albums_ids or set()
-
-
-def get_albums_ids_by_title_or_artist(album_title=None, artist_name=None):
-    album_title = album_title.strip() or None
-    artist_name = artist_name.strip() or None
-    if album_title is None and artist_name is None:
-        # all in
-        conn = sqlite3.connect(config.DATABASE)
-        cur = conn.cursor()
-        cur.execute("SELECT album_id FROM albums")
-        lines = cur.fetchall()
-        albums_ids_by_title_and_artist = [line[0] for line in lines]
-        conn.commit()
-        cur.close()
-    else:
-        if album_title:
-            album_title = album_title.strip()
-            albums_ids_by_title = get_album_ids_by_title(album_title)
-        else:
-            albums_ids_by_title = set()
-
-        if artist_name:
-            artist_name = artist_name.strip()
-            similar_artists_ids = get_similar_artists_ids({'artist_name': artist_name})
-            albums_ids_by_artist = set().union(*[get_albums_ids_by_artist_id(artist_id)
-                                                 for artist_id in similar_artists_ids])
-        else:
-            albums_ids_by_artist = set()
-
-        if len(albums_ids_by_title) == 0 or len(albums_ids_by_artist) == 0:
-            albums_ids_by_title_and_artist = albums_ids_by_title.union(albums_ids_by_artist)
-        else:
-            albums_ids_by_title_and_artist = albums_ids_by_title.intersection(albums_ids_by_artist)
-
-    return albums_ids_by_title_and_artist or None
-
-
-def get_albums_by_title_or_artist(album_title=None, artist_name=None, table=None):
-    # we will not need this one later, we will just perform consecutive queries joining them with 'AND'
-    """
-    Args:
-        album_title (str): approximation of an album title
-        artist_name (str): approximation of the artist's name
-        table: table of album ids already filtered
-
-    Returns:
-    A list of album dicts with artists' names added.
-    """
-    # get albums ids from table
-    albums_ids = set() if table is None else table
-    albums_ids_by_title_and_artist = get_albums_ids_by_title_or_artist(album_title, artist_name)
-    # get full albums
-    # add artists that perform on the albums
-    albums = list()
-    for idx in albums_ids_by_title_and_artist:
-        # if table is None or idx in albums_ids:
-        if idx in albums_ids:
-            album = get_album_by_id(idx)
-            if album:
-                albums.append(album)
-    # todo sort by sortname?
-    return albums or None
 
 
 def _get_albums_from_artist_names(fields_1, values_1):
@@ -486,15 +445,18 @@ def get_records_ids_from_query(table_name,
     idx_name = utils.get_primary_key_name(table_name)
 
     if db_fields:
+        _logger.debug('db_fields: {}, {}'.format(db_fields, db_values))
         conditions = ' AND '.join(str(field)
                                   + (' = ' if field != '' else '')
                                   + (('"' + str(value) + '"')
                                      if isinstance(value, str) else
                                      (str(value[0]) if isinstance(value, list) else str(value))) + ' '
                                   for field, value in zip(db_fields, db_values) if value)
+        _logger.debug('conditions: {}'.format(conditions))
 
         conn = sqlite3.connect(config.DATABASE)
         cur = conn.cursor()
+        _logger.debug('QUERY: {}'.format("SELECT {} FROM {} WHERE {}".format(idx_name, table_name, conditions)))
         cur.execute("SELECT {} FROM {} WHERE {}".format(idx_name, table_name, conditions))
         record_ids = cur.fetchall()
         conn.commit()
@@ -693,7 +655,10 @@ def get_albums_by_title(album_title, similarity_level=0.8):
 
 
 if __name__ == '__main__':
-    get_records_ids_from_query('aaa', [])
+    a = get_similar('artists', {'artist_name': 'John'}, return_field='all')
+    for _ in a:
+        print(_)
+    quit()
     print(get_db_columns())
 
 
