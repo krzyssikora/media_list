@@ -9,7 +9,7 @@ from music_flask.config import _logger
 class DBError(Exception):
     def __init__(self, error_message=None):
         if error_message:
-            print(error_message)
+            _logger.error(error_message)
         sys.exit(1)
 
 
@@ -52,7 +52,7 @@ def get_similar(table_name, item_dict, return_field=None, similarity_level=0.8):
                 similar_items.add(current_dict)
             else:
                 similar_items.add(current_dict[return_field])
-    return similar_items or None
+    return similar_items or set()
 
 
 def get_similar_artists(artist_dict, similarity_level=0.8):
@@ -105,8 +105,7 @@ def add_record_to_table(record, table, artist_from_album=False):
         return idx
 
     if table not in config.DB_TABLES:
-        print('There is no table "{}" in the database.'.format(table))
-        return
+        raise DBError('There is no table "{}" in the database.'.format(table))
 
     if table == 'artists':
         # "artists" - simple case
@@ -124,6 +123,7 @@ def add_record_to_table(record, table, artist_from_album=False):
                 table_keys = list(list(similar_artists)[0].keys())
                 table_keys.remove('similarity')
                 # table_keys.append('similarity')
+                # todo make api display the following - i.e. return it
                 print('The following artists were found in the database:')
                 print(utils.pretty_table_from_dicts(similar_artists, table_keys))
                 decision = input('Do you still want to add the new artist (y/n)? ')
@@ -167,9 +167,9 @@ def get_record_by_id(table_name, idx):
             raise DBError(table_name[:-1] + '_id = ' + str(idx) + ' is not unique!')
         record = record[0]
         record_dict = utils.turn_tuple_into_dict(record, config.DB_COLUMNS[table_name])
-        return record_dict or None
+        return record_dict or dict()
 
-    return None
+    return dict()
 
 
 def get_artist_by_id(idx):
@@ -214,7 +214,7 @@ def get_artists_ids_from_album_id(album_id):
     lines = cur.fetchall()
     conn.commit()
     cur.close()
-    return {line[0] for line in lines} or None
+    return {line[0] for line in lines} or set()
 
 
 def get_albums_ids_by_artist_id(artist_id):
@@ -232,7 +232,7 @@ def get_albums_ids_by_artist_id(artist_id):
     lines = cur.fetchall()
     conn.commit()
     cur.close()
-    return {line[0] for line in lines} or None
+    return {line[0] for line in lines} or set()
 
 
 def get_album_ids_by_title(album_title, similarity_level=0.8):
@@ -260,15 +260,15 @@ def get_album_ids_by_title(album_title, similarity_level=0.8):
 
 def _get_albums_from_artist_names(fields_1, values_1):
     # get album ids from albums_artists table
-    albums_with_artists = set()
     if isinstance(fields_1, dict):
         artist_name_value = fields_1.pop('artist_name')
     else:
         artist_name_idx = fields_1.index('artist_name')
         fields_1.remove('artist_name')
         artist_name_value = values_1.pop(artist_name_idx)
-    if isinstance(artist_name_value, str):
-        artist_name_value = [artist_name_value]
+    artist_name_value = get_similar_artists_names({'artist_name': artist_name_value})
+
+    albums_with_artists = set()
     for artist_name in artist_name_value:
         # get arist_id from artists table
         conn = sqlite3.connect(config.DATABASE)
@@ -389,7 +389,6 @@ def get_records_ids_from_query(table_name,
 
 
 def get_records_from_their_ids(table_name, records_ids, sort_keys=None):
-    # todo sorting here, or in preparing for html???
     if records_ids:
         if table_name == 'albums':
             records = [get_album_by_id(idx) for idx in records_ids]
@@ -415,7 +414,6 @@ def get_records_from_query(table_name,
         records = [get_artist_by_id(idx) for idx in records_ids]
     else:
         records = [get_record_by_id(table_name, idx) for idx in records_ids]
-    # todo sorting
     return records
 
 
@@ -573,7 +571,6 @@ if __name__ == '__main__':
     print(get_db_columns())
 
 
-# todo: return None, or better empty set???
 # todo: remove redundant methods
 # todo:
 #   add tables:
@@ -581,8 +578,9 @@ if __name__ == '__main__':
 #       item_id, album_id, track_id, track_name, track_duration, notes
 #     albums_tags with columns:  (change notes???)
 #       item_id, album_id, tag
+#       list of allowed tags: copy, missing, ...
 # todo: CRUD
-#  create:
+#  create:  DONE, but in terminal mode only
 #    ::DONE:: api.add_album_to_table()
 #    ::DONE:: api.add_artist_to_table()
 #  read:
@@ -596,6 +594,8 @@ if __name__ == '__main__':
 #    api.edit_artist(artist_name)
 #    api.add_band_members(band_name)
 #      this should be a part of adding artist if it is a band
+#      this should update albums_artists, too
+#      this should change adding album
 #    api.add_artist_to_album(album_title)
 #  delete:
 #    delete_record_from_table_by_id(table, idx)

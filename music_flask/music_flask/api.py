@@ -486,19 +486,12 @@ def get_simple_query(artist_name, album_title, media):
     if media:
         fields['medium'] = media
         if artist_name:
-            fields['artist_name'] = list(database.get_similar_artists_names({'artist_name': artist_name}))
+            fields['artist_name'] = artist_name
         if album_title:
             fields['album_title'] = album_title
         table = database.get_records_from_query(table_name='albums',
                                                 fields=fields)
     # todo: the above shows different approach in similarity in albums and artists
-    #  database.find_similar(table_name, item_dict, return_field=None <- changed to primary key, similarity_level=0.8)
-    #  get_similar_artists(artist_dict, similarity_level=0.8)
-    #   = find_similar(table_name='artists', item_dict=artist_dict, return_field='all')  <- think about 'all'
-    #  get_similar_artists_ids(artist_dict, similarity_level=0.8)
-    #   = find_similar(table_name='artists', item_dict=artist_dict, return_field='artist_id')
-    #  get_similar_artists_names(artist_dict, similarity_level=0.8)
-    #   = find_similar(table_name='artists', item_dict=artist_dict, return_field='artist_name')
 
     table = utils.turn_dicts_into_list_of_tuples_for_html(table, config.ALL_COLUMNS)
 
