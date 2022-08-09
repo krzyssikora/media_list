@@ -85,6 +85,40 @@ def get_similar_artists_ids(artist_dict, similarity_level=0.8):
     return similar_artists_ids or None
 
 
+def get_similar_artists_names(artist_dict, similarity_level=0.8):
+    """
+    Args:
+        artist_dict:  includes at least one of the following keys: artist_name, artist_surname, artist_firstname
+        similarity_level: only artists for which at least one field is similar on at least this level will be returned
+
+    Returns:
+        a set of ids of artists similar to the one in question
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute('''SELECT * FROM artists''')
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    similar_artists_ids = set()
+    fields = {'artist_name', 'artist_surname', 'artist_firstname'}.intersection(f for f in artist_dict.keys()
+                                                                                if artist_dict.get(f, None))
+    for row in lines:
+        artist_id, artist_type, artist_name, artist_surname, artist_firstname, artist_role, sort_name = row
+        current_dict = {
+            'artist_id': artist_id,
+            'artist_name': artist_name,
+            'artist_surname': artist_surname,
+            'artist_firstname': artist_firstname
+        }
+        current_similarity_ratio = max(utils.similarity_ratio(str(artist_dict[field]).lower(),
+                                                              str(current_dict[field]).lower())
+                                       for field in fields)
+        if current_similarity_ratio >= similarity_level:
+            similar_artists_ids.add(artist_name)
+    return similar_artists_ids or None
+
+
 def add_record_to_table(record, table, artist_from_album=False):
     """
     Adds a record to db table.
@@ -173,6 +207,7 @@ def get_db_columns():
 
 
 def get_albums_ids_by_medium(media):
+    # redundant?
     if media:
         conn = sqlite3.connect(config.DATABASE)
         cur = conn.cursor()
@@ -285,7 +320,7 @@ def get_album_ids_by_title(album_title, similarity_level=0.8):
     for line in lines:
         if line[1] and utils.similarity_ratio(album_title, line[1]) >= similarity_level:
             albums_ids.add(line[0])
-    return albums_ids or None
+    return albums_ids or set()
 
 
 def get_albums_ids_by_title_or_artist(album_title=None, artist_name=None):
@@ -340,7 +375,6 @@ def get_albums_by_title_or_artist(album_title=None, artist_name=None, table=None
     # get full albums
     # add artists that perform on the albums
     albums = list()
-    _logger.debug('album ids retrived: {}'.format(albums_ids_by_title_and_artist))
     for idx in albums_ids_by_title_and_artist:
         # if table is None or idx in albums_ids:
         if idx in albums_ids:
@@ -348,60 +382,150 @@ def get_albums_by_title_or_artist(album_title=None, artist_name=None, table=None
             if album:
                 albums.append(album)
     # todo sort by sortname?
-    _logger.debug('albums: {}'.format(albums))
     return albums or None
+
+
+def _get_albums_from_artist_names(fields_1, values_1):
+    # get album ids from albums_artists table
+    albums_with_artists = set()
+    if isinstance(fields_1, dict):
+        artist_name_value = fields_1.pop('artist_name')
+    else:
+        artist_name_idx = fields_1.index('artist_name')
+        fields_1.remove('artist_name')
+        artist_name_value = values_1.pop(artist_name_idx)
+    if isinstance(artist_name_value, str):
+        artist_name_value = [artist_name_value]
+    for artist_name in artist_name_value:
+        # get arist_id from artists table
+        conn = sqlite3.connect(config.DATABASE)
+        cur = conn.cursor()
+        cur.execute("SELECT artist_id FROM artists WHERE artist_name = (?)", (artist_name,))
+        artists_ids = cur.fetchall()
+        conn.commit()
+        cur.close()
+        # now get albums_ids for each of the artists
+        if artists_ids:
+            conn = sqlite3.connect(config.DATABASE)
+            cur = conn.cursor()
+            artists_ids = set(idx[0] for idx in artists_ids)
+            for artist_id in artists_ids:
+                cur.execute("SELECT album_id FROM albums_artists WHERE artist_id = (?)", (artist_id,))
+                albums_ids = cur.fetchall()
+                if albums_ids:
+                    albums_with_artists = albums_with_artists.union(set(idx[0] for idx in albums_ids))
+            conn.commit()
+            cur.close()
+    return albums_with_artists, fields_1, values_1
+
+
+def _get_albums_from_title(fields_1, values_1):
+    if isinstance(fields_1, dict):
+        album_title_value = fields_1.pop('album_title')
+    else:
+        album_title_idx = fields_1.index('album_title')
+        fields_1.remove('album_title')
+        album_title_value = values_1.pop(album_title_idx)
+    if isinstance(album_title_value, str):
+        album_title_value = [album_title_value]
+
+    albums_from_title = set()
+    for album_title in album_title_value:
+        albums_from_title = albums_from_title.union(get_album_ids_by_title(album_title))
+
+    return albums_from_title, fields_1, values_1
+
+
+def _get_fields_and_values_refactored(table_name, fields_1, values_1):
+    # split fields from their values if given together
+    albums_with_artists = None
+    if table_name == 'albums' and 'artist_name' in fields_1:
+        # get album ids from albums_artists table
+        albums_with_artists, fields_1, values_1 = _get_albums_from_artist_names(fields_1, values_1)
+
+    albums_from_title = None
+    if table_name == 'albums' and 'album_title' in fields_1:
+        # get album ids from its approx title
+        albums_from_title, fields_1, values_1 = _get_albums_from_title(fields_1, values_1)
+
+    if albums_with_artists is None or albums_from_title is None:
+        albums_ids_from_artists_and_albums = (albums_with_artists or set()).union(albums_from_title or set())
+    else:
+        albums_ids_from_artists_and_albums = albums_with_artists.intersection(albums_from_title)
+
+    if isinstance(fields_1, dict):
+        fields_2 = list()
+        values_2 = list()
+        for field_1, value_1 in fields_1.items():
+            # change value-list into a string
+            if isinstance(value_1, list) and len(value_1) > 0:
+                value_1 = ['(' + ' OR '.join(str(field_1) + ' = "' + str(v) + '"' for v in value_1) + ')']
+                field_1 = ''
+            fields_2.append(field_1)
+            values_2.append(value_1)
+    else:
+        fields_2 = fields_1
+        # change value-list into a string
+        values_2 = list()
+        for val_id, value_1 in enumerate(values_1):
+            if isinstance(value_1, list) and len(value_1) > 0:
+                values_2.append(
+                    ['(' + ' OR '.join(str(fields_2[val_id]) + ' = "' + str(v) + '"' for v in value_1) + ')'])
+                fields_2[val_id] = ''
+            else:
+                values_2.append(value_1)
+    return fields_2, values_2, albums_ids_from_artists_and_albums
 
 
 def get_records_ids_from_query(table_name,
                                fields, values=None,
                                record_ids_already_chosen=None,
                                conjunction='AND'):
-    # split fields from their values if given together
-    if isinstance(fields, dict):
-        db_fields = list()
-        db_values = list()
-        for field, value in fields.items():
-            # change value-list into a string
-            if isinstance(value, list):
-                value = ['(' + ' OR '.join(str(field) + ' = "' + str(v) + '"' for v in value) + ')']
-                field = ''
-            # print('>>{}<<>>{}<<'.format(field, value))
-            db_fields.append(field)
-            db_values.append(value)
-    else:
-        db_fields = fields
-        # change value-list into a string
-        db_values = list()
-        for idx, value in enumerate(values):
-            if isinstance(value, list):
-                db_values.append(['(' + ' OR '.join(str(db_fields[idx]) + ' = "' + str(v) + '"' for v in value) + ')'])
-                db_fields[idx] = ''
-            else:
-                db_values.append(value)
-
+    db_fields, db_values, albums_ids_from_artists_and_albums = \
+        _get_fields_and_values_refactored(table_name, fields, values)
     idx_name = utils.get_primary_key_name(table_name)
 
-    conn = sqlite3.connect(config.DATABASE)
-    cur = conn.cursor()
-    conditions = ' AND '.join(str(field)
-                              + (' = ' if field != '' else '')
-                              + (('"' + str(value) + '"')
-                                 if isinstance(value, str) else
-                                 (str(value[0]) if isinstance(value, list) else str(value))) + ' '
-                              for field, value in zip(db_fields, db_values) if value)
-    cur.execute("SELECT {} FROM {} WHERE {}".format(idx_name, table_name, conditions))
-    record_ids = cur.fetchall()
-    conn.commit()
-    cur.close()
+    if db_fields:
+        conditions = ' AND '.join(str(field)
+                                  + (' = ' if field != '' else '')
+                                  + (('"' + str(value) + '"')
+                                     if isinstance(value, str) else
+                                     (str(value[0]) if isinstance(value, list) else str(value))) + ' '
+                                  for field, value in zip(db_fields, db_values) if value)
 
-    record_ids = set(record_ids)
-    if record_ids_already_chosen:
+        conn = sqlite3.connect(config.DATABASE)
+        cur = conn.cursor()
+        cur.execute("SELECT {} FROM {} WHERE {}".format(idx_name, table_name, conditions))
+        record_ids = cur.fetchall()
+        conn.commit()
+        cur.close()
+
+        record_ids = set(idx[0] for idx in record_ids) if record_ids else set()
+        if albums_ids_from_artists_and_albums:
+            record_ids = record_ids.intersection(albums_ids_from_artists_and_albums)
+    else:
+        record_ids = albums_ids_from_artists_and_albums
+
+    if record_ids_already_chosen is not None:
         if conjunction == 'AND':
             record_ids = record_ids.intersection(record_ids_already_chosen)
         elif conjunction == 'OR':
             record_ids = record_ids.union(record_ids_already_chosen)
 
-    return record_ids or None
+    return record_ids or set()
+
+
+def get_records_from_their_ids(table_name, records_ids, sort_keys=None):
+    # todo sorting here, or in preparing for html???
+    if records_ids:
+        if table_name == 'albums':
+            records = [get_album_by_id(idx) for idx in records_ids]
+        elif table_name == 'artists':
+            records = [get_artist_by_id(idx) for idx in records_ids]
+        else:
+            records = [get_record_by_id(table_name, idx) for idx in records_ids]
+        return records or list()
+    return list()
 
 
 def get_records_from_query(table_name,
@@ -411,7 +535,7 @@ def get_records_from_query(table_name,
     records_ids = get_records_ids_from_query(table_name,
                                              fields, values,
                                              record_ids_already_chosen,
-                                             conjunction)
+                                             conjunction) or set()
     if table_name == 'albums':
         records = [get_album_by_id(idx) for idx in records_ids]
     elif table_name == 'artists':
@@ -420,7 +544,6 @@ def get_records_from_query(table_name,
         records = [get_record_by_id(table_name, idx) for idx in records_ids]
     # todo sorting
     return records
-
 
 
 def update_records_field(table_name, record_dict, field, value):
@@ -573,6 +696,9 @@ if __name__ == '__main__':
     get_records_ids_from_query('aaa', [])
     print(get_db_columns())
 
+
+# todo: return None, or better empty set???
+# todo: remove redundant methods
 # todo:
 #   add tables:
 #     albums_tracks with columns:

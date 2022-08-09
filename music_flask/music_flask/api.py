@@ -478,13 +478,36 @@ def add_artist_to_table(from_album=False):
         return None
 
 
-def get_query(artist_name, album_title, media):
-    table = database.get_albums_ids_by_medium(media)
-    _logger.debug('artist_name: {}, album_title: {}, media: {}'.format(artist_name, album_title, media))
-    table = utils.turn_dicts_into_list_of_tuples_for_html(database.get_albums_by_title_or_artist(album_title,
-                                                                                                 artist_name,
-                                                                                                 table),
-                                                          config.ALL_COLUMNS)
+def get_simple_query(artist_name, album_title, media):
+    table = set()
+    if media:
+        table = database.get_records_ids_from_query('albums', {'medium': media})
+        if artist_name:
+            artist_names = list(database.get_similar_artists_names({'artist_name': artist_name}))
+            table = database.get_records_ids_from_query('albums',
+                                                        fields={'artist_name': artist_names},
+                                                        record_ids_already_chosen=table,
+                                                        conjunction='AND')
+
+        if album_title:
+            table = database.get_records_ids_from_query('albums',
+                                                        fields={'album_title': album_title},
+                                                        record_ids_already_chosen=table,
+                                                        conjunction='AND')
+
+    table = database.get_records_from_their_ids('albums', table)
+
+    # todo the above does not look like database.get_album_ids_by_title (no similarity taken into account)
+    #  database.find_similar(table_name, item_dict, return_field=None <- changed to primary key, similarity_level=0.8)
+    #  get_similar_artists(artist_dict, similarity_level=0.8)
+    #   = find_similar(table_name='artists', item_dict=artist_dict, return_field='all')  <- think about 'all'
+    #  get_similar_artists_ids(artist_dict, similarity_level=0.8)
+    #   = find_similar(table_name='artists', item_dict=artist_dict, return_field='artist_id')
+    #  get_similar_artists_names(artist_dict, similarity_level=0.8)
+    #   = find_similar(table_name='artists', item_dict=artist_dict, return_field='artist_name')
+
+    table = utils.turn_dicts_into_list_of_tuples_for_html(table, config.ALL_COLUMNS)
+
     query_dict = {
         'media': media,
         'album': album_title.strip(),
@@ -492,7 +515,6 @@ def get_query(artist_name, album_title, media):
     }
     query = ', '.join(['{}: {}'.format(k, ', '.join(v) if isinstance(v, list) else v)
                        for k, v in query_dict.items() if v])
-    # query = ', '.join(['<b>{}</b>: {}'.format(k, v) for k, v in query_dict.items() if v])
     if query == '':
         query = '---'
     many = len(table) - 1

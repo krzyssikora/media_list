@@ -203,16 +203,14 @@
                     var old_items_per_page = items_per_page;
                     items_per_page = btn;
                     var hidden_items_per_page = document.getElementById('hidden-items-per-page');
-                    hidden_items_per_page.style.display = 'inline';
                     hidden_items_per_page.innerHTML = items_per_page;
                     sendItemsPerPage();
                     // change all buttons' class to off
                     for (let nbr of page_numbers) {
                         page_number_buttons[nbr].className = 'button-off';
                     };
-                    page_number_buttons[btn].className = 'button-on';
                     // change chosen button's class to on
-                    hidden_items_per_page.style.display = 'hidden';
+                    page_number_buttons[btn].className = 'button-on';
                     // find new pages values
                     var first_item_on_page = (counter - 1) * old_items_per_page + 1;
                     counter = Math.ceil(first_item_on_page / items_per_page);
