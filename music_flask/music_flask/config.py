@@ -60,6 +60,10 @@ DISPLAY_COLUMNS = {
     # 'artist_firstname': 'firstname',
     'artist_role': 'role',
 }
+
+DB_COLUMNS_FROM_DISPLAY = {display_column: db_column
+                           for db_column, display_column in DISPLAY_COLUMNS.items() if display_column}
+
 DB_ARTISTS_COLUMNS = [
     'artist_id',
     'artist_type',

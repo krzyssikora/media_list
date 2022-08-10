@@ -188,10 +188,26 @@
             return ret_str
         };
 
+        function convert(elt) {
+        // var convert = function(convert){
+            return $("<span />", { html: elt }).text();
+            //return document.createElement("span").innerText;
+        };
+        
+
         function add_row(row) {
             var ret_str = '<tr>';
             for (const elt of table[row]) {
-                ret_str += '<td>' + elt + '</td>';
+                var new_elt = elt.toString();
+                // console.log(typeof(new_elt))
+                // if (new_elt.includes('Blixa')) {
+                //     console.log(new_elt.includes('&lt;'));
+                //     console.log(new_elt.includes('&gt;'));
+                //     new_elt = new_elt.replace('&lt;', '<');
+                //     new_elt = new_elt.replace('&gt;', '>');
+                //     console.log(new_elt == elt.toString())
+                // };
+                ret_str += '<td>' + convert(new_elt) + '</td>';
             };
             ret_str += '</tr>'
             return ret_str

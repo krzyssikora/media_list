@@ -27,10 +27,13 @@ def query():
     title = 'my music'
     get_items_per_page(items_pp=items_per_page)
     get_media(media_list=chosen_media)
-    users_query_string, users_query_object, table = api.get_simple_query(artist_name, album_title, chosen_media)
+    users_query_string, users_query_object, table, tmp_table, tmp_ids = \
+        api.get_simple_query(artist_name, album_title, chosen_media)
     return render_template('query.html',
                            title=title,
                            table=table,  # [counter - 1],
+                           tmp_table=tmp_table,
+                           tmp_ids=tmp_ids,
                            table_json=json.dumps(table),
                            query=users_query_string,
                            user_filter=users_query_object,

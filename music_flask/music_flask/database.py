@@ -197,15 +197,18 @@ def get_album_by_id(idx):
         #  - it needs artist role / function to be in albums_artists table;
         #  they could be then displayed in the form 'Mike Patton (vocal, keyboard), Tomasz Mann (writer)'
         cur.execute("""
-                                SELECT artists.artist_name 
-                                FROM albums_artists JOIN artists
-                                ON albums_artists.artist_id = artists.artist_id
-                                WHERE albums_artists.publ_role LIKE 'title%'
-                                AND albums_artists.album_id = {}
-                                """.format(idx))
+                    SELECT artists.artist_name 
+                    FROM albums_artists JOIN artists
+                    ON albums_artists.artist_id = artists.artist_id
+                    WHERE albums_artists.publ_role LIKE 'title%'
+                    AND albums_artists.album_id = {}
+                    """.format(idx))
         lines = cur.fetchall()
         lines = [line[0] for line in lines]
-        record_dict['artist_name'] = ', '.join(lines)
+        # todo: make entries clickable, but I think it will be in converting to html
+        # record_dict['artist_name'] = '<p><b>' + '</b>, <b>'.join(lines) + '</b></p>'
+        # record_dict['artist_name'] = ', '.join(lines)
+        record_dict['artist_name'] = lines
         conn.commit()
         cur.close()
     return record_dict
@@ -281,7 +284,9 @@ def _get_fields_and_values_refactored(table_name, fields_1, values_1):
         # get album ids from its approx title
         albums_from_title, fields_1, values_1 = _get_albums_from_title(fields_1, values_1)
 
-    if albums_with_artists is None or albums_from_title is None:
+    if albums_with_artists is None and albums_from_title is None:
+        albums_ids_from_artists_and_albums = None
+    elif albums_with_artists is None or albums_from_title is None:
         albums_ids_from_artists_and_albums = (albums_with_artists or set()).union(albums_from_title or set())
     else:
         albums_ids_from_artists_and_albums = albums_with_artists.intersection(albums_from_title)
@@ -318,6 +323,7 @@ def get_records_ids_from_query(table_name,
         _get_fields_and_values_refactored(table_name, fields, values)
     idx_name = utils.get_primary_key_name(table_name)
 
+    record_ids = None
     if db_fields:
         conditions = ' AND '.join(str(field)
                                   + (' = ' if field != '' else '')
@@ -335,8 +341,9 @@ def get_records_ids_from_query(table_name,
 
         record_ids = set(idx[0] for idx in record_ids) if record_ids else set()
 
-        record_ids = record_ids.intersection(albums_ids_from_artists_and_albums)
-    else:
+        if albums_ids_from_artists_and_albums is not None:
+            record_ids = record_ids.intersection(albums_ids_from_artists_and_albums)
+    elif albums_ids_from_artists_and_albums is not None:
         record_ids = albums_ids_from_artists_and_albums
 
     if record_ids_already_chosen is not None:
