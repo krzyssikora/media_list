@@ -6,7 +6,149 @@ from music import database
 import api
 
 
-def old_records_from_csv(my_file, albums_list):
+def get_artists_from_album_id(album_id):
+    # old, redundant?
+    """
+    Args:
+        album_id:
+
+    Returns:
+        a list of artists (full dicts) with connections to album_id (in albums_artists table)
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT artist_id FROM albums_artists WHERE album_id = (?)", (album_id, ))
+    lines = cur.fetchall()
+    artists = list()
+    for line in lines:
+        cur.execute("SELECT * FROM artists WHERE artist_id = (?)", (line[0],))
+        artist_line = cur.fetchone()
+        artist_dict = utils.turn_tuple_into_dict(artist_line, config.DB_ARTISTS_COLUMNS)
+        artists.append(artist_dict)
+    conn.commit()
+    cur.close()
+    return artists
+
+
+def get_albums_by_artist_id(artist_id):
+    # old, redundant?
+    """
+        Args:
+            artist_id:
+
+        Returns:
+            a list of albums (full dicts) with connections to artist_id (in albums_artists table)
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT album_id FROM albums_artists WHERE artist_id = (?)", (artist_id,))
+    lines = cur.fetchall()
+    albums = list()
+    for line in lines:
+        cur.execute("SELECT * FROM albums WHERE album_id = (?)", (line[0],))
+        album_line = cur.fetchone()
+        album_dict = utils.turn_tuple_into_dict(album_line, config.DB_ALBUMS_COLUMNS)
+        albums.append(album_dict)
+    conn.commit()
+    cur.close()
+    return albums
+
+
+def get_albums_by_title(album_title, similarity_level=0.8):
+    # old. redundant?
+    """
+    Args:
+        album_title (str): album's name or its approximation
+        similarity_level (float between 0 and 1): only albums with name similar on at least this level will be returned
+
+    Returns:
+        a list of albums (full dicts) with name similar to album_title
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT album_id, album_title FROM albums")
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    # collect albums_ids
+    albums_ids = list()
+    for line in lines:
+        if line[1] and utils.similarity_ratio(album_title, line[1]) >= similarity_level:
+            albums_ids.append(line[0])
+    # get full album data
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    albums = list()
+    for album_id in albums_ids:
+        cur.execute("SELECT * FROM albums WHERE album_id = (?)", (album_id, ))
+        album_line = cur.fetchone()
+        album_dict = utils.turn_tuple_into_dict(album_line, config.DB_ALBUMS_COLUMNS)
+        albums.append(album_dict)
+    conn.commit()
+    cur.close()
+    return albums
+
+
+def get_artists_ids_from_album_id(album_id):
+    # redundant?
+    """
+    Args:
+        album_id:
+
+    Returns:
+        a set of artist_ids with connections to album_id (in albums_artists table)
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT artist_id FROM albums_artists WHERE album_id = (?)", (album_id, ))
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    return {line[0] for line in lines} or set()
+
+
+def get_album_ids_by_title(album_title, similarity_level=0.8):
+    """
+    Args:
+        album_title (str): album's name or its approximation
+        similarity_level (float between 0 and 1): only albums with name similar on at least this level will be returned
+
+    Returns:
+        a list of album ids with name similar to album_title
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT album_id, album_title FROM albums")
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    # collect albums_ids
+    albums_ids = set()
+    for line in lines:
+        if line[1] and utils.similarity_ratio(album_title, line[1]) >= similarity_level:
+            albums_ids.add(line[0])
+    return albums_ids or set()
+
+
+def get_albums_ids_by_artist_id(artist_id):
+    # redundant?
+    """
+        Args:
+            artist_id:
+
+        Returns:
+            a set of album_ids with connections to artist_id (in albums_artists table)
+    """
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT album_id FROM albums_artists WHERE artist_id = (?)", (artist_id,))
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    return {line[0] for line in lines} or set()
+
+
+def records_from_csv(my_file, albums_list):
     with open(my_file, encoding="utf-8-sig") as csvfile:
         reader = csv.DictReader(csvfile)
         mapping = {"kto":       "artist_name",
@@ -54,7 +196,7 @@ def old_records_from_csv(my_file, albums_list):
     return albums_list
 
 
-def old_records_from_csv_classics(my_file, albums_list):
+def records_from_csv_classics(my_file, albums_list):
     with open(my_file, encoding="utf-8-sig") as csvfile:
         reader = csv.DictReader(csvfile)
         mapping = {"kto":           "artist_name",
@@ -110,7 +252,7 @@ def old_records_from_csv_classics(my_file, albums_list):
     return albums_list, artists_list
 
 
-def old_database_from_list(my_list, artists=None):
+def database_from_list(my_list, artists=None):
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS albums
@@ -161,7 +303,7 @@ def old_database_from_list(my_list, artists=None):
     cur.close()
 
 
-def old_artist_types():
+def artist_types():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM artists")
@@ -183,7 +325,7 @@ def old_artist_types():
     cur.close()
 
 
-def old_get_person_first_last_and_sort_names():
+def get_person_first_last_and_sort_names():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM artists")
@@ -210,7 +352,7 @@ def old_get_person_first_last_and_sort_names():
     cur.close()
 
 
-def old_get_duplicate_artists(ratio=0.85):
+def get_duplicate_artists(ratio=0.85):
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     duplicate_list = list()
@@ -231,7 +373,7 @@ def old_get_duplicate_artists(ratio=0.85):
     return duplicate_list
 
 
-def old_add_main_artist_id_to_albums():
+def add_main_artist_id_to_albums():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute("""SELECT albums.album_id, albums.artist_name, albums.main_artist_id, artists.artist_id FROM albums
@@ -251,7 +393,7 @@ def old_add_main_artist_id_to_albums():
     cur.close()
 
 
-def old_find_empty_main_artist():
+def find_empty_main_artist():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute("SELECT * FROM albums WHERE main_artist_id IS NULL")
@@ -307,7 +449,7 @@ def find_null_main_artist_id_in_albums():
     print(len(lines))
 
 
-def old_find_incorrect_main_artist_id_in_albums():
+def find_incorrect_main_artist_id_in_albums():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute("""
@@ -333,7 +475,7 @@ def old_find_incorrect_main_artist_id_in_albums():
                                                      'R.artist_surname']))
 
 
-def old_merge_albums_with_artists():
+def merge_albums_with_artists():
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
     cur.execute("""
@@ -353,7 +495,7 @@ def old_merge_albums_with_artists():
     cur.close()
 
 
-def old_find_incorrect_artists_names_in_albums():
+def find_incorrect_artists_names_in_albums():
     """
     for each album / artist where:
     1. albums.main_artist_id == artists.artist_id
@@ -447,5 +589,5 @@ def old_find_incorrect_artists_names_in_albums():
 if __name__ == '__main__':
     # tmp_artist_types()
     # print(find_similar_artist({'artist_name': 'paton'}, 0.6))
-    old_get_person_first_last_and_sort_names()
+    get_person_first_last_and_sort_names()
     pass

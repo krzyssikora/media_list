@@ -2,7 +2,7 @@ import os
 import msvcrt as m
 
 from music_flask import config, utils, database
-# from music_flask.config import _logger
+from music_flask.config import _logger
 
 
 def take_char():
@@ -439,9 +439,9 @@ def add_album_to_table():
         if album_id:
             album_part['album_id'] = album_id
             for new_artist_id, new_publ_role in album_artists_ids:
-                album_artist_records = database.get_record(table_name='albums_artists',
-                                                           fields=['album_id', 'artist_id'],
-                                                           values=[album_id, new_artist_id])
+                album_artist_records = database.get_records(table_name='albums_artists',
+                                                            fields=['album_id', 'artist_id'],
+                                                            values=[album_id, new_artist_id])
                 if album_artist_records is None or len(album_artist_records) == 0:
                     database.add_record_to_table(record={'album_id': album_id,
                                                          'artist_id': new_artist_id,
@@ -478,20 +478,31 @@ def add_artist_to_table(from_album=False):
         return None
 
 
-def get_query(artist_name, album_title, media):
-    table = database.filter_media(media)
-    table = utils.turn_dicts_to_sliced_list_of_tuples_for_html(database.get_albums_by_title_or_artist(album_title,
-                                                                                                      artist_name,
-                                                                                                      table),
-                                                               config.ALL_COLUMNS)
+def get_simple_query(artist_name, album_title, media):
+    # get the data
+    fields = dict()
+    table = set()
+    if media:
+        fields['medium'] = media
+        if artist_name:
+            artist_name = artist_name.strip()
+            fields['artist_name'] = artist_name
+        if album_title:
+            album_title = album_title.strip()
+            fields['album_title'] = album_title
+        table = database.get_records_from_query(table_name='albums',
+                                                fields=fields)
+
+    table = utils.turn_dicts_into_list_of_tuples_for_html(table, config.ALL_COLUMNS)
+
+    # get the query dict and string
     query_dict = {
         'media': media,
-        'album': album_title.strip(),
-        'artist': artist_name.strip()
+        'album': album_title,
+        'artist': artist_name
     }
     query = ', '.join(['{}: {}'.format(k, ', '.join(v) if isinstance(v, list) else v)
                        for k, v in query_dict.items() if v])
-    # query = ', '.join(['<b>{}</b>: {}'.format(k, v) for k, v in query_dict.items() if v])
     if query == '':
         query = '---'
     many = len(table) - 1

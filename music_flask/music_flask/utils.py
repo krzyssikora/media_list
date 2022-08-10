@@ -1,6 +1,7 @@
 from difflib import SequenceMatcher
 from prettytable import PrettyTable
 from music_flask import config
+from music_flask.config import _logger
 
 
 def turn_tuple_into_dict(the_tuple, the_keys):
@@ -12,8 +13,9 @@ def turn_tuple_into_dict(the_tuple, the_keys):
     return the_dict
 
 
-def turn_dicts_to_sliced_list_of_tuples_for_html(dicts, keys, slice_length=10):
-    # todo: change order of displaying albums
+def turn_dicts_into_list_of_tuples_for_html(dicts, keys,
+                                            sort_keys=('sort_name', 'date_orig', 'date_publ', 'album_title', 'part')):
+    dicts = dicts or []
     non_empty_keys = list()
     display_keys = ['#']
     for key in keys:
@@ -22,17 +24,25 @@ def turn_dicts_to_sliced_list_of_tuples_for_html(dicts, keys, slice_length=10):
         if display_key:
             non_empty_keys.append(key)
             display_keys.append(display_key)
-    table = [tuple(display_keys)]
-    for idx, row_dict in enumerate(dicts):
-        table.append(tuple([idx + 1] + [str(row_dict.get(key, '')) + '/' + str(row_dict.get('parts', ''))
+
+    # change dicts into tuples
+    table = list()
+    for row_dict in dicts:
+        table.append(tuple([''] + [str(row_dict.get(key, '')) + '/' + str(row_dict.get('parts', ''))
                            if (key == 'part_id' and row_dict.get('parts', None))
                            else row_dict.get(key, '') for key in non_empty_keys]))
-    return table
-
-    # sliced_table = [table[slice_no * slice_length: (slice_no + 1) * slice_length]
-    #                 for slice_no in range(len(table) // slice_length + 1)]
-    #
-    # return sliced_table
+    # sort them
+    if sort_keys:
+        sorting_keys = [config.DISPLAY_COLUMNS[k] for k in sort_keys if k in non_empty_keys]
+        sorting_ids = [display_keys.index(k) for k in sorting_keys]
+        sorting_ids.reverse()
+        for idx in sorting_ids:
+            table.sort(key=lambda x: x[idx])
+    # add numbering
+    final_table = [tuple(display_keys)]
+    for idx, row in enumerate(table):
+        final_table.append(tuple((idx + 1,) + row[1:]))
+    return final_table
 
 
 def turn_dicts_to_list_of_tuples(dicts, keys):
@@ -82,7 +92,7 @@ def similarity_ratio(sentence_a, sentence_b):
         ratios.append(ratio_a)
     ratios.sort(reverse=True)
     ratios = ratios[:min_len]
-    return mean(ratios)
+    return mean(ratios) if ratios else 0
 
 
 def pretty_table_from_dicts(dicts, column_names=None, max_column_width=None):
@@ -139,3 +149,14 @@ def pretty_table_from_tuples(tuples, column_names=None, max_column_width=None):
             row = [str(elt)[:max_column_width] for elt in row]
         table.add_row(row)
     return table
+
+
+def get_primary_key_name(table_name):
+    if table_name in {'albums', 'artists'}:
+        return table_name[:-1] + '_id'
+    else:
+        return 'item_id'
+
+
+if __name__ == '__main__':
+    print(similarity_ratio('to be or not', '   '))

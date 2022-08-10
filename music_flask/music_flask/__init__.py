@@ -27,7 +27,7 @@ def query():
     title = 'my music'
     get_items_per_page(items_pp=items_per_page)
     get_media(media_list=chosen_media)
-    users_query_string, users_query_object, table = api.get_query(artist_name, album_title, chosen_media)
+    users_query_string, users_query_object, table = api.get_simple_query(artist_name, album_title, chosen_media)
     return render_template('query.html',
                            title=title,
                            table=table,  # [counter - 1],
@@ -62,9 +62,9 @@ def get_media(media_list):
     global chosen_media
     # chosen_media = json.load(media_list)
     try:
-        chosen_media = eval(media_list)
+        chosen_media = eval(str(media_list))
     except TypeError as e:
-        _logger.error('type: {}, {}'.format(type(chosen_media), e))
+        _logger.error('type before: {}, {}'.format(type(media_list), e))
     return '/'
 
 

@@ -37,6 +37,9 @@
         const table_length = table.length - 1;
         var number_of_pages = Math.ceil(table_length / items_per_page);
         var last_page_length = table_length % items_per_page;
+        if (last_page_length == 0) {
+            last_page_length = items_per_page
+        };
         var counter = 1;
         query_table.innerHTML = getQueryTable();
 
@@ -200,21 +203,22 @@
                     var old_items_per_page = items_per_page;
                     items_per_page = btn;
                     var hidden_items_per_page = document.getElementById('hidden-items-per-page');
-                    hidden_items_per_page.style.display = 'inline';
                     hidden_items_per_page.innerHTML = items_per_page;
                     sendItemsPerPage();
                     // change all buttons' class to off
                     for (let nbr of page_numbers) {
                         page_number_buttons[nbr].className = 'button-off';
                     };
-                    page_number_buttons[btn].className = 'button-on';
                     // change chosen button's class to on
-                    hidden_items_per_page.style.display = 'hidden';
+                    page_number_buttons[btn].className = 'button-on';
                     // find new pages values
                     var first_item_on_page = (counter - 1) * old_items_per_page + 1;
                     counter = Math.ceil(first_item_on_page / items_per_page);
                     number_of_pages = Math.ceil(table_length / items_per_page);
                     last_page_length = table_length % items_per_page;
+                    if (last_page_length == 0) {
+                        last_page_length = items_per_page
+                    };
                     // updatePagesControls();
                     pages_total.innerHTML = number_of_pages;
                     pages_total_bottom.innerHTML = number_of_pages;
