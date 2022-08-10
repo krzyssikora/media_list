@@ -494,7 +494,7 @@ def get_simple_query(artist_name, album_title, media):
                                                 fields=fields)
 
     # table = utils.turn_dicts_into_list_of_tuples_for_html(table, config.ALL_COLUMNS)
-    table, html_table_string, html_dom_ids = utils.get_html_from_table(table, config.ALL_COLUMNS)
+    table, table_header, table_content, html_dom_ids = utils.get_html_from_table(table, config.ALL_COLUMNS)
     # get the query dict and string
     query_dict = {
         'media': media,
@@ -507,7 +507,7 @@ def get_simple_query(artist_name, album_title, media):
         query = '---'
     many = len(table) - 1
     query += ' ({} item{} found)'.format(many, '' if many == 1 else 's')
-    return query, query_dict, table, html_table_string, html_dom_ids
+    return query, query_dict, table, table_header, table_content, html_dom_ids
 
 
 def main():

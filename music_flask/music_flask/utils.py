@@ -15,58 +15,66 @@ def turn_tuple_into_dict(the_tuple, the_keys):
 
 def get_html_from_table(dicts, keys,
                         clickable_columns=('title', 'artist /-s', 'medium'),
-                        sort_keys=('sort_name', 'date_orig', 'date_publ', 'album_title', 'part')):
+                        sort_keys=('type', 'sort_name', 'date_orig', 'date_publ', 'album_title', 'part')):
     def wrap_with_tag(text, tag, dom_elt_id=None):
         html_id = ''
         if dom_elt_id:
-            html_id = ' id="{}"'.format(dom_elt_id)
+            html_id = ' id=\'{}\''.format(dom_elt_id)
         return f'<{tag}{html_id}> {text} </{tag}>'
 
-    def get_table_cell(cell_content, row_id, column_id, cell_tag='td'):
-        if column_id in indexes_of_clickable_columns:
-            html_id = 'query_{}_{}'.format(row_id, column_id)
+    def get_table_cell(cell_content, column_id, cell_tag='td'):
+        if column_id in columns_ids:
+            html_id_elements = [columns_db[column_id]]
             if isinstance(cell_content, list):
                 html_cell_elements = list()
                 for elt in cell_content:
-                    single_html_id = html_id + '_' + '***'.join(elt.split())
-                    html_cell_elements.append(wrap_with_tag(elt, 'span', single_html_id))
-                    html_dom_ids.add((row_id, column_id, elt))
+                    html_id_elements.append('***'.join(elt.split()))
+                    html_id = 'query_{}_{}'.format(*html_id_elements)
+                    html_cell_elements.append(wrap_with_tag(elt, 'span', html_id))
+                    html_dom_ids.add(tuple(html_id_elements))
                 cell_string = wrap_with_tag(', '.join(html_cell_elements), cell_tag)
             else:
+                html_id_elements.append('***'.join(cell_content.split()))
+                html_id = 'query_{}_{}'.format(*html_id_elements)
                 cell_string = wrap_with_tag(cell_content, cell_tag, html_id)
-                html_dom_ids.add((row_id, column_id))
+                html_dom_ids.add(tuple(html_id_elements))
         else:
             if isinstance(cell_content, list):
                 cell_string = wrap_with_tag(', '.join(cell_content), cell_tag)
             else:
                 cell_string = wrap_with_tag(cell_content, cell_tag)
-        # cell_string = wrap_with_tag(cell_string, cell_tag)
         return cell_string
 
-    def get_table_row(row_content, row_id, row_tag='tr'):
+    def get_table_row(row_content, row_tag='tr'):
         row_string = ''
         for column_id, cell_content in enumerate(row_content):
-            row_string += get_table_cell(cell_content, row_id, column_id)
+            row_string += get_table_cell(cell_content, column_id)
         row_string = wrap_with_tag(row_string, row_tag)
         return row_string
 
     table = turn_dicts_into_list_of_tuples_for_html(dicts, keys, sort_keys)
-    table_header = table[0]
+
+    # columns_ids - ids of columns that can be clicked
+    # columns_db  - db names of all columns
+    # columns_html - names to be used for html ids
+    table_columns = table[0]
     html_dom_ids = set()
     table_rows = table[1:]
-    clickable_columns = [col for col in clickable_columns if col in table_header]
-    indexes_of_clickable_columns = [table_header.index(col) for col in clickable_columns]
-    html_table_string = ''
+    clickable_columns = [col for col in clickable_columns if col in table_columns]
+    columns_ids = [table_columns.index(col) for col in clickable_columns]
+    columns_db = [config.DB_COLUMNS_FROM_DISPLAY[col.split()[0]] for col in table_columns]
+    columns_db = ['***'.join(col.split('_')) for col in columns_db]
+    table_header = ''
     # header row
-    for cell_text in table_header:
-        html_table_string += wrap_with_tag(cell_text, 'th')
-    html_table_string = wrap_with_tag(html_table_string, 'tr')
+    for cell_text in table_columns:
+        table_header += wrap_with_tag(cell_text, 'th')
+    table_header = wrap_with_tag(table_header, 'tr')
     # other rows
+    table_content = list()
     for idx, row in enumerate(table_rows):
-        html_table_string += get_table_row(row, idx + 1)
-    html_table_string = wrap_with_tag(html_table_string, 'table')
+        table_content.append(get_table_row(row))
 
-    return table, html_table_string, html_dom_ids
+    return table, table_header, table_content, html_dom_ids
 
 
 def turn_dicts_into_list_of_tuples_for_html(dicts, keys,
@@ -88,6 +96,8 @@ def turn_dicts_into_list_of_tuples_for_html(dicts, keys,
                            if (key == 'part_id' and row_dict.get('parts', None))
                            else row_dict.get(key, '') for key in non_empty_keys]))
     # sort them
+    # todo 'type' should not be displayed, but if it is not, then it is not sorted
+    #  change approach - make up table with all columns, sort, remove redundant columns
     if sort_keys:
         sorting_keys = [config.DISPLAY_COLUMNS[k] for k in sort_keys if k in non_empty_keys]
         sorting_ids = [display_keys.index(k) for k in sorting_keys]

@@ -5,6 +5,10 @@
     // advanced filters
     // cascading filters
     
+    function convert(elt) {
+        return $("<span />", { html: elt }).text();
+    };
+
     function getHiddenData(data_id, data_type) {
         // data_id (str): id from html
         // data_type (str): either 'int' or 'object'
@@ -16,7 +20,10 @@
         } else if (data_type == 'int') {
             ret_object = parseInt(elt_string)
         } else if (data_type == 'object') {
-            ret_object = JSON.parse(elt_string); 
+            elt_string = convert(elt_string);
+            ret_object = JSON5.parse(elt_string);
+        } else if (data_type == 'html') {
+            ret_object = convert(elt_string)
         };
         dom_elt.style.display = 'hidden';
         return ret_object;
@@ -32,9 +39,13 @@
         var query_table = document.getElementById('results');
         // table content
         var table = getHiddenData('hidden-table', 'object');
+        var table_header =getHiddenData('hidden-table-header', 'html');
+        // var table_content = convert(document.getElementById('hidden-table-content'));
+        var table_content = getHiddenData('hidden-table-content', 'object');
         var items_per_page = getHiddenData('hidden-items-per-page', 'int');
-        
-        const table_length = table.length - 1;
+        // document.getElementById('empty').innerHTML = '<table>' + table_header + table_content.slice(0,3) + '</table>'
+
+        const table_length = table_content.length;
         var number_of_pages = Math.ceil(table_length / items_per_page);
         var last_page_length = table_length % items_per_page;
         if (last_page_length == 0) {
@@ -42,7 +53,6 @@
         };
         var counter = 1;
         query_table.innerHTML = getQueryTable();
-
         // previous filter
         // var user_filter = getHiddenData('hidden-filter', 'object');
         
@@ -159,6 +169,7 @@
             coll[0].style.width = (width - 30) + 'px';
             content.style.width = (width - 40) + 'px';
         };
+        
 
         function getQueryTable() {
             if (counter == number_of_pages) {
@@ -170,48 +181,15 @@
                 return '';
             };
             var table_str = '<table>';
-            table_str += add_top_row();
-            for (let i = 0; i < number_of_items; i++) {
-                table_str += add_row(counter * items_per_page + i + 1 - items_per_page);
-            };
+            table_str += table_header;
+            table_str += table_content.slice(counter * items_per_page - items_per_page, 
+                counter * items_per_page + number_of_items - items_per_page).join(' ');
             table_str += '</table>';
             adjustBottomBorder();
             return table_str;
         };
 
-        function add_top_row() {
-            var ret_str = '<tr>';
-            for (const elt of table[0]) {
-                ret_str += '<th>' + elt + '</th>';
-            };
-            ret_str += '</tr>'
-            return ret_str
-        };
 
-        function convert(elt) {
-        // var convert = function(convert){
-            return $("<span />", { html: elt }).text();
-            //return document.createElement("span").innerText;
-        };
-        
-
-        function add_row(row) {
-            var ret_str = '<tr>';
-            for (const elt of table[row]) {
-                var new_elt = elt.toString();
-                // console.log(typeof(new_elt))
-                // if (new_elt.includes('Blixa')) {
-                //     console.log(new_elt.includes('&lt;'));
-                //     console.log(new_elt.includes('&gt;'));
-                //     new_elt = new_elt.replace('&lt;', '<');
-                //     new_elt = new_elt.replace('&gt;', '>');
-                //     console.log(new_elt == elt.toString())
-                // };
-                ret_str += '<td>' + convert(new_elt) + '</td>';
-            };
-            ret_str += '</tr>'
-            return ret_str
-        };
         function addAllListeners() {
             for (let btn of page_numbers) {
                 page_number_buttons[btn].addEventListener("click", function(evt){

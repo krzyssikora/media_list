@@ -53,7 +53,7 @@ DISPLAY_COLUMNS = {
     'date_orig': 'recorded',
     'date_publ': 'published',
     'notes': 'notes',
-    'type': None,
+    'type': 'type',
     'genre': 'genre',
     'artist_name': 'artist /-s',
     # 'artist_surname': 'surname',
@@ -61,7 +61,7 @@ DISPLAY_COLUMNS = {
     'artist_role': 'role',
 }
 
-DB_COLUMNS_FROM_DISPLAY = {display_column: db_column
+DB_COLUMNS_FROM_DISPLAY = {display_column.split()[0]: db_column
                            for db_column, display_column in DISPLAY_COLUMNS.items() if display_column}
 
 DB_ARTISTS_COLUMNS = [
