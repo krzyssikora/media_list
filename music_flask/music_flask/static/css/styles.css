@@ -167,8 +167,8 @@ span.deleteicon span {
   width: 20px;
   height: 20px;
   border-radius: 30%;
-  color: #fff;
-  background-color: #ccc;
+  color: var(--colour-text-white);
+  background-color: var(--colour-main-background);
   font: 18px monospace;
   text-align: center;
   line-height: 1em;

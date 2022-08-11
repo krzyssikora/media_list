@@ -53,7 +53,7 @@
             last_page_length = items_per_page
         };
         var counter = 1;
-        query_table.innerHTML = getQueryTable();
+        refreshQueryTable();
         // previous filter ???
         // var user_filter = getHiddenData('hidden-filter', 'object');
         
@@ -147,7 +147,7 @@
             };
             page_number.innerHTML = counter;
             page_number_bottom.innerHTML = counter;
-            query_table.innerHTML = getQueryTable();
+            refreshQueryTable();
         };
 
         function sendItemsPerPage() {
@@ -190,6 +190,11 @@
             return table_str;
         };
 
+        function refreshQueryTable() {
+            query_table.innerHTML = getQueryTable();
+            addTableListeners();
+        };
+
 
         function addAllListeners() {
             for (let btn of page_numbers) {
@@ -218,7 +223,7 @@
                     pages_total.innerHTML = number_of_pages;
                     pages_total_bottom.innerHTML = number_of_pages;
                     changePage();
-                    query_table.innerHTML = getQueryTable();
+                    refreshQueryTable();
                 })
             };
     
@@ -269,7 +274,9 @@
                 counter = 1;
                 changePage();
             });
+        };
 
+        function addTableListeners() {
             const query_elements = document.querySelectorAll(`[id^="query_"]`);
             for (let i=0; i<query_elements.length; i++) {
                 const dom_element = query_elements[i];
@@ -280,12 +287,23 @@
                     evt.preventDefault();
                     if (db_name == 'medium') {
                         console.log(`link no ${i}, medium: ${query_value}, CLICKED!`)
-                        // TODO: finish choice of media
+                        var medium_buttons = document.getElementsByClassName('medium-button');
+                        for (let medium_button of medium_buttons) {
+                            medium_button.classList.remove('clicked');
+                            var button_text = medium_button.innerHTML;
+                            if (active_media.includes(button_text)) {
+                                active_media = active_media.filter(elt => elt != button_text);
+                            };
+                            if (button_text == query_value) {
+                                medium_button.classList.toggle("clicked");
+                                active_media.push(button_text);
+                            };
+                        };
                     } else {
                         const query_text_field = document.getElementById(db_name);
                         query_text_field.value = query_value;
-                        document.getElementById('btn-submit').click();
                     };
+                    document.getElementById('btn-submit').click();
                 })
             };
         };

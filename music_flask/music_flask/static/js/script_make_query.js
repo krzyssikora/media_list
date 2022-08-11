@@ -1,8 +1,9 @@
+var active_media = [];
 (function() {
     "use strict";
 
 	var all_media = ['CD', 'vinyl', 'DVD', 'ebook', 'book']
-	var active_media = [];
+	
 
 
 	// make the buttons for choice of media clickable
