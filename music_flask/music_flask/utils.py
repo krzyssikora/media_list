@@ -28,6 +28,7 @@ def get_html_from_table(dicts, keys,
         Args:
             cell_content: either a string or a list of strings
             column_id (int): column number from 0
+            row_id (int): row number from 0
             cell_tag: most likely will be always 'td'
 
         Returns:
@@ -48,7 +49,7 @@ def get_html_from_table(dicts, keys,
                     html_dom_ids.add(tuple(html_id_elements))
                 cell_string = wrap_with_tag(', '.join(html_cell_elements), cell_tag)
             else:
-                cell_content = cell_content
+                cell_content = str(cell_content)
                 html_id_elements.append('***'.join(cell_content.replace('\'', '@').split()))
                 html_id = 'query_{}_{}_{}'.format(*html_id_elements)
                 cell_content = wrap_with_tag(cell_content, 'span', html_id)
@@ -96,8 +97,8 @@ def get_html_from_table(dicts, keys,
 def turn_dicts_into_list_of_tuples_for_html(dicts, keys,
                                             sort_keys=('sort_name', 'date_orig', 'date_publ', 'album_title', 'part')):
     dicts = dicts or []
-    non_empty_keys = list()
-    display_keys = ['#']
+    non_empty_keys = list()  # database column names with at least one non-empty row
+    display_keys = ['#']  # display columns as above
     for key in keys:
         display_key = config.DISPLAY_COLUMNS.get(key, None) \
             if any(str(row.get(key, '')).strip() for row in dicts) else None
@@ -105,25 +106,32 @@ def turn_dicts_into_list_of_tuples_for_html(dicts, keys,
             non_empty_keys.append(key)
             display_keys.append(display_key)
 
+    if len(display_keys) == 1:
+        return [display_keys]
     # change dicts into tuples
     table = list()
     for row_dict in dicts:
         table.append(tuple([''] + [str(row_dict.get(key, '')) + '/' + str(row_dict.get('parts', ''))
-                           if (key == 'part_id' and row_dict.get('parts', None))
-                           else row_dict.get(key, '') for key in non_empty_keys]))
+                                   if (key == 'part_id' and row_dict.get('parts', None))
+                                   else row_dict.get(key, '') for key in non_empty_keys]))
     # sort them
-    # todo 'type' should not be displayed, but if it is not, then it is not sorted
-    #  change approach - make up table with all columns, sort, remove redundant columns
     if sort_keys:
         sorting_keys = [config.DISPLAY_COLUMNS[k] for k in sort_keys if k in non_empty_keys]
         sorting_ids = [display_keys.index(k) for k in sorting_keys]
         sorting_ids.reverse()
         for idx in sorting_ids:
             table.sort(key=lambda x: x[idx])
+
+    # remove no-display columns
     # add numbering
-    final_table = [tuple(display_keys)]
+    no_display_columns = ['sort name', 'type']
+    no_display_indexes = [display_keys.index(col) for col in no_display_columns]
+    final_table = [tuple(display_keys[col_idx] for col_idx in range(len(display_keys))
+                         if col_idx not in no_display_indexes)]
     for idx, row in enumerate(table):
-        final_table.append(tuple((idx + 1,) + row[1:]))
+        final_table.append(tuple([idx + 1] + [row[col_idx + 1] for col_idx in range(len(display_keys) - 1)
+                                              if col_idx + 1 not in no_display_indexes]))
+
     return final_table
 
 
@@ -136,8 +144,6 @@ def turn_dicts_to_list_of_tuples(dicts, keys):
 
 
 def similarity_ratio_for_words(a, b):
-    # a = clear_word(a)
-    # b = clear_word(b)
     return SequenceMatcher(None, a, b).ratio()
 
 

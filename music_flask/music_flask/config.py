@@ -1,4 +1,4 @@
-from datetime import datetime
+# from datetime import datetime
 import logging
 
 # DATABASE = "music_flask/database/records_list.sqlite"
@@ -46,7 +46,7 @@ DISPLAY_COLUMNS = {
     'parts': None,
     'part_id': 'part',
     'first_part_id': None,
-    'sort_name': None,
+    'sort_name': 'sort name',  # change later to None
     'album_title': 'title',
     'content': 'content',
     'publisher': 'publisher',
@@ -54,7 +54,7 @@ DISPLAY_COLUMNS = {
     'date_orig': 'recorded',
     'date_publ': 'published',
     'notes': 'notes',
-    'type': 'type',
+    'type': 'type',  # change later to None
     'genre': 'genre',
     'artist_name': 'artist /-s',
     # 'artist_surname': 'surname',
