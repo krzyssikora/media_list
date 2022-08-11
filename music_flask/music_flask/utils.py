@@ -19,7 +19,7 @@ def get_html_from_table(dicts, keys,
     def wrap_with_tag(text, tag, dom_elt_id=None):
         html_id = ''
         if dom_elt_id:
-            html_id = ' id=\'{}\''.format(dom_elt_id)
+            html_id = ' id=\'{}\' class=\'new_query\''.format(dom_elt_id)
         return f'<{tag}{html_id}> {text} </{tag}>'
 
     def get_table_cell(cell_content, column_id, row_id, cell_tag='td'):
@@ -51,7 +51,8 @@ def get_html_from_table(dicts, keys,
                 cell_content = cell_content
                 html_id_elements.append('***'.join(cell_content.replace('\'', '@').split()))
                 html_id = 'query_{}_{}_{}'.format(*html_id_elements)
-                cell_string = wrap_with_tag(cell_content, cell_tag, html_id)
+                cell_content = wrap_with_tag(cell_content, 'span', html_id)
+                cell_string = wrap_with_tag(cell_content, cell_tag)
                 html_dom_ids.add(tuple(html_id_elements))
         else:
             if isinstance(cell_content, list):

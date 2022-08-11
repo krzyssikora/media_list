@@ -30,10 +30,9 @@
     };
 
     window.addEventListener("load", function() {
-        // data properties
+        // data properties and DOM elements
         var counter = 1;
-        // DOM elements
-        // submit query button
+        // submit query button ???
         
         // table position
         var query_table = document.getElementById('results');
@@ -43,8 +42,10 @@
         // var table_content = convert(document.getElementById('hidden-table-content'));
         var table_content = getHiddenData('hidden-table-content', 'object');
         var items_per_page = getHiddenData('hidden-items-per-page', 'int');
+        // debug:
         // document.getElementById('empty').innerHTML = '<table>' + table_header + table_content.slice(0,3) + '</table>'
 
+        // query table settings
         const table_length = table_content.length;
         var number_of_pages = Math.ceil(table_length / items_per_page);
         var last_page_length = table_length % items_per_page;
@@ -53,7 +54,7 @@
         };
         var counter = 1;
         query_table.innerHTML = getQueryTable();
-        // previous filter
+        // previous filter ???
         // var user_filter = getHiddenData('hidden-filter', 'object');
         
         // pages-controls
@@ -268,6 +269,25 @@
                 counter = 1;
                 changePage();
             });
+
+            const query_elements = document.querySelectorAll(`[id^="query_"]`);
+            for (let i=0; i<query_elements.length; i++) {
+                const dom_element = query_elements[i];
+                const query_data = dom_element.id.split("_");
+                const db_name = query_data[2].replace("***", "_");
+                const query_value = query_data[3].replaceAll("***", " ").replaceAll("@", "'");
+                dom_element.addEventListener('click', function(evt) {
+                    evt.preventDefault();
+                    if (db_name == 'medium') {
+                        console.log(`link no ${i}, medium: ${query_value}, CLICKED!`)
+                        // TODO: finish choice of media
+                    } else {
+                        const query_text_field = document.getElementById(db_name);
+                        query_text_field.value = query_value;
+                        document.getElementById('btn-submit').click();
+                    };
+                })
+            };
         };
     });
 

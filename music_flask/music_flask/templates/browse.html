@@ -17,10 +17,10 @@
             </div>
             <p class="query-info">query:</p>
             <div class='form-group'>
-                <input type='text' class='form' placeholder='artist name' name='artist_name' id='artist_name'>
+                <input type='text' class='form deletable' placeholder='artist name' name='artist_name' id='artist_name'>
             </div>
             <div class='form-group'>
-                <input type='text' class='form' placeholder='album title' name='album_title' id='album_title'>
+                <input type='text' class='form deletable' placeholder='album title' name='album_title' id='album_title'>
             </div>
             </br>
             <button type="submit" class="button-off" id="btn-submit">submit</button>
@@ -31,7 +31,7 @@
     {% endblock %}
 
 </div>
-<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
 <script src="{{ url_for('static', filename='js/script_main_menu.js') }}"></script>
 <script src="{{ url_for('static', filename='js/script_make_query.js') }}"></script>
 <script src="{{ url_for('static', filename='js/script_collapsible.js') }}"></script>
