@@ -1,8 +1,8 @@
 # from datetime import datetime
 import logging
 
-# DATABASE = "music_flask/database/records_list.sqlite"
-DATABASE = "music_flask/database/records_list_tmp.sqlite"
+DATABASE = "music_flask/database/records_list.sqlite"
+# DATABASE = "music_flask/database/records_list_tmp.sqlite"
 
 # the one below is for local debugging only:
 # DATABASE =
