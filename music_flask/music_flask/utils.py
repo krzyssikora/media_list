@@ -22,20 +22,35 @@ def get_html_from_table(dicts, keys,
             html_id = ' id=\'{}\''.format(dom_elt_id)
         return f'<{tag}{html_id}> {text} </{tag}>'
 
-    def get_table_cell(cell_content, column_id, cell_tag='td'):
+    def get_table_cell(cell_content, column_id, row_id, cell_tag='td'):
+        """
+
+        Args:
+            cell_content: either a string or a list of strings
+            column_id (int): column number from 0
+            cell_tag: most likely will be always 'td'
+
+        Returns:
+            table,
+            table_header,
+            table_content,
+            html_dom_ids (list): tuples (column_database_name, value_to_be_queried)
+
+        """
         if column_id in columns_ids:
-            html_id_elements = [columns_db[column_id]]
+            html_id_elements = [row_id, columns_db[column_id]]
             if isinstance(cell_content, list):
                 html_cell_elements = list()
                 for elt in cell_content:
-                    html_id_elements.append('***'.join(elt.split()))
-                    html_id = 'query_{}_{}'.format(*html_id_elements)
+                    html_id_elements_of_this_elt = html_id_elements + ['***'.join(elt.replace('\'', '@').split())]
+                    html_id = 'query_{}_{}_{}'.format(*html_id_elements_of_this_elt)
                     html_cell_elements.append(wrap_with_tag(elt, 'span', html_id))
                     html_dom_ids.add(tuple(html_id_elements))
                 cell_string = wrap_with_tag(', '.join(html_cell_elements), cell_tag)
             else:
-                html_id_elements.append('***'.join(cell_content.split()))
-                html_id = 'query_{}_{}'.format(*html_id_elements)
+                cell_content = cell_content
+                html_id_elements.append('***'.join(cell_content.replace('\'', '@').split()))
+                html_id = 'query_{}_{}_{}'.format(*html_id_elements)
                 cell_string = wrap_with_tag(cell_content, cell_tag, html_id)
                 html_dom_ids.add(tuple(html_id_elements))
         else:
@@ -45,10 +60,10 @@ def get_html_from_table(dicts, keys,
                 cell_string = wrap_with_tag(cell_content, cell_tag)
         return cell_string
 
-    def get_table_row(row_content, row_tag='tr'):
+    def get_table_row(row_content, row_id, row_tag='tr'):
         row_string = ''
         for column_id, cell_content in enumerate(row_content):
-            row_string += get_table_cell(cell_content, column_id)
+            row_string += get_table_cell(cell_content, column_id, row_id)
         row_string = wrap_with_tag(row_string, row_tag)
         return row_string
 
@@ -72,7 +87,7 @@ def get_html_from_table(dicts, keys,
     # other rows
     table_content = list()
     for idx, row in enumerate(table_rows):
-        table_content.append(get_table_row(row))
+        table_content.append(get_table_row(row, idx))
 
     return table, table_header, table_content, html_dom_ids
 

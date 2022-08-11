@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 
 # DATABASE = "music_flask/database/records_list.sqlite"
@@ -135,6 +136,9 @@ ALL_COLUMNS = [
     'artist_firstname',
     'artist_role',
 ]
+# logging.basicConfig(filename='my_music_{}.log'.format(datetime.strftime(datetime.now(),
+#                                                                         '%Y_%m_%d')),
+#                     level=logging.DEBUG)
 # create logger
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
