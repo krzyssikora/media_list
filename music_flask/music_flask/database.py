@@ -196,18 +196,28 @@ def get_album_by_id(idx):
         # todo collect artists roles / functions, too (like: guitar, composer, bass OR writer, translator)
         #  - it needs artist role / function to be in albums_artists table;
         #  they could be then displayed in the form 'Mike Patton (vocal, keyboard), Tomasz Mann (writer)'
+        # cur.execute("""
+        #             SELECT artists.artist_name
+        #             FROM albums_artists JOIN artists
+        #             ON albums_artists.artist_id = artists.artist_id
+        #             WHERE albums_artists.publ_role LIKE 'title%'
+        #             AND albums_artists.album_id = {}
+        #             """.format(idx))
+        # lines = cur.fetchall()
+        # lines = [line[0] for line in lines]
+        # record_dict['artist_name'] = lines
+        # conn.commit()
+        # cur.close()
+
         cur.execute("""
-                    SELECT artists.artist_name 
-                    FROM albums_artists JOIN artists
-                    ON albums_artists.artist_id = artists.artist_id
-                    WHERE albums_artists.publ_role LIKE 'title%'
-                    AND albums_artists.album_id = {}
-                    """.format(idx))
+                            SELECT artists.artist_name, albums_artists.publ_role
+                            FROM albums_artists JOIN artists
+                            ON albums_artists.artist_id = artists.artist_id
+                            AND albums_artists.album_id = {}
+                            """.format(idx))
+        # WHERE albums_artists.publ_role LIKE 'title%'
         lines = cur.fetchall()
-        lines = [line[0] for line in lines]
-        # todo: make entries clickable, but I think it will be in converting to html
-        # record_dict['artist_name'] = '<p><b>' + '</b>, <b>'.join(lines) + '</b></p>'
-        # record_dict['artist_name'] = ', '.join(lines)
+        lines = ([line[0] for line in lines if line[1] == 'title'], [line[0] for line in lines if line[1] == 'other'])
         record_dict['artist_name'] = lines
         conn.commit()
         cur.close()

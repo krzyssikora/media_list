@@ -20,7 +20,7 @@ def get_html_from_table(dicts, keys,
         html_id = ''
         if dom_elt_id:
             html_id = ' id=\'{}\' class=\'new_query\''.format(dom_elt_id)
-        return f'<{tag}{html_id}> {text} </{tag}>'
+        return f'<{tag}{html_id}>{text}</{tag}>'
 
     def get_table_cell(cell_content, column_id, row_id, cell_tag='td'):
         """
@@ -38,16 +38,29 @@ def get_html_from_table(dicts, keys,
             html_dom_ids (list): tuples (column_database_name, value_to_be_queried)
 
         """
+        def get_html_tagged_string_from_list(cell_cont):
+            html_cell_elements = list()
+            for elmt in cell_cont:
+                html_id_elements_of_this_elmt = html_id_elements + ['***'.join(elmt.replace('\'', '@').split())]
+                html_id_for_this_elmt = 'query_{}_{}_{}'.format(*html_id_elements_of_this_elmt)
+                html_cell_elements.append(wrap_with_tag(elmt, 'span', html_id_for_this_elmt))
+                html_dom_ids.add(tuple(html_id_elements))
+            return ', '.join(html_cell_elements)
+
         if column_id in columns_ids:
             html_id_elements = [row_id, columns_db[column_id]]
-            if isinstance(cell_content, list):
-                html_cell_elements = list()
-                for elt in cell_content:
-                    html_id_elements_of_this_elt = html_id_elements + ['***'.join(elt.replace('\'', '@').split())]
-                    html_id = 'query_{}_{}_{}'.format(*html_id_elements_of_this_elt)
-                    html_cell_elements.append(wrap_with_tag(elt, 'span', html_id))
-                    html_dom_ids.add(tuple(html_id_elements))
-                cell_string = wrap_with_tag(', '.join(html_cell_elements), cell_tag)
+            if isinstance(cell_content, tuple):
+                # artist_names are tuples of two lists
+                # 1st with title artists
+                # 2nd with other artists
+                cell_content_1 = get_html_tagged_string_from_list(cell_content[0])
+                cell_content_2 = get_html_tagged_string_from_list(cell_content[1])
+                if cell_content_2:
+                    cell_content_2 = ' (' + get_html_tagged_string_from_list(cell_content[1]) + ')'
+                cell_string = wrap_with_tag(cell_content_1 + cell_content_2, cell_tag)
+            elif isinstance(cell_content, list):
+                cell_content = get_html_tagged_string_from_list(cell_content)
+                cell_string = wrap_with_tag(cell_content, cell_tag)
             else:
                 cell_content = str(cell_content)
                 html_id_elements.append('***'.join(cell_content.replace('\'', '@').split()))
