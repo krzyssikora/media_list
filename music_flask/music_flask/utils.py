@@ -16,11 +16,14 @@ def turn_tuple_into_dict(the_tuple, the_keys):
 def get_html_from_table(dicts, keys,
                         clickable_columns=('title', 'artist /-s', 'medium'),
                         sort_keys=('type', 'sort_name', 'date_orig', 'date_publ', 'album_title', 'part')):
-    def wrap_with_tag(text, tag, dom_elt_id=None):
+    def wrap_with_tag(text, tag, dom_elt_id=None, dom_elt_class=None):
         html_id = ''
+        html_class = ''
         if dom_elt_id:
             html_id = ' id=\'{}\' class=\'new_query\''.format(dom_elt_id)
-        return f'<{tag}{html_id}>{text}</{tag}>'
+        if dom_elt_class:
+            html_class = ' class=\'{}\''.format(dom_elt_class)
+        return f'<{tag}{html_id}{html_class}>{text}</{tag}>'
 
     def get_table_cell(cell_content, column_id, row_id, cell_tag='td'):
         """
@@ -56,7 +59,8 @@ def get_html_from_table(dicts, keys,
                 cell_content_1 = get_html_tagged_string_from_list(cell_content[0])
                 cell_content_2 = get_html_tagged_string_from_list(cell_content[1])
                 if cell_content_2:
-                    cell_content_2 = ' (' + get_html_tagged_string_from_list(cell_content[1]) + ')'
+                    cell_content_2 = wrap_with_tag(' (' + get_html_tagged_string_from_list(cell_content[1]) + ')',
+                                                   'span', dom_elt_class='other_artist')
                 cell_string = wrap_with_tag(cell_content_1 + cell_content_2, cell_tag)
             elif isinstance(cell_content, list):
                 cell_content = get_html_tagged_string_from_list(cell_content)

@@ -33,6 +33,8 @@
         // data properties and DOM elements
         var counter = 1;
         // submit query button ???
+
+        const other_artists_checkbox = document.getElementById('other-artists-checkbox');
         
         // table position
         var query_table = document.getElementById('results');
@@ -274,6 +276,20 @@
                 counter = 1;
                 changePage();
             });
+
+            other_artists_checkbox.addEventListener('click', function(){
+                other_artists_checkbox.value = 1 - other_artists_checkbox.value;
+                var other_artists = document.getElementsByClassName('other_artist');
+                if (other_artists_checkbox.value == 1) {
+                    for (var artist of other_artists) {
+                        artist.style.display = 'block';
+                    }
+                } else {
+                    for (var artist of other_artists) {
+                        artist.style.display = 'none';
+                    }
+                };
+            })
         };
 
         function addTableListeners() {
