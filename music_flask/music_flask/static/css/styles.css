@@ -164,27 +164,27 @@ div.trim {
   position: relative;
 }
 .tooltip:hover:after{
-  background: #333;
-  background: rgba(0,0,0,.8);
+  background: var(--colour-border);
   border-radius: 10px;
   bottom: 26px;
+  left: 0px;
   color: #fff;
   content: attr(other-artists-info);
-  left: 20%;
   padding: 5px;
   position: absolute;
   z-index: 98;
   width: 80px;
   font-size: small;
+  vertical-align: middle;
   text-align: center;
 }
 .tooltip:hover:before{
   border: solid;
-  border-color: #333 transparent;
+  border-color: var(--colour-border) transparent;
   border-width: 6px 6px 0 6px;
   bottom: 20px;
+  left: 10px;
   content: "";
-  left: 50%;
   position: absolute;
   z-index: 99;
 }
