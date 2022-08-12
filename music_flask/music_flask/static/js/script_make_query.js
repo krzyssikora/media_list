@@ -22,11 +22,6 @@ var active_media = [];
 	};
 
 	// create crosses in input boxes
-	// $(document).ready(function() {
-	// 	$('input.deletable').wrap('<span class="deleteicon"></span>').after($('<span>x</span>').click(function() {
-	// 		$(this).prev('input').val('').trigger('change').focus();
-	// 	}));
-	// });
 	$('input.deletable').wrap('<span class="deleteicon"></span>').after($('<span>x</span>').click(function() {
 		$(this).prev('input').val('').trigger('change').focus();
 	}));
@@ -55,6 +50,7 @@ var active_media = [];
 
 	var artist_field = document.getElementById('artist_name'); 
 	var album_field = document.getElementById('album_title'); 
+	var publisher_field = document.getElementById('publisher');
 	var user_filter;
     $.getScript('/static/js/module.js', function(){
 		user_filter = getHiddenData('hidden-filter', 'object');
@@ -67,6 +63,9 @@ var active_media = [];
 			};
 			if (user_filter.album.length > 0) {
 				album_field.value = user_filter.album
+			};
+			if (user_filter.publisher.length > 0) {
+				publisher_field.value = user_filter.publisher
 			};
 			for (var medium of user_filter.media) {
 				document.getElementById(`button-${medium}`).setAttribute('class', 'medium-button clicked');

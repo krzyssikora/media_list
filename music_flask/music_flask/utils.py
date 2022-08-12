@@ -14,7 +14,7 @@ def turn_tuple_into_dict(the_tuple, the_keys):
 
 
 def get_html_from_table(dicts, keys,
-                        clickable_columns=('title', 'artist /-s', 'medium'),
+                        clickable_columns=('title', 'artist /-s', 'medium', 'publisher'),
                         sort_keys=('type', 'sort_name', 'date_orig', 'date_publ', 'album_title', 'part')):
     def wrap_with_tag(text, tag, dom_elt_id=None, dom_elt_class=None):
         html_id = ''
@@ -108,7 +108,7 @@ def get_html_from_table(dicts, keys,
     for idx, row in enumerate(table_rows):
         table_content.append(get_table_row(row, idx))
 
-    return table, table_header, table_content, html_dom_ids
+    return table_header, table_content, html_dom_ids
 
 
 def turn_dicts_into_list_of_tuples_for_html(dicts, keys,

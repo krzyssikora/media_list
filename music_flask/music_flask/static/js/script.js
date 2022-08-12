@@ -35,11 +35,18 @@
         // submit query button ???
 
         const other_artists_checkbox = document.getElementById('other-artists-checkbox');
-        
+        const publishers = getHiddenData('hidden-publishers', 'object');
+        var publishers_choice = document.getElementById('publisher_list');
+
+        publishers.forEach(function(item){
+            var option = document.createElement('option');
+            option.value = item;
+            publishers_choice.appendChild(option);
+        })
+
         // table position
         var query_table = document.getElementById('results');
         // table content
-        var table = getHiddenData('hidden-table', 'object');
         var table_header =getHiddenData('hidden-table-header', 'html');
         // var table_content = convert(document.getElementById('hidden-table-content'));
         var table_content = getHiddenData('hidden-table-content', 'object');
@@ -180,7 +187,7 @@
             } else {
                 var number_of_items = items_per_page
             };
-            if (table.length <= 1) {
+            if (table_length <= 1) {
                 return '';
             };
             var table_str = '<table>';
@@ -301,6 +308,7 @@
                 const query_value = query_data[3].replaceAll("***", " ").replaceAll("@", "'");
                 dom_element.addEventListener('click', function(evt) {
                     evt.preventDefault();
+                    console.log(`query_value: ${query_value}, db_name: ${db_name}`);
                     if (db_name == 'medium') {
                         console.log(`link no ${i}, medium: ${query_value}, CLICKED!`)
                         var medium_buttons = document.getElementsByClassName('medium-button');
@@ -318,6 +326,7 @@
                     } else {
                         const query_text_field = document.getElementById(db_name);
                         query_text_field.value = query_value;
+                        console.log(query_text_field)
                     };
                     document.getElementById('btn-submit').click();
                 })

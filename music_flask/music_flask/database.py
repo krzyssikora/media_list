@@ -388,6 +388,18 @@ def get_records_from_query(table_name,
     return get_records_from_their_ids(table_name, records_ids)
 
 
+def get_distinct_entries(table_name, field_name):
+    conn = sqlite3.connect(config.DATABASE)
+    cur = conn.cursor()
+    cur.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL".format(field_name, table_name, field_name))
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    lines = [line[0] for line in lines]
+    lines.sort()
+    return lines
+
+
 def update_records_field(table_name, record_dict, field, value):
     conn = sqlite3.connect(config.DATABASE)
     cur = conn.cursor()
@@ -452,9 +464,7 @@ def dummy():
 
 
 if __name__ == '__main__':
-    a = get_similar('artists', {'artist_name': 'John'}, return_field='all')
-    for _ in a:
-        print(_)
+    print(get_distinct_entries('albums', 'publisher'))
     quit()
     print(get_db_columns())
 

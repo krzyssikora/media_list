@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 import json
-from music_flask import config, utils, api
+from music_flask import config, utils, api, database
 from music_flask.config import _logger
 
 app = Flask(__name__)
@@ -24,23 +24,25 @@ def query():
     global counter_value
     artist_name = request.form.get('artist_name')
     album_title = request.form.get('album_title')
+    publisher = request.form.get('publisher')
+    _logger.debug("publisher: {}".format(publisher))
     title = 'my music'
     get_items_per_page(items_pp=items_per_page)
     get_media(media_list=chosen_media)
-    users_query_string, users_query_object, table, table_header, table_content, html_dom_ids = \
-        api.get_simple_query(artist_name, album_title, chosen_media)
+    users_query_string, users_query_object, table_header, table_content, html_dom_ids = \
+        api.get_simple_query(artist_name, album_title, chosen_media, publisher)
+    publishers = database.get_distinct_entries('albums', 'publisher')
     return render_template('query.html',
                            title=title,
-                           table=table,  # [counter - 1],
                            table_header=table_header,
                            table_content=table_content,
                            html_dom_ids=html_dom_ids,
-                           table_json=json.dumps(table),
+                           publishers=publishers,
                            query=users_query_string,
                            user_filter=users_query_object,
                            items_per_page=items_per_page,
                            counter=counter_value,
-                           pages=len(table) // items_per_page + 1,
+                           pages=len(table_content) // items_per_page,
                            )
 
 
@@ -49,7 +51,7 @@ def browse():
     title = 'my music'
     return render_template('browse.html',
                            title=title,
-                           user_filter=str({'media': ['CD', 'vinyl', 'DVD'], 'album': '', 'artist': ''})
+                           user_filter=str({'media': ['CD', 'vinyl', 'DVD'], 'album': '', 'artist': '', 'publisher': ''})
                            )
 
 
