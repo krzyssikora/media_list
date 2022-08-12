@@ -282,7 +282,7 @@
                 var other_artists = document.getElementsByClassName('other_artist');
                 if (other_artists_checkbox.value == 1) {
                     for (var artist of other_artists) {
-                        artist.style.display = 'block';
+                        artist.style.display = 'inline';
                     }
                 } else {
                     for (var artist of other_artists) {
