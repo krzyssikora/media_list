@@ -45,9 +45,9 @@ div.trim {
   background-color: rgb(182, 182, 182);
 }
 
-/* #menu-item-main {
+.menu-item-main {
   font-weight: bold;
-} */
+}
 
 .menu-item:hover {
   font-weight: bold;

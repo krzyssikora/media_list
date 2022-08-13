@@ -10,6 +10,8 @@
             elt.removeAttribute('id');
             if (elt.innerHTML == page) {
                 $(elt).attr('id', 'menu-item-active');
+            } else if (elt.innerHTML == 'browse' & page == 'query') {
+                $('.menu-item-browse')[0].id = 'menu-item-active';
             };
         });
     };
