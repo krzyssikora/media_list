@@ -332,6 +332,7 @@ table {
 } 
 
 .button-off {
+  cursor: pointer;
   border-style: none;
   border-radius: 5px;
   min-height: 30px;
@@ -344,6 +345,7 @@ table {
 }
 
 .button-on {
+  cursor: pointer;
   border-style: none;
   border-radius: 5px;
   min-height: 30px;

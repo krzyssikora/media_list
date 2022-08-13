@@ -8,6 +8,7 @@ app = Flask(__name__)
 counter_value = 1
 items_per_page = 10
 chosen_media = list()
+publishers = database.get_distinct_entries('albums', 'publisher')
 
 
 @app.route('/')
@@ -25,13 +26,11 @@ def query():
     artist_name = request.form.get('artist_name')
     album_title = request.form.get('album_title')
     publisher = request.form.get('publisher')
-    _logger.debug("publisher: {}".format(publisher))
     title = 'my music'
     get_items_per_page(items_pp=items_per_page)
     get_media(media_list=chosen_media)
     users_query_string, users_query_object, table_header, table_content, html_dom_ids = \
         api.get_simple_query(artist_name, album_title, chosen_media, publisher)
-    publishers = database.get_distinct_entries('albums', 'publisher')
     return render_template('query.html',
                            title=title,
                            table_header=table_header,

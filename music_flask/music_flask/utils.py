@@ -47,7 +47,7 @@ def get_html_from_table(dicts, keys,
                 html_id_elements_of_this_elmt = html_id_elements + ['***'.join(elmt.replace('\'', '@').split())]
                 html_id_for_this_elmt = 'query_{}_{}_{}'.format(*html_id_elements_of_this_elmt)
                 html_cell_elements.append(wrap_with_tag(elmt, 'span', html_id_for_this_elmt))
-                html_dom_ids.add(tuple(html_id_elements))
+                html_dom_ids.add(tuple(html_id_elements_of_this_elmt))
             return ', '.join(html_cell_elements)
 
         if column_id in columns_ids:

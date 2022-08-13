@@ -187,7 +187,7 @@
             } else {
                 var number_of_items = items_per_page
             };
-            if (table_length <= 1) {
+            if (table_length == 0) {
                 return '';
             };
             var table_str = '<table>';
