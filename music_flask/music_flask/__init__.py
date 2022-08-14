@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request
-import json
 from music_flask import config, utils, api, database
 from music_flask.config import _logger
 
@@ -8,7 +7,9 @@ app = Flask(__name__)
 counter_value = 1
 items_per_page = 10
 chosen_media = list()
+new_query = dict()
 publishers = database.get_distinct_entries('albums', 'publisher')
+temp = 666
 
 
 @app.route('/')
@@ -17,6 +18,7 @@ def index():
     # get_page_number(counter=counter_value, func='index')
     return render_template('index.html',
                            title=title,
+                           temp=temp,
                            )
 
 
@@ -50,7 +52,10 @@ def browse():
     title = 'my music'
     return render_template('browse.html',
                            title=title,
-                           user_filter=str({'media': ['CD', 'vinyl', 'DVD'], 'album': '', 'artist': '', 'publisher': ''})
+                           user_filter=str({'media': ['CD', 'vinyl', 'DVD'],
+                                            'title': '',
+                                            'artist': '',
+                                            'publisher': ''})
                            )
 
 
@@ -62,14 +67,48 @@ def edit():
                            )
 
 
+@app.route('/save_query')
+def save_query():
+    title = 'saved queries'
+    get_query(query_to_save=new_query)
+    saved_query_message = database.save_query(new_query)
+    queries_table_header, queries_table, query_dicts = api.get_queries_table()
+    return render_template('saved_queries.html',
+                           title=title,
+                           saved_query_message=saved_query_message,
+                           queries_table_header=queries_table_header,
+                           queries_table=queries_table,
+                           query_dicts=query_dicts,
+                           )
+
+
+@app.route('/saved_queries')
+def saved_queries():
+    title = 'saved queries'
+    queries_table_header, queries_table, query_dicts = api.get_queries_table()
+    _logger.debug(queries_table_header)
+    _logger.debug(queries_table)
+    _logger.debug('query_dicts %s', query_dicts)
+    return render_template('saved_queries.html',
+                           title=title,
+                           queries_table_header=queries_table_header,
+                           queries_table=queries_table,
+                           query_dicts=query_dicts,
+                           )
+
+
 @app.route('/get_active_media/<string:media_list>', methods=['POST'])
 def get_media(media_list):
     global chosen_media
     # chosen_media = json.load(media_list)
-    try:
-        chosen_media = eval(str(media_list))
-    except TypeError as e:
-        _logger.error('type before: {}, {}'.format(type(media_list), e))
+    chosen_media = eval(str(media_list))
+    return '/'
+
+
+@app.route('/get_query_to_save/<string:query_to_save>', methods=['POST'])
+def get_query(query_to_save):
+    global new_query
+    new_query = eval(str(query_to_save))
     return '/'
 
 

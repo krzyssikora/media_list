@@ -34,10 +34,10 @@ div.trim {
 
 .menu-item {
   display: block;
-  padding: 10px;
+  padding: 10px 30px 10px 5px;
   color: var(--colour-dark-magenta);
   text-decoration: none;
-	min-width: 80px;
+	/* min-width: 80px; */
 }
 
 #menu-item-active {
@@ -113,6 +113,20 @@ div.trim {
   line-height: normal;
   font-weight: bold;
   margin: 0;
+}
+
+#save_query_button {
+  background-color: var(--colour-buttonface);
+  margin: 5px;
+  padding: 5px;
+  border: 2px solid var(--colour-main-background);
+  font-size: medium;
+  border-radius: 5pt;
+}
+
+#save_query_button:hover {
+  color: var(--colour-dark-magenta);
+  cursor: pointer;
 }
 
 #query {

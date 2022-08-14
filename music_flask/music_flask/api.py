@@ -478,6 +478,12 @@ def add_artist_to_table(from_album=False):
         return None
 
 
+def get_queries_table():
+    query_dicts = database.get_queries_from_database()
+    table_header, table = utils.get_html_for_queries_from_table(query_dicts)
+    return table_header, table, query_dicts
+
+
 def get_simple_query(artist_name, album_title, media, publisher):
     # get the data
     fields = dict()
@@ -497,13 +503,10 @@ def get_simple_query(artist_name, album_title, media, publisher):
 
     # table = utils.turn_dicts_into_list_of_tuples_for_html(table, config.ALL_COLUMNS)
     table_header, table_content, html_dom_ids = utils.get_html_from_table(table, config.ALL_COLUMNS)
-    _logger.debug('table_header: {}'.format(table_header))
-    _logger.debug('table_content: {}'.format(table_content))
-    _logger.debug('html_dom_ids: {}'.format(html_dom_ids))
     # get the query dict and string
     query_dict = {
         'media': media,
-        'album': album_title,
+        'title': album_title,
         'artist': artist_name,
         'publisher': publisher,
     }
@@ -513,8 +516,6 @@ def get_simple_query(artist_name, album_title, media, publisher):
         query = '---'
     many = len(table_content)
     query += ' ({} item{} found)'.format(many, '' if many == 1 else 's')
-    _logger.debug('query: {}'.format(query))
-    _logger.debug('query_dict: {}'.format(query_dict))
     return query, query_dict, table_header, table_content, html_dom_ids
 
 

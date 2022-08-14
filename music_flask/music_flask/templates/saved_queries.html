@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block content %}
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<div>
+    <h1>{{ title }}</h1>
+	<div id="new_query_message"></div>
+    <div>
+		<table id="queries_table" style="max-width: 75%; margin-left: auto; margin-right: auto; overflow: auto; height: 50%;">
+			<tr>
+				<th>id</th><th>query</th>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td>media: CD, author: bowie
+					<button style="float: right">delete</button>
+					<button style="float: right">use</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://unpkg.com/json5@2/dist/index.min.js"></script>
+<script src="{{ url_for('static', filename='js/script_main_menu.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script_saved_queries.js') }}"></script>
+<p hidden id="hidden-saved-query-message">{{ saved_query_message }}</p>
+<p hidden id="hidden-queries-table-header">{{ queries_table_header }}</p>
+<p hidden id="hidden-queries-table">{{ queries_table }}</p>
+<p hidden id="hidden-query-dicts">{{ query_dicts }}</p>
+
+{% endblock %}

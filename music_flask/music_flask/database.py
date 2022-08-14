@@ -463,8 +463,79 @@ def dummy():
     cur.close()
 
 
+# METHODS FOR SAVING QUERIES DATABASE
+
+
+def save_query(query_dict):
+    conn = sqlite3.connect(config.DATABASE_QUERIES)
+    cur = conn.cursor()
+    keys = config.QUERY_COLUMNS_TO_DB
+    for key, value in query_dict.items():
+        query_dict[key] = str(value)
+    conditions = ' AND '.join('{} = "{}"'.format(keys.get(key, key), value)
+                              if value else '{} IS NULL'.format(keys.get(key, key))
+                              for key, value in query_dict.items()
+                              )
+    _logger.debug("SELECT * FROM queries WHERE {}".format(conditions))
+    cur.execute("SELECT * FROM queries WHERE {}".format(conditions))
+    lines = cur.fetchall()
+    if lines:
+        _logger.debug('queries lines: %s', lines)
+        return_message = 'This query is already saved.'
+    else:
+        keys = config.QUERY_COLUMNS_TO_DB
+        columns = [key for key, value in query_dict.items() if value]
+        placeholder = ', '.join(['?'] * len(columns))
+        values = tuple(query_dict[key] for key in columns)
+        _logger.debug("INSERT INTO queries ({columns}) VALUES ({placeholder})".format(
+            columns=', '.join(keys.get(key, key) for key in columns),
+            placeholder=placeholder))
+        cur.execute("INSERT INTO queries ({columns}) VALUES ({placeholder})".format(
+            columns=', '.join(keys.get(key, key) for key in columns),
+            placeholder=placeholder),
+                    values)
+        return_message = "New query saved."
+    conn.commit()
+    cur.close()
+    return return_message
+
+
+def get_queries_from_database():
+    conn = sqlite3.connect(config.DATABASE_QUERIES)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM queries")
+    lines = cur.fetchall()
+    conn.commit()
+    cur.close()
+    query_dicts = list()
+    keys = config.QUERY_COLUMNS
+    for line in lines:
+        query_dict = {key: value for key, value in zip(keys, line) if value}
+        query_dicts.append(query_dict)
+    return query_dicts
+
+
+def initialize():
+    conn = sqlite3.connect(config.DATABASE_QUERIES)
+    cur = conn.cursor()
+    cur.execute('''CREATE TABLE IF NOT EXISTS queries
+        (query_id INTEGER PRIMARY KEY, artist_name TEXT, album_title TEXT, publisher TEXT, medium TEXT, 
+        date_orig TEXT, date_publ TEXT, notes TEXT, genre TEXT)
+        ''')
+    conn.commit()
+    cur.close()
+
+
+def dummy_query():
+    conn = sqlite3.connect(config.DATABASE_QUERIES)
+    cur = conn.cursor()
+    cur.execute("SELECT")
+    conn.commit()
+    cur.close()
+
+
 if __name__ == '__main__':
-    print(get_distinct_entries('albums', 'publisher'))
+    initialize()
     quit()
     print(get_db_columns())
 

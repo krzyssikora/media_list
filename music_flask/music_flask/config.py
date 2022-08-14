@@ -1,12 +1,15 @@
 # from datetime import datetime
 import logging
 
-DATABASE = "music_flask/database/records_list.sqlite"
+# DATABASE = "music_flask/database/records_list.sqlite"
+# DATABASE_QUERIES = "music_flask/database/saved_queries.sqlite"
 # DATABASE = "music_flask/database/records_list_tmp.sqlite"
 
 # the one below is for local debugging only:
-# DATABASE =\
-#     'c:/Users/krzys/Documents/Python/lekcje/music_list/music_flask/music_flask/database/records_list_tmp.sqlite'
+DATABASE =\
+    'c:/Users/krzys/Documents/Python/lekcje/music_list/music_flask/music_flask/database/records_list_tmp.sqlite'
+DATABASE_QUERIES =\
+    'c:/Users/krzys/Documents/Python/lekcje/music_list/music_flask/music_flask/database/saved_queries.sqlite'
 
 DB_TABLES = {'artists', 'albums', 'albums_artists', 'bands_members'}
 
@@ -136,6 +139,30 @@ ALL_COLUMNS = [
     'artist_firstname',
     'artist_role',
 ]
+
+QUERY_COLUMNS = [
+    'id',
+    'artist',
+    'title',
+    'publisher',
+    'medium',
+    'recorded',
+    'published',
+    'notes',
+    'genre'
+]
+
+QUERY_COLUMNS_TO_DB = {
+    # 'id': 'id',
+    'artist': 'artist_name',
+    'title': 'album_title',
+    # 'publisher': 'publisher',
+    'media': 'medium',
+    'recorded': 'date_orig',
+    'published': 'date_publ',
+    # 'notes': 'notes',
+    # 'genre': 'genre',
+}
 # logging.basicConfig(filename='my_music_{}.log'.format(datetime.strftime(datetime.now(),
 #                                                                         '%Y_%m_%d')),
 #                     level=logging.DEBUG)

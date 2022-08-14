@@ -111,6 +111,31 @@ def get_html_from_table(dicts, keys,
     return table_header, table_content, html_dom_ids
 
 
+def get_html_for_queries_from_table(query_dicts):
+    def wrap_with_tag(text, tag, dom_elt_id=None, dom_elt_class=None):
+        html_id = ''
+        html_class = ''
+        if dom_elt_id:
+            html_id = ' id=\'{}\''.format(dom_elt_id)
+        if dom_elt_class:
+            html_class = ' class=\'{}\''.format(dom_elt_class)
+        return f'<{tag}{html_id}{html_class}>{text}</{tag}>'
+
+    columns = config.QUERY_COLUMNS
+    table_header = wrap_with_tag(wrap_with_tag('id', 'th') + wrap_with_tag('query', 'th'), 'tr')
+    table = list()
+    keys = config.QUERY_COLUMNS_TO_DB
+    for query_dict in query_dicts:
+        line_html = wrap_with_tag(query_dict['id'], 'td')
+        line_html += wrap_with_tag(', '.join('{}: {}'.format(column, query_dict.get(column, None))
+                                             for column in columns[1:]
+                                             if query_dict.get(column, None)), 'td', dom_elt_id=query_dict['id'])
+        line_html = wrap_with_tag(line_html, 'tr')
+        table.append(line_html)
+
+    return table_header, table
+
+
 def turn_dicts_into_list_of_tuples_for_html(dicts, keys,
                                             sort_keys=('sort_name', 'date_orig', 'date_publ', 'album_title', 'part')):
     dicts = dicts or []

@@ -1,7 +1,6 @@
 (function() {
     "use strict";
     // TODOs:
-    // links to other queries (i.e. artists - each artist is a link and publishers)
     // advanced filters
     // cascading filters
     
@@ -32,8 +31,7 @@
     window.addEventListener("load", function() {
         // data properties and DOM elements
         var counter = 1;
-        // submit query button ???
-
+        
         const other_artists_checkbox = document.getElementById('other-artists-checkbox');
         const publishers = getHiddenData('hidden-publishers', 'object');
         var publishers_choice = document.getElementById('publisher_list');
@@ -51,9 +49,7 @@
         // var table_content = convert(document.getElementById('hidden-table-content'));
         var table_content = getHiddenData('hidden-table-content', 'object');
         var items_per_page = getHiddenData('hidden-items-per-page', 'int');
-        // debug:
-        // document.getElementById('empty').innerHTML = '<table>' + table_header + table_content.slice(0,3) + '</table>'
-
+        
         // query table settings
         const table_length = table_content.length;
         var number_of_pages = Math.ceil(table_length / items_per_page);
@@ -63,8 +59,6 @@
         };
         var counter = 1;
         refreshQueryTable();
-        // previous filter ???
-        // var user_filter = getHiddenData('hidden-filter', 'object');
         
         // pages-controls
         var pages_controls = document.getElementById('pages-controls');
@@ -326,7 +320,6 @@
                     } else {
                         const query_text_field = document.getElementById(db_name);
                         query_text_field.value = query_value;
-                        console.log(query_text_field)
                     };
                     document.getElementById('btn-submit').click();
                 })
