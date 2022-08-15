@@ -20,6 +20,11 @@ function getHiddenData(data_id, data_type) {
     } else {
         ret_object = elt_string;
     };
+    if (Object.keys(ret_object).includes('medium')) {
+        if (typeof(ret_object.medium) == 'string') {
+            ret_object.medium = JSON5.parse(ret_object.medium)
+        }
+    };
     dom_elt.style.display = 'none';
     return ret_object;
 };

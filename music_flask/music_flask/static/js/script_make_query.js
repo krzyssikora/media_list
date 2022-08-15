@@ -42,7 +42,7 @@ const query_pattern_end = / items found/;
 		request.open('POST', `/get_query_to_save/${query_str}`)
 		request.send();        
 	};
-
+	
 	document.getElementById('btn-submit').addEventListener('click', function() {
 		sendChosenMedia();
 	});
@@ -78,6 +78,9 @@ const query_pattern_end = / items found/;
 	var publisher_field = document.getElementById('publisher');
 	var user_filter;
     $.getScript('/static/js/module.js', function(){
+		// find name of html file that calls the script
+		var path = window.location.pathname;
+		var page = path.split("/").pop();
 		user_filter = getHiddenData('hidden-filter', 'object');
 		if (user_filter == '') {
 			artist_field.value = '';
@@ -87,7 +90,7 @@ const query_pattern_end = / items found/;
 				artist_field.value = user_filter.artist
 			};
 			if (user_filter.title.length > 0) {
-				title_field.value = user_filter.album
+				title_field.value = user_filter.title
 			};
 			if (user_filter.publisher.length > 0) {
 				publisher_field.value = user_filter.publisher
@@ -95,13 +98,17 @@ const query_pattern_end = / items found/;
 			for (var medium of user_filter.medium) {
 				document.getElementById(`button-${medium}`).setAttribute('class', 'medium-button clicked');
 			};
-		};
+		};		
 
 		var media_clicked = document.getElementsByClassName('clicked');
 		for( var i=0; i < media_clicked.length; i++) {
 			if (!active_media.includes(media_clicked[i].innerHTML)) {
 				active_media.push(media_clicked[i].innerHTML)
 			};
+		};
+
+		if (page == 'query_from_saved') {
+			document.getElementById('btn-submit').click()
 		};
     });
 	

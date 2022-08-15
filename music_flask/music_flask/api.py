@@ -504,12 +504,16 @@ def get_simple_query(artist_name, album_title, media, publisher):
     # table = utils.turn_dicts_into_list_of_tuples_for_html(table, config.ALL_COLUMNS)
     table_header, table_content, html_dom_ids = utils.get_html_from_table(table, config.ALL_COLUMNS)
     # get the query dict and string
-    query_dict = {
-        'medium': media,
-        'title': album_title,
-        'artist': artist_name,
-        'publisher': publisher,
-    }
+    _logger.debug('media: {}'.format(media))
+    query_dict_data = [
+        ('medium', media),
+        ('title', album_title),
+        ('artist', artist_name),
+        ('publisher', publisher),
+    ]
+    query_dict = dict()
+    for field, value in query_dict_data:
+        query_dict[field] = value if value else ''
     query = ', '.join(['{}: {}'.format(k, ', '.join(v) if isinstance(v, list) else v)
                        for k, v in query_dict.items() if v])
     if query == '':

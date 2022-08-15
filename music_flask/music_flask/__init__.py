@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request
+import json
+
+from flask import Flask, render_template, request, url_for, redirect
 from music_flask import config, utils, api, database
 from music_flask.config import _logger
 
@@ -9,7 +11,8 @@ items_per_page = 10
 chosen_media = list()
 new_query = dict()
 publishers = database.get_distinct_entries('albums', 'publisher')
-temp = 666
+query_from_saved = ''
+from_saved_query = False
 
 
 @app.route('/')
@@ -18,13 +21,13 @@ def index():
     # get_page_number(counter=counter_value, func='index')
     return render_template('index.html',
                            title=title,
-                           temp=temp,
                            )
 
 
 @app.route('/query', methods=['POST'])
 def query():
-    global counter_value
+    global counter_value, from_saved_query
+
     artist_name = request.form.get('artist_name')
     album_title = request.form.get('album_title')
     publisher = request.form.get('publisher')
@@ -86,14 +89,47 @@ def save_query():
 def saved_queries():
     title = 'saved queries'
     queries_table_header, queries_table, query_dicts = api.get_queries_table()
-    _logger.debug(queries_table_header)
-    _logger.debug(queries_table)
-    _logger.debug('query_dicts %s', query_dicts)
     return render_template('saved_queries.html',
                            title=title,
                            queries_table_header=queries_table_header,
                            queries_table=queries_table,
                            query_dicts=query_dicts,
+                           )
+
+
+@app.route('/use_query/<string:query_to_use>', methods=['POST'])
+def use_query(query_to_use):
+    global counter_value, from_saved_query, query_from_saved
+    from_saved_query = True
+    query_from_saved = query_to_use
+    return '/'
+
+
+@app.route('/query_from_saved', methods=['POST', 'GET'])
+def query_from_saved():
+    global counter_value, from_saved_query, query_from_saved
+    use_query(query_from_saved)
+    _logger.debug('query_from_saved: {}'.format(query_from_saved))
+    query_from_saved = eval(query_from_saved)
+    artist_name = query_from_saved.get('artist', None)
+    album_title = query_from_saved.get('title', None)
+    publisher = query_from_saved.get('publisher', None)
+    chosen_media = query_from_saved.get('medium', None)
+    title = 'my music'
+    get_items_per_page(items_pp=items_per_page)
+    users_query_string, users_query_object, table_header, table_content, html_dom_ids = \
+        api.get_simple_query(artist_name, album_title, chosen_media, publisher)
+    return render_template('query.html',
+                           title=title,
+                           table_header=table_header,
+                           table_content=table_content,
+                           html_dom_ids=html_dom_ids,
+                           publishers=publishers,
+                           query=users_query_string,
+                           user_filter=users_query_object,
+                           items_per_page=items_per_page,
+                           counter=counter_value,
+                           pages=len(table_content) // items_per_page,
                            )
 
 
@@ -140,3 +176,8 @@ def edit_test():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+# TODO: in script_make_query.js
+#  1. line 82: if page == 'query_from_saved', collapse the div showing inputs (make query object non-active?)
+#  2. save_query button does not work
