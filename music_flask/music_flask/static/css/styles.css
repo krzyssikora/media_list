@@ -445,5 +445,11 @@ p {
 	/* margin-bottom: 1em; */
 }
 
+#new_query_message {
+  text-align: center;
+  line-height: 2.5em;
+  color: var(--colour-dark-magenta);
+}
+
 /* # for id
    . for class */

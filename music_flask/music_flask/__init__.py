@@ -52,7 +52,7 @@ def browse():
     title = 'my music'
     return render_template('browse.html',
                            title=title,
-                           user_filter=str({'media': ['CD', 'vinyl', 'DVD'],
+                           user_filter=str({'medium': ['CD', 'vinyl', 'DVD'],
                                             'title': '',
                                             'artist': '',
                                             'publisher': ''})

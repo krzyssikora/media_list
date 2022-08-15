@@ -50,7 +50,7 @@ const query_pattern_end = / items found/;
 	// change keywords in query displayed to strong
 	var query = document.getElementById('query');
 	var query_str = query.innerHTML;
-	const keywords = ['media:', 'title:', 'artist:', 'publisher:'];
+	const keywords = ['medium:', 'title:', 'artist:', 'publisher:'];
 	for (let keyword of keywords) {
 		if (query_str.includes(keyword)) {
 			query_str = query_str.replace(keyword.slice(0,-1), `<strong>${keyword.slice(0,-1)}</strong>`)
@@ -95,7 +95,7 @@ const query_pattern_end = / items found/;
 			if (user_filter.publisher.length > 0) {
 				publisher_field.value = user_filter.publisher
 			};
-			for (var medium of user_filter.media) {
+			for (var medium of user_filter.medium) {
 				document.getElementById(`button-${medium}`).setAttribute('class', 'medium-button clicked');
 			};
 		};

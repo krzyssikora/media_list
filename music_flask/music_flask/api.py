@@ -505,7 +505,7 @@ def get_simple_query(artist_name, album_title, media, publisher):
     table_header, table_content, html_dom_ids = utils.get_html_from_table(table, config.ALL_COLUMNS)
     # get the query dict and string
     query_dict = {
-        'media': media,
+        'medium': media,
         'title': album_title,
         'artist': artist_name,
         'publisher': publisher,
