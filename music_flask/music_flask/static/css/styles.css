@@ -451,5 +451,17 @@ p {
   color: var(--colour-dark-magenta);
 }
 
+.query_button {
+  float: right;
+  margin: 2px;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--colour-main-background);
+}
+
+.query_button:hover {
+  color: var(--colour-dark-magenta);
+}
+
 /* # for id
    . for class */

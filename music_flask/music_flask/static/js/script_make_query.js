@@ -48,15 +48,12 @@ const query_pattern_end = / items found/;
 	});
 
 	// change keywords in query displayed to strong
+	$.getScript('/static/js/module.js', function(){
+		makeKeywordsBold('query');
+	})
 	var query = document.getElementById('query');
 	var query_str = query.innerHTML;
-	const keywords = ['medium:', 'title:', 'artist:', 'publisher:'];
-	for (let keyword of keywords) {
-		if (query_str.includes(keyword)) {
-			query_str = query_str.replace(keyword.slice(0,-1), `<strong>${keyword.slice(0,-1)}</strong>`)
-		};
-	};
-	query.innerHTML = query_str;
+	
 	var first_found = query_pattern_start.exec(query_str);
 	if (first_found) {
 		var second_found = query_pattern_end.exec(query_str);

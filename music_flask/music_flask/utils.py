@@ -129,7 +129,8 @@ def get_html_for_queries_from_table(query_dicts):
         line_html = wrap_with_tag(query_dict['id'], 'td')
         line_html += wrap_with_tag(', '.join('{}: {}'.format(column, query_dict.get(column, None))
                                              for column in columns[1:]
-                                             if query_dict.get(column, None)), 'td', dom_elt_id=query_dict['id'])
+                                             if query_dict.get(column, None)), 'td',
+                                   dom_elt_id='query_' + str(query_dict['id']))
         line_html = wrap_with_tag(line_html, 'tr')
         table.append(line_html)
 
