@@ -58,7 +58,8 @@ div.trim {
 /* Style the button that is used to open and close the collapsible content */
 .collapsible {
   border-top: 1px solid var(--colour-border);
-  border-bottom: 1px solid var(--colour-border);
+  /* border-bottom: 1px solid var(--colour-border); */
+  border-bottom: none;
   border-left: none;
   border-right: none;
   border-radius: 15px;
@@ -70,7 +71,7 @@ div.trim {
   text-align: left;
   /* outline: none; */
   font-size: 16px;
-  margin: 5px;
+  margin: none;
 }
 
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
@@ -113,6 +114,7 @@ div.trim {
   line-height: normal;
   font-weight: bold;
   margin: 0;
+  margin-top: 10px;
 }
 
 #save_query_button {
@@ -289,6 +291,7 @@ th {
 
 table {
   width: 100%;
+  box-sizing: border-box;
 }
 
 .new_query:hover {
@@ -341,8 +344,9 @@ table {
 
 #results {
   width: 100%;
+  box-sizing: border-box;
   bottom: 20px;
-  overflow: scroll;
+  overflow: hidden;
 } 
 
 .button-off {

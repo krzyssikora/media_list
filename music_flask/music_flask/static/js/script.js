@@ -302,9 +302,7 @@
                 const query_value = query_data[3].replaceAll("***", " ").replaceAll("@", "'");
                 dom_element.addEventListener('click', function(evt) {
                     evt.preventDefault();
-                    console.log(`query_value: ${query_value}, db_name: ${db_name}`);
                     if (db_name == 'medium') {
-                        console.log(`link no ${i}, medium: ${query_value}, CLICKED!`)
                         var medium_buttons = document.getElementsByClassName('medium-button');
                         for (let medium_button of medium_buttons) {
                             medium_button.classList.remove('clicked');

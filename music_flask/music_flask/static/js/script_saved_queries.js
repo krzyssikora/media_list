@@ -75,7 +75,6 @@ var query_dicts;
                 var the_query = query_dicts[query_id];
                 delete the_query.id;
                 document.getElementById('hidden-filter').innerHTML = JSON.stringify(the_query);
-                console.log(document.getElementById('hidden-filter').innerHTML)
             })
         };
     });

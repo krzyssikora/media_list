@@ -1,6 +1,4 @@
-import json
-
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request
 from music_flask import config, utils, api, database
 from music_flask.config import _logger
 
@@ -107,7 +105,8 @@ def use_query(query_to_use):
 
 @app.route('/query_from_saved', methods=['POST', 'GET'])
 def query_from_saved():
-    global counter_value, from_saved_query, query_from_saved
+    global counter_value, from_saved_query, query_from_saved, chosen_media
+    # query_from_saved = ''
     use_query(query_from_saved)
     _logger.debug('query_from_saved: {}'.format(query_from_saved))
     query_from_saved = eval(query_from_saved)
@@ -180,4 +179,4 @@ if __name__ == '__main__':
 
 # TODO: in script_make_query.js
 #  1. line 82: if page == 'query_from_saved', collapse the div showing inputs (make query object non-active?)
-#  2. save_query button does not work when change keywords in displayed query are changed to strong with use of module.js
+#  2. save_query button does not work when keywords in displayed query are changed to strong with use of module.js

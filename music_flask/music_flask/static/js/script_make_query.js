@@ -6,7 +6,6 @@ const query_pattern_end = / items found/;
     "use strict";
 
 	var all_media = ['CD', 'vinyl', 'DVD', 'ebook', 'book']
-	
 
 
 	// make the buttons for choice of media clickable
@@ -75,10 +74,7 @@ const query_pattern_end = / items found/;
 			save_query_button.innerHTML = 'save query';
 			save_query_button.id = 'save_query_button'
 			query.appendChild(save_query_button);
-			console.log('save_query_button created')
 			save_query_button.addEventListener('click', function() {
-				// query.click();
-				console.log('save query clicked')
 				window.location.href = '/save_query'
 				sendQueryToDatabase();
 			});
