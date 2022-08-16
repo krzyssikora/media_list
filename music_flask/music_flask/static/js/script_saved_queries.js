@@ -7,10 +7,10 @@ var query_dicts;
 (function() {
     "use strict";
 
-    function sendQueryToPython(the_query) {
+    function sendQueryToPython(the_query, action) {
 		var request = new XMLHttpRequest();
 		var query_str = JSON.stringify(the_query);
-		request.open('POST', `/use_query/${query_str}`)
+		request.open('POST', `/saved_query/${action}/${query_str}`)
 		request.send();        
 	};
 
@@ -31,39 +31,40 @@ var query_dicts;
         makeKeywordsBold('queries_table');
         
         // add buttons
+        var buttons_ids = [];
+        for (let query_dict of query_dicts) {
+            buttons_ids.push(query_dict.id)
+        };
         const delete_buttons = [];
         const use_buttons = [];
         for (let i=0; i<queries_table.length; i++) {
-            var query_id = i + 1;
+            var query_id = buttons_ids[i];
             var query_id_str = query_id.toString();
             var queries_row = document.getElementById('query_' + query_id_str);
             
             var use_button = document.createElement('button');
             use_button.id = 'use_' + query_id_str;
             use_button.className = 'query_button';
-            use_button.innerHTML = 'use'
+            use_button.innerHTML = 'use';
             queries_row.appendChild(use_button);
             use_buttons.push(use_button);
 
             var delete_button = document.createElement('button');
             delete_button.id = 'delete_' + query_id_str;
             delete_button.className = 'query_button';
-            delete_button.innerHTML = 'delete'
+            delete_button.innerHTML = 'delete';
             queries_row.appendChild(delete_button);
             delete_buttons.push(delete_button);
+
         };
 
         // add use button actions
-        for (let use_button of use_buttons) {
-            use_button.addEventListener('click', function(){
-                var query_id = use_buttons.indexOf(use_button);
-                var the_query = query_dicts[query_id];
-                // window.location.href = '/query'
-                // sendQueryToPython(the_query);
-                var request = new XMLHttpRequest();
-                var query_str = JSON.stringify(the_query);
-                request.open('POST', `/use_query/${query_str}`)
-                request.send();
+        console.log(use_buttons.length)
+        for (let i=0; i<use_buttons.length; i++) {
+            use_buttons[i].addEventListener('click', function(){
+                var query_id = buttons_ids[i];
+                var the_query = query_dicts[i];
+                sendQueryToPython(the_query, 'use');
                 window.location.href = '/query_from_saved'
             })
         };
@@ -73,8 +74,7 @@ var query_dicts;
             delete_button.addEventListener('click', function(){
                 var query_id = delete_buttons.indexOf(delete_button);
                 var the_query = query_dicts[query_id];
-                delete the_query.id;
-                document.getElementById('hidden-filter').innerHTML = JSON.stringify(the_query);
+                sendQueryToPython(the_query, 'delete');
             })
         };
     });

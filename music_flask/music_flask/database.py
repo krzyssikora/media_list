@@ -500,6 +500,22 @@ def save_query(query_dict):
     return return_message
 
 
+def delete_query(query):
+    if 'medium' in query:
+        query['medium'] = eval(query['medium'])
+    keys = config.QUERY_COLUMNS_TO_DB
+    conditions = ' AND '.join('{}={}'.format(keys.get(k, k), v if isinstance(v, int) else '"{}"'.format(v))
+                              for k, v in query.items() if v)
+    conn = sqlite3.connect(config.DATABASE_QUERIES)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM queries WHERE {}".format(conditions))
+    line = cur.fetchone()
+    if line:
+        cur.execute("DELETE FROM queries WHERE query_id={}".format(query['id']))
+    conn.commit()
+    cur.close()
+
+
 def get_queries_from_database():
     conn = sqlite3.connect(config.DATABASE_QUERIES)
     cur = conn.cursor()
@@ -519,7 +535,8 @@ def initialize():
     conn = sqlite3.connect(config.DATABASE_QUERIES)
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS queries
-        (query_id INTEGER PRIMARY KEY, artist_name TEXT, album_title TEXT, publisher TEXT, medium TEXT, 
+        (query_id INTEGER PRIMARY KEY, query_name TEXT, 
+        artist_name TEXT, album_title TEXT, publisher TEXT, medium TEXT, 
         date_orig TEXT, date_publ TEXT, notes TEXT, genre TEXT)
         ''')
     conn.commit()

@@ -95,11 +95,12 @@ def saved_queries():
                            )
 
 
-@app.route('/use_query/<string:query_to_use>', methods=['POST'])
+@app.route('/saved_query/use/<string:query_to_use>', methods=['POST'])
 def use_query(query_to_use):
     global counter_value, from_saved_query, query_from_saved
     from_saved_query = True
     query_from_saved = query_to_use
+    _logger.debug('query_from_saved: {}'.format(query_from_saved))
     return '/'
 
 
@@ -130,6 +131,15 @@ def query_from_saved():
                            counter=counter_value,
                            pages=len(table_content) // items_per_page,
                            )
+
+
+@app.route('/saved_query/delete/<string:query_to_use>', methods=['POST'])
+def delete_query(query_to_use):
+    # global counter_value, from_saved_query, query_from_saved
+    # from_saved_query = True
+    # query_from_saved = query_to_use
+    database.delete_query(eval(query_to_use))
+    return '/'
 
 
 @app.route('/get_active_media/<string:media_list>', methods=['POST'])

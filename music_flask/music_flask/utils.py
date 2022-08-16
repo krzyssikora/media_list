@@ -125,8 +125,8 @@ def get_html_for_queries_from_table(query_dicts):
     table_header = wrap_with_tag(wrap_with_tag('id', 'th') + wrap_with_tag('query', 'th'), 'tr')
     table = list()
     keys = config.QUERY_COLUMNS_TO_DB
-    for query_dict in query_dicts:
-        line_html = wrap_with_tag(query_dict['id'], 'td')
+    for idx, query_dict in enumerate(query_dicts):
+        line_html = wrap_with_tag(idx + 1, 'td')
         line_html += wrap_with_tag(', '.join('{}: {}'.format(column, query_dict.get(column, None))
                                              for column in columns[1:]
                                              if query_dict.get(column, None)), 'td',
