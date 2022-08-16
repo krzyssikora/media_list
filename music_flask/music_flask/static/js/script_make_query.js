@@ -48,11 +48,21 @@ const query_pattern_end = / items found/;
 	});
 
 	// change keywords in query displayed to strong
-	$.getScript('/static/js/module.js', function(){
-		makeKeywordsBold('query');
-	})
+	// $.getScript('/static/js/module.js', function(){
+	// 	makeKeywordsBold('query');
+	// })
+	// var query = document.getElementById('query');
+	// var query_str = query.innerHTML;
 	var query = document.getElementById('query');
 	var query_str = query.innerHTML;
+	const keywords = ['medium:', 'title:', 'artist:', 'publisher:'];
+	for (let keyword of keywords) {
+		if (query_str.includes(keyword)) {
+			query_str = query_str.replace(keyword.slice(0,-1), `<strong>${keyword.slice(0,-1)}</strong>`)
+		};
+	};
+	query.innerHTML = query_str;
+	// TODO: test later, why the commented part above does not work and save query button stops reacting to clicks
 	
 	var first_found = query_pattern_start.exec(query_str);
 	if (first_found) {
@@ -65,11 +75,13 @@ const query_pattern_end = / items found/;
 			save_query_button.innerHTML = 'save query';
 			save_query_button.id = 'save_query_button'
 			query.appendChild(save_query_button);
+			console.log('save_query_button created')
 			save_query_button.addEventListener('click', function() {
-				query.click();
+				// query.click();
+				console.log('save query clicked')
 				window.location.href = '/save_query'
 				sendQueryToDatabase();
-			})
+			});
 		};
 	};
 
