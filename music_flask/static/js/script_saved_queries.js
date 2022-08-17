@@ -32,8 +32,11 @@ var query_dicts;
             makeKeywordsBold('queries_table');
             // add query editor
             const query_editor = document.getElementById('query-editor');
-            const query_editor_text_field = document.createElement('input');
-            query_editor_text_field.id = 'query-editor-text-field'
+            const query_editor_text_field = document.createElement('textarea');
+            query_editor_text_field.id = 'query-editor-text-field';
+            query_editor_text_field.rows = 15;
+            query_editor_text_field.cols = 30;
+            query_editor_text_field.placeholder = 'enter your query here';
             query_editor.appendChild(query_editor_text_field);
         } else {
             document.getElementById('new_query_message').innerHTML = 'There are no queries saved.'

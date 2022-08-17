@@ -13,6 +13,7 @@
 }
 
 body {
+  font-size: medium;
   background-color: var(--colour-main-background);
   font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
 }
@@ -58,7 +59,6 @@ div.trim {
 /* Style the button that is used to open and close the collapsible content */
 .collapsible {
   border-top: 1px solid var(--colour-border);
-  /* border-bottom: 1px solid var(--colour-border); */
   border-bottom: none;
   border-left: none;
   border-right: none;
@@ -69,8 +69,7 @@ div.trim {
   padding: 10px 0px 10px 15px;
   width: 100%;
   text-align: left;
-  /* outline: none; */
-  font-size: 16px;
+  font-size: large;
   margin: none;
 }
 
@@ -291,7 +290,7 @@ th {
 
 table {
   width: 100%;
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
 }
 
 .new_query:hover {
@@ -507,17 +506,62 @@ table {
   to {transform: scale(1)}
 } 
 
+#new_query_message {
+  text-align: center;
+  line-height: 2.5em;
+  color: var(--colour-dark-magenta);
+}
+
+.query_button {
+  float: right;
+  margin: 2px;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--colour-main-background);
+}
+
+.query_button:hover {
+  color: var(--colour-dark-magenta);
+}
+
 /* container for saved queries and the editor */
 #queries_containter {
+  text-align: center;
   max-width: 75%; 
+  overflow-x: hidden;
+  overflow-y: auto;
   margin-left: auto; 
   margin-right: auto; 
   overflow: auto; 
   height: 50%;
 }
 
-#query-editor-text-field {
+.in-queries-container {
+  float: left;
+  text-align: left;
   width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin-left: auto; 
+  margin-right: auto; 
+  min-height: 20%;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+textarea {
+  width: 100%;
+  border: none;
+  margin-top: 10px;
+}
+
+.indented-text {
+  padding: 10px;
+}
+
+.codelike {
+  font-family: monospace;
 }
 
 /* for edit.html */
@@ -573,23 +617,6 @@ p {
 	/* margin-bottom: 1em; */
 }
 
-#new_query_message {
-  text-align: center;
-  line-height: 2.5em;
-  color: var(--colour-dark-magenta);
-}
-
-.query_button {
-  float: right;
-  margin: 2px;
-  border: none;
-  border-radius: 3px;
-  background-color: var(--colour-main-background);
-}
-
-.query_button:hover {
-  color: var(--colour-dark-magenta);
-}
 
 /* # for id
    . for class */

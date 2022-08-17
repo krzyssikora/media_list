@@ -5,11 +5,19 @@
     <h1>{{ title }}</h1>
 	<div id="new_query_message"></div>
     <div id="queries_containter">
-		<table id="queries_table">
+		<table id="queries_table" class="in-queries-container">
 		</table>
-		<div id="query-editor">
 
+		<div class="in-queries-container indented-text">
+			You may combine saved queries using parentheses 
+			and boolean operators <strong>AND</strong>, <strong>OR</strong> and <strong>NOT</strong>.
+			For example:
+			<div class="codelike">
+				(1 and 2) or (3 and 4)
+			</div>
 		</div>
+		
+		<div id="query-editor" class="in-queries-container"></div>
 	</div>
 	
 </div>
