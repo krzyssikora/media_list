@@ -2,8 +2,8 @@ import sys
 import sqlite3
 import re
 
-from music_flask_red import utils, config, api
-from music_flask_red.config import _logger
+from music_flask import utils, config, api
+from music_flask.config import _logger
 
 
 class DBError(Exception):

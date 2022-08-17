@@ -30,6 +30,11 @@ var query_dicts;
             document.getElementById('new_query_message').innerHTML = saved_query_message;
             document.getElementById('queries_table').innerHTML = queries_table_header + clean_queries_table.join(' ');
             makeKeywordsBold('queries_table');
+            // add query editor
+            const query_editor = document.getElementById('query-editor');
+            const query_editor_text_field = document.createElement('input');
+            query_editor_text_field.id = 'query-editor-text-field'
+            query_editor.appendChild(query_editor_text_field);
         } else {
             document.getElementById('new_query_message').innerHTML = 'There are no queries saved.'
         };

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
-from music_flask_red import config, utils, api, database
-from music_flask_red.config import _logger
+from music_flask import config, utils, api, database
+from music_flask.config import _logger
 
 app = Flask(__name__)
 
