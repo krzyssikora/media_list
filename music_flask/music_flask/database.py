@@ -467,22 +467,31 @@ def dummy():
 
 
 def save_query(query_dict):
+    keys = config.QUERY_COLUMNS_TO_DB
     conn = sqlite3.connect(config.DATABASE_QUERIES)
     cur = conn.cursor()
-    keys = config.QUERY_COLUMNS_TO_DB
     for key, value in query_dict.items():
         query_dict[key] = str(value)
-    conditions = ' AND '.join('{} = "{}"'.format(keys.get(key, key), value)
-                              if value else '{} IS NULL'.format(keys.get(key, key))
-                              for key, value in query_dict.items()
-                              )
-    _logger.debug("SELECT * FROM queries WHERE {}".format(conditions))
-    cur.execute("SELECT * FROM queries WHERE {}".format(conditions))
-    lines = cur.fetchall()
-    if lines:
-        _logger.debug('queries lines: %s', lines)
-        return_message = 'This query is already saved.'
+    # conditions = ' AND '.join('{} = "{}"'.format(keys.get(key, key), value)
+    #                           if value else '{} IS NULL'.format(keys.get(key, key))
+    #                           for key, value in query_dict.items()
+    #                           )
+    conditions_without_name = ' AND '.join('{} = "{}"'.format(keys.get(key, key), value)
+                                           if value else '{} IS NULL'.format(keys.get(key, key))
+                                           for key, value in query_dict.items()
+                                           if key != 'name'
+                                           )
+    _logger.debug("SELECT * FROM queries WHERE {}".format(conditions_without_name))
+    cur.execute("SELECT * FROM queries WHERE {}".format(conditions_without_name))
+    line = cur.fetchone()
+    if line:
+        _logger.debug('queries lines: %s', line)
+        return_message = 'This query is already saved under the name of {}.'.format(line[1])
     else:
+        if 'name' not in query_dict or query_dict['name'] is None or query_dict['name'].strip() == '':
+            cur.execute("SELECT COUNT(*) FROM queries")
+            new_query_number = cur.fetchone()[0] + 1
+            query_dict['name'] = 'query no.{}'.format(new_query_number)
         keys = config.QUERY_COLUMNS_TO_DB
         columns = [key for key, value in query_dict.items() if value]
         placeholder = ', '.join(['?'] * len(columns))

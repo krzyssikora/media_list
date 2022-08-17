@@ -142,6 +142,7 @@ ALL_COLUMNS = [
 
 QUERY_COLUMNS = [
     'id',
+    'name',
     'artist',
     'title',
     'publisher',
@@ -154,6 +155,7 @@ QUERY_COLUMNS = [
 
 QUERY_COLUMNS_TO_DB = {
     'id': 'query_id',
+    'name': 'query_name',
     'artist': 'artist_name',
     'title': 'album_title',
     # 'publisher': 'publisher',

@@ -63,24 +63,6 @@ const query_pattern_end = / items found/;
 	query.innerHTML = query_str;
 	// TODO: test later, why the commented part above does not work and save query button stops reacting to clicks
 	
-	var first_found = query_pattern_start.exec(query_str);
-	if (first_found) {
-		var second_found = query_pattern_end.exec(query_str);
-		var id_1 = first_found.index;
-		var id_2 = second_found.index;
-		var number_of_items_found = parseInt(query_str.slice(id_1 + 1, id_2));
-		if (number_of_items_found > 0) {
-			const save_query_button = document.createElement('button');
-			save_query_button.innerHTML = 'save query';
-			save_query_button.id = 'save_query_button'
-			query.appendChild(save_query_button);
-			save_query_button.addEventListener('click', function() {
-				window.location.href = '/save_query'
-				sendQueryToDatabase();
-			});
-		};
-	};
-
 	var artist_field = document.getElementById('artist_name'); 
 	var title_field = document.getElementById('album_title'); 
 	var publisher_field = document.getElementById('publisher');
@@ -119,6 +101,34 @@ const query_pattern_end = / items found/;
 			document.getElementById('btn-submit').click()
 		};
     });
+
+	var first_found = query_pattern_start.exec(query_str);
+	if (first_found) {
+		var second_found = query_pattern_end.exec(query_str);
+		var id_1 = first_found.index;
+		var id_2 = second_found.index;
+		var number_of_items_found = parseInt(query_str.slice(id_1 + 1, id_2));
+		if (number_of_items_found > 0) {
+			const save_query_button = document.createElement('button');
+			save_query_button.innerHTML = 'save query';
+			save_query_button.id = 'save_query_button'
+			query.appendChild(save_query_button);
+			save_query_button.addEventListener('click', function() {
+				document.getElementById('ask_query_name').style.display='block';
+				document.getElementById('query-name-form').addEventListener('submit', function(evt) {
+					evt.preventDefault();
+					var query_name = document.getElementById("qname").value;
+					if (query_name) {
+						user_filter.name = query_name;
+					} else {
+						user_filter.name = '';
+					};
+					window.location.href = '/save_query'
+					sendQueryToDatabase();
+				});
+			});
+		};
+	};
 	
 })();
 

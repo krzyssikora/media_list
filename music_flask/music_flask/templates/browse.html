@@ -5,6 +5,7 @@
     <div class="collapsible" id="query">
       {% if query %}<u>query</u>: {{ query }}{% else %}Enter your query.{% endif %}
     </div>
+    
     <div id="search" class="content">
         <form action="/query" method="POST">
             <p class="query-info">media:</p>
@@ -36,6 +37,27 @@
 
     {% block browse %}
     {% endblock %}
+    <!-- The Modal -->
+    <div id="ask_query_name" class="modal">
+        <span onclick="document.getElementById('ask_query_name').style.display='none'"
+        class="close" title="Close Modal">&times;</span>
+
+        <!-- Modal Content -->
+        <form class="modal-content animate" action="/save_query" id="query-name-form">
+            <div class="pop-up-form-container">
+                <label class="pop-up-form-label" for="qname"><b>query name</b></label>
+                <input class="pop-up-form-input" type="text" placeholder="enter your query name" name="qname" id="qname">
+                <button class="pop-up-form-button" type="submit">confirm</button>
+            </div>
+            <div class="pop-up-form-container pop-up-form-info">
+                If you leave the field empty, a default query name will be assigned.
+            </div>
+            <div class="pop-up-form-container pop-up-form-cancelbtn-container">
+                <button class="pop-up-form-button" type="button" 
+                onclick="document.getElementById('ask_query_name').style.display='none'" class="cancelbtn">cancel</button>
+            </div>
+        </form>
+    </div>
 
 </div>
 <script src="https://code.jquery.com/jquery-latest.min.js"></script>

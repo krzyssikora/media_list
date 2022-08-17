@@ -396,6 +396,119 @@ table {
   position: absolute;
 }
 
+/* for saving query */
+/* Full-width inputs */
+.pop-up-form-input {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  font-size: medium;
+}
+
+.pop-up-form-label {
+  font-weight: bold;
+  font-size: large;
+}
+
+.pop-up-form-container {
+  padding: 16px;
+  font-size: medium;
+}
+
+.pop-up-form-cancelbtn-container {
+  background-color: var(--colour-menu-gray);
+  border-radius: 0 0 10px 10px;
+}
+
+.pop-up-form-info {
+  font-size: small;
+  padding: 8px 16px;
+  margin: 2px;
+}
+
+.pop-up-form-button {
+  color: var(--colour-text-gray);
+  border: none;
+  border-radius: 5px;
+  margin: 2px;
+  font-size: medium;
+}
+
+.pop-up-form-button:hover {
+  color: var(--colour-dark-magenta);
+  cursor: pointer;
+}
+
+/* Change styles for span and cancel button on extra small screens */
+@media screen and (max-width: 300px) {
+  .cancelbtn {
+    width: 100%;
+  }
+} 
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  top: 0;
+  margin: auto;
+  width: 100%; 
+  height: 100%;
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+  padding-top: 60px;
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: var(--colour-main-background);
+  margin: 5px auto; /* 15% from the top and centered */
+  border: 1px solid var(--colour-border);
+  border-radius: 10px;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+  /* Position it in the top right corner outside of the modal */
+  position: absolute;
+  right: 25px;
+  top: 0;
+  color: var(--colour-border);
+  font-size: 35px;
+  font-weight: bold;
+}
+
+/* Close button on hover */
+.close:hover,
+.close:focus {
+  color: var(--colour-dark-magenta);
+  cursor: pointer;
+}
+
+/* Add Zoom Animation */
+.animate {
+  -webkit-animation: animatezoom 0.6s;
+  animation: animatezoom 0.6s
+}
+
+@-webkit-keyframes animatezoom {
+  from {-webkit-transform: scale(0)}
+  to {-webkit-transform: scale(1)}
+}
+
+@keyframes animatezoom {
+  from {transform: scale(0)}
+  to {transform: scale(1)}
+} 
+
+
+
 /* for edit.html */
 #tabs {
   width: 80%;

@@ -9,8 +9,8 @@ var query_dicts;
 
     function sendQueryToPython(the_query, action) {
 		var request = new XMLHttpRequest();
-		var query_str = JSON.stringify(the_query);
-		request.open('POST', `/saved_query/${action}/${query_str}`)
+        var query_str = JSON.stringify(the_query);
+        request.open('POST', `/saved_query/${action}/${query_str}`)
 		request.send();        
 	};
 
@@ -59,7 +59,6 @@ var query_dicts;
         };
 
         // add use button actions
-        console.log(use_buttons.length)
         for (let i=0; i<use_buttons.length; i++) {
             use_buttons[i].addEventListener('click', function(){
                 var query_id = buttons_ids[i];
@@ -75,6 +74,7 @@ var query_dicts;
                 var query_id = delete_buttons.indexOf(delete_button);
                 var the_query = query_dicts[query_id];
                 sendQueryToPython(the_query, 'delete');
+                window.location.href = '/saved_queries'
             })
         };
     });
