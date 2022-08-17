@@ -26,9 +26,13 @@ var query_dicts;
             clean_queries_table.push(line);
         };
         query_dicts = getHiddenData('hidden-query-dicts', 'object');
-        document.getElementById('new_query_message').innerHTML = saved_query_message;
-        document.getElementById('queries_table').innerHTML = queries_table_header + clean_queries_table.join(' ');
-        makeKeywordsBold('queries_table');
+        if (queries_table.length > 0) {
+            document.getElementById('new_query_message').innerHTML = saved_query_message;
+            document.getElementById('queries_table').innerHTML = queries_table_header + clean_queries_table.join(' ');
+            makeKeywordsBold('queries_table');
+        } else {
+            document.getElementById('new_query_message').innerHTML = 'There are no queries saved.'
+        };
         
         // add buttons
         var buttons_ids = [];

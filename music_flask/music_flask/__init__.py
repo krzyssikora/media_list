@@ -100,7 +100,6 @@ def use_query(query_to_use):
     global counter_value, from_saved_query, query_from_saved
     from_saved_query = True
     query_from_saved = query_to_use
-    _logger.debug('query_from_saved: {}'.format(query_from_saved))
     return '/'
 
 
@@ -109,7 +108,6 @@ def query_from_saved():
     global counter_value, from_saved_query, query_from_saved, chosen_media
     # query_from_saved = ''
     use_query(query_from_saved)
-    _logger.debug('query_from_saved: {}'.format(query_from_saved))
     query_from_saved = eval(query_from_saved)
     artist_name = query_from_saved.get('artist', None)
     album_title = query_from_saved.get('title', None)
@@ -158,7 +156,6 @@ def get_query(query_to_save):
 # def get_page_number(counter, func=None):
 #     global counter_value
 #     counter_value = int(counter)
-#     _logger.debug('counter: {}, type {} called from: {}'.format(counter_value, type(counter_value), func))
 #     return('/')
 
 @app.route('/get_items_per_page/<string:items_pp>', methods=['POST'])

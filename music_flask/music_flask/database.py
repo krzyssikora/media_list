@@ -472,21 +472,15 @@ def save_query(query_dict):
     cur = conn.cursor()
     for key, value in query_dict.items():
         query_dict[key] = str(value)
-    # conditions = ' AND '.join('{} = "{}"'.format(keys.get(key, key), value)
-    #                           if value else '{} IS NULL'.format(keys.get(key, key))
-    #                           for key, value in query_dict.items()
-    #                           )
     conditions_without_name = ' AND '.join('{} = "{}"'.format(keys.get(key, key), value)
                                            if value else '{} IS NULL'.format(keys.get(key, key))
                                            for key, value in query_dict.items()
                                            if key != 'name'
                                            )
-    _logger.debug("SELECT * FROM queries WHERE {}".format(conditions_without_name))
     cur.execute("SELECT * FROM queries WHERE {}".format(conditions_without_name))
     line = cur.fetchone()
     if line:
-        _logger.debug('queries lines: %s', line)
-        return_message = 'This query is already saved under the name of {}.'.format(line[1])
+        return_message = 'This query is already saved as "{}".'.format(line[1])
     else:
         if 'name' not in query_dict or query_dict['name'] is None or query_dict['name'].strip() == '':
             cur.execute("SELECT COUNT(*) FROM queries")
@@ -496,9 +490,6 @@ def save_query(query_dict):
         columns = [key for key, value in query_dict.items() if value]
         placeholder = ', '.join(['?'] * len(columns))
         values = tuple(query_dict[key] for key in columns)
-        _logger.debug("INSERT INTO queries ({columns}) VALUES ({placeholder})".format(
-            columns=', '.join(keys.get(key, key) for key in columns),
-            placeholder=placeholder))
         cur.execute("INSERT INTO queries ({columns}) VALUES ({placeholder})".format(
             columns=', '.join(keys.get(key, key) for key in columns),
             placeholder=placeholder),
