@@ -179,8 +179,3 @@ def edit_test():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-# TODO: in script_make_query.js
-#  1. line 82: if page == 'query_from_saved', collapse the div showing inputs (make query object non-active?)
-#  2. save_query button does not work when keywords in displayed query are changed to strong with use of module.js
