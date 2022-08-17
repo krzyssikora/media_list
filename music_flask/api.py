@@ -1,8 +1,8 @@
 import os
 import msvcrt as m
 
-from music_flask import config, utils, database
-from music_flask.config import _logger
+from music_flask_red import config, utils, database
+from music_flask_red.config import _logger
 
 
 def take_char():

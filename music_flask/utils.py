@@ -1,7 +1,7 @@
 from difflib import SequenceMatcher
 from prettytable import PrettyTable
-from music_flask import config
-from music_flask.config import _logger
+from music_flask_red import config
+from music_flask_red.config import _logger
 
 
 def turn_tuple_into_dict(the_tuple, the_keys):
