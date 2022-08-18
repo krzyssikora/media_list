@@ -19,8 +19,29 @@
 		</div>
 		
 		<div id="query-editor" class="in-queries-container"></div>
-		<button class="general-button" type="button">save query</button>
+		<button class="general-button" type="button" id="save-query-button">save query</button>
 	</div>
+
+	<!-- The Modal -->
+    <div id="temp_info" class="modal">
+        <span onclick="document.getElementById('temp_info').style.display='none'"
+        class="close" title="Close Modal">&times;</span>
+
+        <!-- Modal Content -->
+        <form class="modal-content animate" action="/save_query" id="query-name-form">
+            <div class="pop-up-form-container pop-up-form-info">
+                Thank you for submitting you query. <br>
+				unfortunatelly, it has not been stored anywhere. <br>
+				Come back here in a year and enter your query again. It is likely, you will be able to see the output then. <br>
+				Otherwise accept that the answer is 42.
+            </div>
+            <div class="pop-up-form-container pop-up-form-cancelbtn-container">
+                <button class="general-button" type="button" 
+                onclick="document.getElementById('temp_info').style.display='none'" class="cancelbtn">cancel</button>
+            </div>
+        </form>
+    </div>
+
 	
 </div>
 

@@ -38,10 +38,18 @@ var query_dicts;
             query_editor_text_field.cols = 30;
             query_editor_text_field.placeholder = 'enter your query here';
             query_editor.appendChild(query_editor_text_field);
+            
+            // TEMPORARY
+            var save_query_button = document.getElementById('save-query-button');
+            save_query_button.addEventListener('click', function() {
+            document.getElementById('temp_info').style.display='block';
+            query_editor_text_field.value = '';
+        });
+        
         } else {
             document.getElementById('new_query_message').innerHTML = 'There are no queries saved.'
         };
-        
+
         // add buttons
         var buttons_ids = [];
         for (let query_dict of query_dicts) {
@@ -90,4 +98,5 @@ var query_dicts;
             })
         };
     });
+
 })();
