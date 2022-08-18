@@ -3,8 +3,10 @@
 <div>
     <h1>{{ title }}</h1>
     <div class="trim">
-        <img id="index_image" src="https://www.publicdomainpictures.net/pictures/30000/velka/blank-dvds-background.jpg">
-        <img id="vinyl" src="https://www.publicdomainpictures.net/pictures/300000/velka/vinyl-record.png">
+        <img id="index_image" src="{{ url_for('static', filename='images/blank-dvds-background.jpg') }}">
+        <!-- https://www.publicdomainpictures.net/pictures/30000/velka/blank-dvds-background.jpg -->
+        <img id="vinyl" src="{{ url_for('static', filename='images/vinyl.png') }}">
+        <!-- https://www.publicdomainpictures.net/pictures/300000/velka/vinyl-record.png -->
     </div>
 </div>
 
