@@ -260,6 +260,9 @@ span.deleteicon span {
   line-height: 1em;
   cursor: pointer;
 }
+span.deleteicon span:hover {
+  color: var(--colour-dark-magenta);
+}
 span.deleteicon input {
   padding-right: 30px;
   box-sizing: border-box;
