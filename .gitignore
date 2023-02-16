@@ -2737,3 +2737,5 @@ spreadsheets/CD_list.xlsx
 
 music/database/records_list.sqlite-journal
 /media_list/virtual/
+
+*.lnk
