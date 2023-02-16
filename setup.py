@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name='music_flask',
-    packages=['music_flask'],
+    name='media_list',
+    packages=['media_list'],
     include_package_data=True,
     install_requires=[
         'flask',
